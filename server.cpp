@@ -25,7 +25,7 @@ int main() {
     client_length = sizeof(client_address);
     client_socket = accept(server_socket, (struct sockaddr *)&client_address, &client_length);
 
-    char buffer[1024] = {0};
+   char *buffer = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContentLength: 12\n\nHello world!";
     read(client_socket, buffer, sizeof(buffer));
     std::cout << "Received: " << buffer << std::endl;
 
