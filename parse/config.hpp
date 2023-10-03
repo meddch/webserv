@@ -5,9 +5,9 @@
 #include <vector>
 #include <string>
  
-using std::vector; 
-using std::map; 
-using std::string; 
+using	std::vector; 
+using	std::map; 
+using	std::string; 
 typedef vector<string> stringVec;
 
 
@@ -27,8 +27,20 @@ struct  ServerContext
     string      			root;
     string             		server_name;
     ssize_t             	cl_max_size;
+    stringVec     			indxs;
     map<int ,string>		error_pages;
     vector<LocationConf>	locations;
+
+};
+
+class	Config
+{
+	private :
+		vector<ServerContext> _main;
+	public :
+	Config(string const &filename);
+	~Config();
+     
 
 };
 
