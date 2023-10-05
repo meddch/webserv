@@ -1,11 +1,9 @@
-#include "utils.hpp"
+#include "ParseConfig.hpp"
 
 string toString(int value)
 {
 	std::stringstream ss;
 	ss << value;
-
-	// Unlikely to happen, bad alloc only
 	if (ss.fail()) return "";
 
 	return ss.str();
@@ -49,6 +47,17 @@ std::string toIPString(in_addr_t ip)
 	return oss.str();
 }
 
+bool isAllDigit(string str)
+{
+	for (size_t i = 0; i < str.length(); i++) {
+		if (!std::isdigit(str[i])) {
+			return false;
+		}
+	}
+	return true;
+}
+
+
 in_addr_t toIPv4(string str)
 {
 	in_addr_t result = 0;
@@ -73,16 +82,6 @@ in_addr_t toIPv4(string str)
 	return htonl(result);
 }
 
-/* --------------------------------------------------------------------------------------------- */
-bool isAllDigit(string str)
-{
-	for (size_t i = 0; i < str.length(); i++) {
-		if (!std::isdigit(str[i])) {
-			return false;
-		}
-	}
-	return true;
-}
 
 string fullPath(string root, string path)
 {
@@ -110,7 +109,7 @@ string getExtension(string path)
 	return "";
 }
 
-Address getAddressFromFd(int fd)
+Listen_Addr getAddressFromFd(int fd)
 {
 	struct sockaddr_in serverAddress;
 	socklen_t addrLen = sizeof(serverAddress);
@@ -118,7 +117,7 @@ Address getAddressFromFd(int fd)
 		throw runtime_error("getsockname() failed");
 	}
 
-	Address addr;
+	Listen_Addr addr;
 	addr.ip = ntohl(serverAddress.sin_addr.s_addr);
 	addr.port = ntohs(serverAddress.sin_port);
 	return addr;

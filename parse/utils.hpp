@@ -8,16 +8,15 @@
 #include <fstream>
 #include <sstream>	
 
-#include "Config.hpp"
+#include "ParseConfig.hpp"
 
-string getFileContent(string path);
-string toString(int value);
-string toIPString(in_addr_t ip);
-in_addr_t toIPv4(string str);
-int toInt(string str);
-bool isAllDigit(string str);
+int    		toInt(string str);
+string      toString(int value);
+in_addr_t   toIPv4(string str);
+string      toIPString(in_addr_t ip);
+bool		isAllDigit(string str);
 
-string fullPath(string root, string path);
-string getExtension(string path);
+string		fullPath(string root, string path);
+string		getExtension(string path);
+Listen_Addr	getAddressFromFd(int fd);
 
-Address getAddressFromFd(int fd);
