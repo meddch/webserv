@@ -6,7 +6,7 @@
 /*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 10:31:01 by mechane           #+#    #+#             */
-/*   Updated: 2023/10/07 12:27:50 by mechane          ###   ########.fr       */
+/*   Updated: 2023/10/07 16:47:33 by mechane          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,8 +102,6 @@ class ParseConfig
 
 		static const stringVec validServerKeys;
 		static const stringVec validLocationKeys;
-		static const vector<int> validErrorCodes;
-		static const vector<int> validRedirectCodes;	
 		
 	public :
 		//Constructor,Geters
@@ -118,8 +116,6 @@ class ParseConfig
 		string	Accept(void);
 		void	ParseServer(void);
 		
-		static bool isValidErrorCode(int code);
-		static bool isValidRedirectCode(int code);
 		static bool isValidServerKey(string key);
 		static bool isValidLocationKey(string key);
 

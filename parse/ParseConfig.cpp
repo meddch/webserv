@@ -4,15 +4,11 @@ const string ServerKeys[] = {"root", "server_name",  "listen", "client_max_body_
 
 const string Locationkeys[] = {"autoindex", "alias", "allowed_method", "index", "return"};
 
-const int ErrorCodes[] = {400, 401, 403, 404, 405, 500, 502, 503, 504};
-
-const int RedirectCodes[] = {300, 301, 302, 303, 304, 305, 306, 307, 308};
 
 const vector<string> ParseConfig::validServerKeys(ServerKeys, ServerKeys + sizeof(ServerKeys) / sizeof(ServerKeys[0]));
 
 const vector<string> ParseConfig::validLocationKeys(Locationkeys, Locationkeys + sizeof(Locationkeys) / sizeof(Locationkeys[0]));
 
-const vector<int> ParseConfig::validErrorCodes(ErrorCodes, ErrorCodes + sizeof(ErrorCodes) / sizeof(ErrorCodes[0]));
 
 bool ParseConfig::isValidServerKey(string key)
 {
@@ -24,15 +20,7 @@ bool ParseConfig::isValidLocationKey(string key)
 	return std::find(validLocationKeys.begin(), validLocationKeys.end(), key) != validLocationKeys.end();
 }
 
-bool ParseConfig::isValidErrorCode(int code)
-{
-	return std::find(validErrorCodes.begin(), validErrorCodes.end(), code) != validErrorCodes.end();
-}
 
-bool ParseConfig::isValidRedirectCode(int code)
-{
-	return std::find(validRedirectCodes.begin(), validRedirectCodes.end(), code) != validRedirectCodes.end();
-}
 
 
 
@@ -264,12 +252,10 @@ void ParseConfig::ParseErrorPage(ServerContext& server)
         {
 			int code = toInt(tokens[i]);
 
-			// Check if the key already exist or the code isn't used
 			map<int, string>::iterator it;
 			if (server.errorPages.find(code) != server.errorPages.end())
-				continue;;
-			if (!isValidErrorCode(code)) 
-				throw runtime_error("code " + toString(code) + " isn't used");
+				continue ;
+
 
 			server.errorPages[code] = tokens.back();
 		}
@@ -343,11 +329,10 @@ void ParseConfig::ParseIndex(LocationContext& location)
 
 void ParseConfig::ParseRedirect(LocationContext& location)
 {
-	try {
+	try 
+    {
 		location.redirect.first = toInt(Accept());
-		if (!isValidRedirectCode(location.redirect.first))
-			throw runtime_error("invalid redirect code");
-		location.redirect.second = Accept(); // need to validate as url?
+		location.redirect.second = Accept(); 
 		Skip(";");
 	}
 	catch (exception& e) 
@@ -389,11 +374,10 @@ void ParseConfig::addDefaultLocation(ServerContext& server)
 		if (it->uri == "/")
 			return;
 
-	// Should add one default or throw an error??
 	LocationContext location = CreateLocation();
 	location.uri = "/";
 	location.allowedMethods.push_back("GET");
-	location.index.push_back("index.html"); // default should be added in places where there is none as well
+	location.index.push_back("index.html");
 
 	server.locations.push_back(location);
 }
