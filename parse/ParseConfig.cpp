@@ -155,7 +155,8 @@ void ParseConfig::ParseLocation(ServerContext& server)
 
 	// Check if location uri already exists
 	vector<LocationContext>::iterator it;
-	for (it = server.locations.begin(); it != server.locations.end(); it++) {
+	for (it = server.locations.begin(); it != server.locations.end(); it++) 
+    {
 		if (it->uri == location.uri)
 			throw runtime_error("Parser: duplication location " + it->uri + "!");
 	}
@@ -201,12 +202,14 @@ void ParseConfig::ParseServerName(ServerContext& server)
 
 void ParseConfig::ParseAddress(ServerContext& server)
 {
-	try {
+	try
+    {
 		string token = Accept();
 
 		// Resolve host portion
 		size_t colonPos = token.find(":");
-		if (colonPos != string::npos) {
+		if (colonPos != string::npos)
+        {
 			server.address.ip = toIPv4(token.substr(0, colonPos));
 			token.erase(token.begin(), token.begin() + colonPos + 1);
 		}
@@ -219,20 +222,22 @@ void ParseConfig::ParseAddress(ServerContext& server)
 			throw exception();
 		server.address.port = port;
 
-		Skip(";");
+		Skip(";"); 
 	}
-	catch (...) {
+	catch (...)
+    {
 		throw runtime_error("Parser: invalid listen!");
 	}
 }
 
 void ParseConfig::ParseClientMaxBodySize(ServerContext& server)
 {
-	try {
+	try
+    {
 		int value = toInt(Accept());
-		if (value < 0) {
+		if (value < 0)
 			throw runtime_error("negative value");
-		}
+
 		server.clientMaxBodySize = value;
 		Skip(";");
 	}
@@ -247,31 +252,30 @@ void ParseConfig::ParseErrorPage(ServerContext& server)
 	vector<string> tokens;
 	string token;
 
-	while ((token = Accept()) != ";") {
-		tokens.push_back(token);
-	}
-	if (tokens.size() < 2) {
+	while ((token = Accept()) != ";")
+        tokens.push_back(token);
+
+	if (tokens.size() < 2) 
 		throw runtime_error("Parser: syntax error!");
-	}
 
 	// Excluding the last element which is the page path
 	try {
-		for (size_t i = 0; i < tokens.size() - 1; i++) {
+		for (size_t i = 0; i < tokens.size() - 1; i++)
+        {
 			int code = toInt(tokens[i]);
 
 			// Check if the key already exist or the code isn't used
 			map<int, string>::iterator it;
-			if (server.errorPages.find(code) != server.errorPages.end()) {
-				throw runtime_error("duplicated error code");
-			}
-			if (!isValidErrorCode(code)) {
+			if (server.errorPages.find(code) != server.errorPages.end())
+				continue;;
+			if (!isValidErrorCode(code)) 
 				throw runtime_error("code " + toString(code) + " isn't used");
-			}
 
 			server.errorPages[code] = tokens.back();
 		}
 	}
-	catch (exception& e) {
+	catch (exception& e)
+    {
 		throw runtime_error("Parser: error page, " + string(e.what()) + "!");
 	}
 }
@@ -287,43 +291,44 @@ void ParseConfig::ParseUri(LocationContext& location)
 void ParseConfig::ParseAutoindex(LocationContext& location)
 {
 	string token = Accept();
-	if (token != "on" && token != "off") {
+	if (token != "on" && token != "off")
 		throw runtime_error("Parser: invalid autoindex value!");
-	}
+
 	location.autoindex = token == "on" ? true : false;
 	Skip(";");
 }
 
 void ParseConfig::ParseAlias(LocationContext& location)
 {
-	try {
+	try
+    {
 		string token = Accept();
 		string path = fullPath(ROOT, token);
 
 		// Check if alias is accessible and is a directory
 		struct stat pathInfo;
-		if (stat(path.c_str(), &pathInfo) != 0 || !S_ISDIR(pathInfo.st_mode)) {
+		if (stat(path.c_str(), &pathInfo) != 0 || !S_ISDIR(pathInfo.st_mode))
 			throw runtime_error("Parser: invalid alias " + token + "!");
-		}
+
 
 		location.alias = token; // path or alias?
 		Skip(";");
 	}
-	catch (...) {
-
-	}
-	// should it return actually path or just the alias?
+	catch (...)
+    {
+        /////
+    }
 }
 
 void ParseConfig::ParseAllowedMethods(LocationContext& location)
 {
 	string token;
-	while ((token = Accept()) != ";") {
+	while ((token = Accept()) != ";")
+    {
 		// Define all allowed methods somewhere else in an array?
 		// Potentially more and need to be accessible in other places
-		if (token != "GET" && token != "POST" && token != "DELETE") {
+		if (token != "GET" && token != "POST" && token != "DELETE") 
 			throw runtime_error("Parser: unknown method " + token);
-		}
 
 		location.allowedMethods.push_back(token);
 	}
@@ -332,22 +337,21 @@ void ParseConfig::ParseAllowedMethods(LocationContext& location)
 void ParseConfig::ParseIndex(LocationContext& location)
 {
 	string token;
-	while ((token = Accept()) != ";") {
+	while ((token = Accept()) != ";") 
 		location.index.push_back(token);
-	}
 }
 
 void ParseConfig::ParseRedirect(LocationContext& location)
 {
 	try {
 		location.redirect.first = toInt(Accept());
-		if (!isValidRedirectCode(location.redirect.first)) {
+		if (!isValidRedirectCode(location.redirect.first))
 			throw runtime_error("invalid redirect code");
-		}
 		location.redirect.second = Accept(); // need to validate as url?
 		Skip(";");
 	}
-	catch (exception& e) {
+	catch (exception& e) 
+    {
 		throw runtime_error("Parser: " + string(e.what()) + "!");
 	}
 }
@@ -369,7 +373,8 @@ LocationContext ParseConfig::CreateLocation(void)
 
 void ParseConfig::addDefaultErrorPages(ServerContext& server)
 {
-	for (size_t i = 0; i < validErrorCodes.size(); i++) {
+	for (size_t i = 0; i < validErrorCodes.size(); i++)
+    {
 		int code = validErrorCodes[i];
 		if (server.errorPages.find(code) == server.errorPages.end())
 			server.errorPages[code] = "/default_error/" + toString(code) + ".html";
