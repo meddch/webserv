@@ -2,6 +2,9 @@
     "files.associations": {
         "*.excalidraw": "json",
         "*.excalidrawlib": "json",
-        "iosfwd": "cpp"
+        "iosfwd": "cpp",
+        "string": "cpp",
+        "filesystem": "cpp",
+        "deque": "cpp"
     }
 }

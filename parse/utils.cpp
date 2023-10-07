@@ -4,8 +4,9 @@ string toString(int value)
 {
 	std::stringstream ss;
 	ss << value;
-	if (ss.fail()) return "";
-
+    
+	if (ss.fail())
+        return "";
 	return ss.str();
 }
 
@@ -49,11 +50,9 @@ std::string toIPString(in_addr_t ip)
 
 bool isAllDigit(string str)
 {
-	for (size_t i = 0; i < str.length(); i++) {
-		if (!std::isdigit(str[i])) {
+	for (size_t i = 0; i < str.length(); i++)
+		if (!std::isdigit(str[i]))
 			return false;
-		}
-	}
 	return true;
 }
 
@@ -63,15 +62,13 @@ in_addr_t toIPv4(string str)
 	in_addr_t result = 0;
 
 	for (int i = 0; i < 4; i++) {
-		if (i < 3 && str.find('.') == string::npos) {
+		if (i < 3 && str.find('.') == string::npos)
 			throw runtime_error("failed to convert " + str);
-		}
 
 		string token = i < 3 ? str.substr(0, str.find('.')) : str;
 		int value = toInt(token);
-		if (!isAllDigit(token) || value < 0 || value > 255) {
+		if (!isAllDigit(token) || value < 0 || value > 255)
 			throw runtime_error("failed to convert " + str);
-		}
 
 		result = (result << 8) | value;
 
@@ -86,7 +83,8 @@ in_addr_t toIPv4(string str)
 string fullPath(string root, string path)
 {
 
-	try {
+	try
+    {
 		// Remove '/' from root and path
 		root = root.at(root.size() - 1) == '/' ? root.substr(0, root.size() - 1) : root;
 		path = path.at(0) == '/' ? path.substr(1) : path;
@@ -102,9 +100,8 @@ string getExtension(string path)
 {
 	size_t pos = path.find_last_of('.');
 
-	if (pos != string::npos && pos != 0) {
+	if (pos != string::npos && pos != 0)
 		return path.substr(pos);
-	}
 
 	return "";
 }
@@ -113,9 +110,8 @@ Listen_Addr getAddressFromFd(int fd)
 {
 	struct sockaddr_in serverAddress;
 	socklen_t addrLen = sizeof(serverAddress);
-	if (getsockname(fd, (struct sockaddr*)&serverAddress, &addrLen) == -1) {
+	if (getsockname(fd, (struct sockaddr*)&serverAddress, &addrLen) == -1)
 		throw runtime_error("getsockname() failed");
-	}
 
 	Listen_Addr addr;
 	addr.ip = ntohl(serverAddress.sin_addr.s_addr);

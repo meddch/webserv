@@ -6,7 +6,7 @@
 /*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 10:31:01 by mechane           #+#    #+#             */
-/*   Updated: 2023/10/05 14:53:57 by mechane          ###   ########.fr       */
+/*   Updated: 2023/10/07 12:27:50 by mechane          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@ struct LocationContext
 struct  ServerContext
 {
     string					root;
-	vector<Listen_Addr>		listen;
+	Listen_Addr		        address;
 	stringVec				index;
 	string					serverName;
 	ssize_t					clientMaxBodySize;
@@ -112,9 +112,9 @@ class ParseConfig
 
 	private :
 		//Parse utils
-		void GetTokens(const string& content, const string& whitespace, const string& symbol);
+		void	GetTokens(const string& content);
 		ServerContext CreateServer(void);
-		void	Consume(const string& token);
+		void	Skip(const string& token);
 		string	Accept(void);
 		void	ParseServer(void);
 		

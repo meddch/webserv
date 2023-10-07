@@ -1,18 +1,18 @@
 #include "utils.hpp"
 
-const string serverKeyArray[] = {"root", "server_name",  "listen", "client_max_body_size", "error_page", "location"};
+const string ServerKeys[] = {"root", "server_name",  "listen", "client_max_body_size", "error_page", "location"};
 
-const string locationKeyArray[] = {"autoindex", "alias", "allowed_method", "index", "return"};
+const string Locationkeys[] = {"autoindex", "alias", "allowed_method", "index", "return"};
 
-const int errorCode[] = {400, 403, 404, 405, 408, 411, 413, 500, 501, 505};
+const int ErrorCodes[] = {400, 401, 403, 404, 405, 500, 502, 503, 504};
 
-const int redirectCode[] = {301, 302, 303, 307, 308};
+const int RedirectCodes[] = {300, 301, 302, 303, 304, 305, 306, 307, 308};
 
-const vector<string> ParseConfig::validServerKeys(serverKeyArray, serverKeyArray + sizeof(serverKeyArray) / sizeof(serverKeyArray[0]));
+const vector<string> ParseConfig::validServerKeys(ServerKeys, ServerKeys + sizeof(ServerKeys) / sizeof(ServerKeys[0]));
 
-const vector<string> ParseConfig::validLocationKeys(locationKeyArray, locationKeyArray + sizeof(locationKeyArray) / sizeof(locationKeyArray[0]));
+const vector<string> ParseConfig::validLocationKeys(Locationkeys, Locationkeys + sizeof(Locationkeys) / sizeof(Locationkeys[0]));
 
-const vector<int> ParseConfig::validErrorCodes(errorCode, errorCode + sizeof(errorCode) / sizeof(errorCode[0]));
+const vector<int> ParseConfig::validErrorCodes(ErrorCodes, ErrorCodes + sizeof(ErrorCodes) / sizeof(ErrorCodes[0]));
 
 bool ParseConfig::isValidServerKey(string key)
 {
@@ -39,13 +39,13 @@ bool ParseConfig::isValidRedirectCode(int code)
 ParseConfig::ParseConfig(string const &filename)
 {
     std::ifstream file(filename.c_str());
-	if (!file.fail())
+	if (file.fail())
 		throw runtime_error("Failed to open file: " + filename);
     
 	_config.clear();
     _tokens.clear();
 	string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-	GetTokens(content, WHITESPACES, "{};");
+	GetTokens(content);
 
     while(!_tokens.empty())
         ParseServer();
@@ -56,10 +56,13 @@ vector<ServerContext> ParseConfig::GetConfig()
     return _config;
 }
 
-void	ParseConfig::GetTokens(const string& content, const string& whitespace, const string& spc_caratcter)
+
+//Get all tokens
+void	ParseConfig::GetTokens(const string& content)
 {
+    const string whitespaces(WHITESPACES), spc_caratcter("{};");
 	size_t pos = 0;
-    
+
 	while (pos < content.size())
 	{
 		if (spc_caratcter.find(content[pos]) != spc_caratcter.npos)
@@ -67,11 +70,11 @@ void	ParseConfig::GetTokens(const string& content, const string& whitespace, con
 			_tokens.push_back(string(1, content[pos]));
 			pos++;
 		}
-		else if (whitespace.find(content[pos]) != whitespace.npos)
+		else if (whitespaces.find(content[pos]) != whitespaces.npos)
 			pos++;
 		else
 		{
-			size_t tokEnd = content.find_first_of(whitespace + spc_caratcter, pos);
+			size_t tokEnd = content.find_first_of(whitespaces + spc_caratcter, pos);
 			if (tokEnd == string::npos)
 				tokEnd = content.size();
 			_tokens.push_back(content.substr(pos, tokEnd - pos));
@@ -90,7 +93,7 @@ string	ParseConfig::Accept(void)
 	return token;
 }
 
-void	ParseConfig::Consume(const string& token)
+void	ParseConfig::Skip(const string& token)
 {
 	if (_tokens.front() != token)
 		throw runtime_error("can't find " + token + "!");
@@ -102,11 +105,8 @@ void	ParseConfig::Consume(const string& token)
 ServerContext ParseConfig::CreateServer(void)
 {
 	ServerContext config;
-	Listen_Addr add;
 
 	memset(&config, 0, sizeof(ServerContext));
-	memset(&add, 0, sizeof(Listen_Addr));
-	config.listen.push_back(add);
 	config.root = ROOT;
 	config.clientMaxBodySize = -1;
 
@@ -116,7 +116,7 @@ ServerContext ParseConfig::CreateServer(void)
 void	ParseConfig::ParseServer()
 {
 	ServerContext server = CreateServer();
-	Consume("server"), Consume("{");
+	Skip("server"), Skip("{");
 
 	string token;
 	while ((token = Accept()) != "}")
@@ -125,10 +125,10 @@ void	ParseConfig::ParseServer()
 			throw runtime_error("Parser: unknown server key " + token + "!");
 		else if (token == "root")
 			ParseRoot(server);
-		else if (token == "server_name")
-			ParseServerName(server);
 		else if (token == "listen")
 			ParseAddress(server);
+		else if (token == "server_name")
+			ParseServerName(server);
 		else if (token == "client_max_body_size")
 			ParseClientMaxBodySize(server);
 		else if (token == "error_page")
@@ -137,7 +137,7 @@ void	ParseConfig::ParseServer()
 			ParseLocation(server);
 	}
 
-	if (!server.listen.front().ip && !server.listen.front().port)
+	if (!server.address.ip && !server.address.port)
 		throw runtime_error("Parser: server has no listen field!");
 
 	// Fill in the default error pages and '/' location if not provided
@@ -151,7 +151,7 @@ void	ParseConfig::ParseServer()
 void ParseConfig::ParseLocation(ServerContext& server)
 {
 	LocationContext location = CreateLocation();
-	ParseUri(location), Consume("{");
+	ParseUri(location), Skip("{");
 
 	// Check if location uri already exists
 	vector<LocationContext>::iterator it;
@@ -174,12 +174,12 @@ void ParseConfig::ParseLocation(ServerContext& server)
 		else if (token == "index")
 			ParseIndex(location);
 		else if (token == "return")
+            ParseRedirect(location);
 	}
 
 	// Add default method (GET) if no allowed method is specified
-	if (location.allowedMethods.empty()) {
+	if (location.allowedMethods.empty())
 		location.allowedMethods.push_back("GET");
-	}
 
 	// Check for required fields of locaiton context block?
 
@@ -190,13 +190,13 @@ void ParseConfig::ParseLocation(ServerContext& server)
 void ParseConfig::ParseRoot(ServerContext& server)
 {
 	server.root = fullPath(ROOT, Accept());
-	Consume(";");
+	Skip(";");
 }
 
 void ParseConfig::ParseServerName(ServerContext& server)
 {
 	server.serverName = Accept();
-	Consume(";");
+	Skip(";");
 }
 
 void ParseConfig::ParseAddress(ServerContext& server)
@@ -210,18 +210,16 @@ void ParseConfig::ParseAddress(ServerContext& server)
 			server.address.ip = toIPv4(token.substr(0, colonPos));
 			token.erase(token.begin(), token.begin() + colonPos + 1);
 		}
-		else {
+		else 
 			server.address.ip = 0;
-		}
 
 		// Resolve port portion
 		int port = toInt(token);
-		if (port <= 0 || port > 65535) {
+		if (port <= 0 || port > 65535)
 			throw exception();
-		}
 		server.address.port = port;
 
-		Consume(";");
+		Skip(";");
 	}
 	catch (...) {
 		throw runtime_error("Parser: invalid listen!");
@@ -236,7 +234,7 @@ void ParseConfig::ParseClientMaxBodySize(ServerContext& server)
 			throw runtime_error("negative value");
 		}
 		server.clientMaxBodySize = value;
-		Consume(";");
+		Skip(";");
 	}
 	catch (exception& e) {
 		throw runtime_error("Parser: body size, " + string(e.what()) + "!");
@@ -293,7 +291,7 @@ void ParseConfig::ParseAutoindex(LocationContext& location)
 		throw runtime_error("Parser: invalid autoindex value!");
 	}
 	location.autoindex = token == "on" ? true : false;
-	Consume(";");
+	Skip(";");
 }
 
 void ParseConfig::ParseAlias(LocationContext& location)
@@ -309,7 +307,7 @@ void ParseConfig::ParseAlias(LocationContext& location)
 		}
 
 		location.alias = token; // path or alias?
-		Consume(";");
+		Skip(";");
 	}
 	catch (...) {
 
@@ -347,7 +345,7 @@ void ParseConfig::ParseRedirect(LocationContext& location)
 			throw runtime_error("invalid redirect code");
 		}
 		location.redirect.second = Accept(); // need to validate as url?
-		Consume(";");
+		Skip(";");
 	}
 	catch (exception& e) {
 		throw runtime_error("Parser: " + string(e.what()) + "!");
