@@ -6,7 +6,7 @@
 /*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 10:31:01 by mechane           #+#    #+#             */
-/*   Updated: 2023/10/07 16:47:33 by mechane          ###   ########.fr       */
+/*   Updated: 2023/10/09 15:41:16 by mechane          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,6 +104,7 @@ class ParseConfig
 		static const stringVec validLocationKeys;
 		
 	public :
+    
 		//Constructor,Geters
 		ParseConfig(string const &filename);
 		vector<ServerContext> GetConfig();
@@ -111,24 +112,24 @@ class ParseConfig
 	private :
 		//Parse utils
 		void	GetTokens(const string& content);
-		ServerContext CreateServer(void);
-		void	Skip(const string& token);
 		string	Accept(void);
-		void	ParseServer(void);
+		void	Skip(const string& token);
 		
 		static bool isValidServerKey(string key);
 		static bool isValidLocationKey(string key);
 
+		ServerContext   CreateServer(void);
+		LocationContext CreateLocation(void);
+
+		void ParseServer(void);
 		void ParseLocation(ServerContext& server);
 
-		/* Server Field Parsers */
 		void ParseRoot(ServerContext& server);
 		void ParseServerName(ServerContext& server);
 		void ParseAddress(ServerContext& server);
 		void ParseClientMaxBodySize(ServerContext& server);
 		void ParseErrorPage(ServerContext& server);
 		
-		/* Location Field Parsers */
 		void ParseUri(LocationContext& location);
 		void ParseAutoindex(LocationContext& location);
 		void ParseAlias(LocationContext& location);
@@ -136,16 +137,9 @@ class ParseConfig
 		void ParseIndex(LocationContext& location);
 		void ParseRedirect(LocationContext& location);
 		
-		/* Keys */
-		static const stringVec validServerKeys;
-		static const stringVec validLocationKeys;
-		static const vector<int> validErrorCodes;
-		static const vector<int> validRedirectCodes;
 		
-		/* Default Settings */
-		LocationContext CreateLocation(void);
-		void addDefaultErrorPages(ServerContext& server);
 		void addDefaultLocation(ServerContext& server);
+
 
 
 };

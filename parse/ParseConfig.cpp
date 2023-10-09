@@ -1,8 +1,11 @@
 #include "utils.hpp"
 
-const string ServerKeys[] = {"root", "server_name",  "listen", "client_max_body_size", "error_page", "location"};
 
-const string Locationkeys[] = {"autoindex", "alias", "allowed_method", "index", "return"};
+// static helpers *******************************************
+
+const string ServerKeys[] = {"root", "server_name", "listen", "client_max_body_size", "error_page", "location"};
+
+const string Locationkeys[] = {"autoindex", "alias", "allowed_methods", "index", "return"};
 
 
 const vector<string> ParseConfig::validServerKeys(ServerKeys, ServerKeys + sizeof(ServerKeys) / sizeof(ServerKeys[0]));
@@ -22,7 +25,7 @@ bool ParseConfig::isValidLocationKey(string key)
 
 
 
-
+//Constructor,Geters ******************************************
 
 ParseConfig::ParseConfig(string const &filename)
 {
@@ -45,10 +48,11 @@ vector<ServerContext> ParseConfig::GetConfig()
 }
 
 
-//Get all tokens
+// Parsiing utils  >> *********************************************
+
 void	ParseConfig::GetTokens(const string& content)
 {
-    const string whitespaces(WHITESPACES), spc_caratcter("{};");
+    const string whitespaces(" \t\r\n"), spc_caratcter("{};");
 	size_t pos = 0;
 
 	while (pos < content.size())
@@ -89,12 +93,13 @@ void	ParseConfig::Skip(const string& token)
 	_tokens.pop_front();
 }
 
+//*******************************************************************
 
 ServerContext ParseConfig::CreateServer(void)
 {
 	ServerContext config;
 
-	memset(&config, 0, sizeof(ServerContext));
+
 	config.root = ROOT;
 	config.clientMaxBodySize = -1;
 
@@ -128,8 +133,7 @@ void	ParseConfig::ParseServer()
 	if (!server.address.ip && !server.address.port)
 		throw runtime_error("Parser: server has no listen field!");
 
-	// Fill in the default error pages and '/' location if not provided
-	addDefaultErrorPages(server);
+	// Fill in the default error pages and '/' location if not provided ?
 	addDefaultLocation(server);
 
 	_config.push_back(server);
@@ -158,7 +162,7 @@ void ParseConfig::ParseLocation(ServerContext& server)
 			ParseAutoindex(location);
 		else if (token == "alias")
 			ParseAlias(location);
-		else if (token == "allowed_method")
+		else if (token == "allowed_methods")
 			ParseAllowedMethods(location);
 		else if (token == "index")
 			ParseIndex(location);
@@ -178,19 +182,20 @@ void ParseConfig::ParseLocation(ServerContext& server)
 
 void ParseConfig::ParseRoot(ServerContext& server)
 {
-	server.root = fullPath(ROOT, Accept());
+    server.root = fullPath(ROOT, Accept());
 	Skip(";");
 }
 
 void ParseConfig::ParseServerName(ServerContext& server)
 {
-	server.serverName = Accept();
+	
+    server.serverName = Accept();
 	Skip(";");
 }
 
 void ParseConfig::ParseAddress(ServerContext& server)
 {
-	try
+    try
     {
 		string token = Accept();
 
@@ -220,7 +225,7 @@ void ParseConfig::ParseAddress(ServerContext& server)
 
 void ParseConfig::ParseClientMaxBodySize(ServerContext& server)
 {
-	try
+    try
     {
 		int value = toInt(Accept());
 		if (value < 0)
@@ -237,7 +242,7 @@ void ParseConfig::ParseClientMaxBodySize(ServerContext& server)
 
 void ParseConfig::ParseErrorPage(ServerContext& server)
 {
-	vector<string> tokens;
+    vector<string> tokens;
 	string token;
 
 	while ((token = Accept()) != ";")
@@ -246,18 +251,14 @@ void ParseConfig::ParseErrorPage(ServerContext& server)
 	if (tokens.size() < 2) 
 		throw runtime_error("Parser: syntax error!");
 
-	// Excluding the last element which is the page path
 	try {
 		for (size_t i = 0; i < tokens.size() - 1; i++)
         {
 			int code = toInt(tokens[i]);
-
 			map<int, string>::iterator it;
 			if (server.errorPages.find(code) != server.errorPages.end())
 				continue ;
-
-
-			server.errorPages[code] = tokens.back();
+			server.errorPages.insert(make_pair(code, tokens.back()));
 		}
 	}
 	catch (exception& e)
@@ -269,7 +270,8 @@ void ParseConfig::ParseErrorPage(ServerContext& server)
 
 void ParseConfig::ParseUri(LocationContext& location)
 {
-	location.uri = Accept();
+	
+    location.uri = Accept();
 	// validate, it has to start with '/'?
 	// any illegal characters in the uri?
 }
@@ -311,9 +313,9 @@ void ParseConfig::ParseAllowedMethods(LocationContext& location)
 	string token;
 	while ((token = Accept()) != ";")
     {
-		// Define all allowed methods somewhere else in an array?
+        // Define all allowed methods somewhere else in an array?
 		// Potentially more and need to be accessible in other places
-		if (token != "GET" && token != "POST" && token != "DELETE") 
+		if (token != "GET" && token != "POST" && token != "DELETE" ) 
 			throw runtime_error("Parser: unknown method " + token);
 
 		location.allowedMethods.push_back(token);
@@ -348,22 +350,10 @@ LocationContext ParseConfig::CreateLocation(void)
 	LocationContext location;
 
 	// Set the default values
-    memset(&location, 0, sizeof(LocationContext));
 	location.alias = "";
 	location.redirect.second = "";
 
 	return location;
-}
-
-
-void ParseConfig::addDefaultErrorPages(ServerContext& server)
-{
-	for (size_t i = 0; i < validErrorCodes.size(); i++)
-    {
-		int code = validErrorCodes[i];
-		if (server.errorPages.find(code) == server.errorPages.end())
-			server.errorPages[code] = "/default_error/" + toString(code) + ".html";
-	}
 }
 
 

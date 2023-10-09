@@ -16,21 +16,17 @@ int toInt(string str)
 	int result;
 	char remainingChar;
 
-	// Check if there are leftover characters
-	if (!(iss >> result) || (iss.get(remainingChar))) {
+	if (!(iss >> result) || (iss.get(remainingChar))) 
 		throw runtime_error("convert " + str + " toInt fails");
-	}
 
-	// Check fail and edge cases
-	if (result == 0 && str != "0" && str != "+0" && str != "-0") {
+	if (result == 0 && str != "0" && str != "+0" && str != "-0")
 		throw runtime_error("convert " + str + " toInt fails");
-	}
-	if (result == INT_MAX && str != "2147483647" && str != "+2147483647") {
+
+	if (result == INT_MAX && str != "2147483647" && str != "+2147483647")
 		throw runtime_error("convert " + str + " toInt fails");
-	}
-	if (result == INT_MIN && str != "-2147483648") {
+
+	if (result == INT_MIN && str != "-2147483648")
 		throw runtime_error("convert " + str + " toInt fails");
-	}
 
 	return result;
 }
@@ -61,7 +57,8 @@ in_addr_t toIPv4(string str)
 {
 	in_addr_t result = 0;
 
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 4; i++)
+    {
 		if (i < 3 && str.find('.') == string::npos)
 			throw runtime_error("failed to convert " + str);
 
@@ -89,7 +86,8 @@ string fullPath(string root, string path)
 		root = root.at(root.size() - 1) == '/' ? root.substr(0, root.size() - 1) : root;
 		path = path.at(0) == '/' ? path.substr(1) : path;
 	}
-	catch (...) {
+	catch (...)
+    {
 		// Protect against if strings are empty or index out of bound
 		return "";
 	}

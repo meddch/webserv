@@ -10,7 +10,7 @@ using namespace std;
 
 deque<string>	GetTokens(const string& content)
 {
-    const string whitespaces(" \t\r\n"), spc_caratcter("{};");
+    const string whitespaces("\r\n"), spc_caratcter(":");
 	size_t pos = 0;
     deque<string> _tokens;
 
