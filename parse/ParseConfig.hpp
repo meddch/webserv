@@ -6,7 +6,7 @@
 /*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 10:31:01 by mechane           #+#    #+#             */
-/*   Updated: 2023/10/09 15:41:16 by mechane          ###   ########.fr       */
+/*   Updated: 2023/10/09 15:47:42 by mechane          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ typedef vector<string> stringVec;
 
 
 #define WHITESPACES 	" /t/n"
-#define ROOT			"public"
+#define ROOT			"Home"
 
 struct Listen_Addr
 {
@@ -104,7 +104,7 @@ class ParseConfig
 		static const stringVec validLocationKeys;
 		
 	public :
-    
+
 		//Constructor,Geters
 		ParseConfig(string const &filename);
 		vector<ServerContext> GetConfig();
