@@ -44,6 +44,7 @@ std::string toIPString(in_addr_t ip)
 	return oss.str();
 }
 
+
 bool isAllDigit(string str)
 {
 	for (size_t i = 0; i < str.length(); i++)
@@ -116,3 +117,4 @@ Listen_Addr getAddressFromFd(int fd)
 	addr.port = ntohs(serverAddress.sin_port);
 	return addr;
 }
+
