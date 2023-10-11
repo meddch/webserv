@@ -99,8 +99,9 @@ ServerContext ParseConfig::CreateServer(void)
 {
 	ServerContext config;
 
-
-	config.root = ROOT;
+    config.address.ip = 0;
+    config.address.port = 80; 
+	config.root.clear();
 	config.clientMaxBodySize = -1;
 
 	return config;
@@ -130,8 +131,8 @@ void	ParseConfig::ParseServer()
 			ParseLocation(server);
 	}
 
-	if (!server.address.ip && !server.address.port)
-		throw runtime_error("Parser: server has no listen field!");
+	if (server.root.empty())
+		throw runtime_error("Parser: server has no root!");
 
 	// Fill in the default error pages and '/' location if not provided ?
 	addDefaultLocation(server);
@@ -199,7 +200,6 @@ void ParseConfig::ParseAddress(ServerContext& server)
     {
 		string token = Accept();
 
-		// Resolve host portion
 		size_t colonPos = token.find(":");
 		if (colonPos != string::npos)
         {
@@ -209,10 +209,9 @@ void ParseConfig::ParseAddress(ServerContext& server)
 		else 
 			server.address.ip = 0;
 
-		// Resolve port portion
 		int port = toInt(token);
 		if (port <= 0 || port > 65535)
-			throw exception();
+			throw runtime_error("Parser : Invalid Port!");
 		server.address.port = port;
 
 		Skip(";"); 
@@ -234,7 +233,8 @@ void ParseConfig::ParseClientMaxBodySize(ServerContext& server)
 		server.clientMaxBodySize = value;
 		Skip(";");
 	}
-	catch (exception& e) {
+	catch (exception& e)
+    {
 		throw runtime_error("Parser: body size, " + string(e.what()) + "!");
 	}
 }
