@@ -15,6 +15,6 @@ public:
 	string              getErrorPage(int code) const;
 	int                 getMaxBodySize() const;
 	bool                bodySizeAllowed(int bytes) const;
-    set<Listen_Addr>    getUniqueAddresses(vector<Server> servers);
+
 
 };
