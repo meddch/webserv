@@ -49,44 +49,6 @@ set<Listen_Addr> Core::getUniqueAddresses(vector<Server> servers)
 
 void	Core::run()
 {
-	 while (1) 
-	 {
-
-	int conn;
-
-	if ( (conn = accept(listener, NULL, NULL)) < 0 )
-	    Error_Quit("Error calling accept()");
-
-
-	/*  Fork child process to service connection  */
-
-	if ( (pid = fork()) == 0 ) {
-
-	    /*  This is now the forked child process, so
-		close listening socket and service request   */
-
-	    if ( close(listener) < 0 )
-		Error_Quit("Error closing listening socket in child.");
-	    
-	    Service_Request(conn);
-
-
-	    /*  Close connected socket and exit  */
-
-	    if ( close(conn) < 0 )
-		Error_Quit("Error closing connection socket.");
-	    exit(EXIT_SUCCESS);
-	}
-
-
-	/*  If we get here, we are still in the parent process,
-	    so close the connected socket, clean up child processes,
-	    and go back to accept a new connection.                   */
-
-	if ( close(conn) < 0 )
-	    Error_Quit("Error closing connection socket in parent.");
-
-	waitpid(-1, NULL, WNOHANG);
-    }
+	
 
 }
