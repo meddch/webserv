@@ -17,4 +17,5 @@ public :
     Core(vector<ServerContext> configs);
     void	CreateTcpIpListeners(set<Listen_Addr> s_addrs);
 	set<Listen_Addr>    getUniqueAddresses(vector<Server> servers);
+	void run();
 };

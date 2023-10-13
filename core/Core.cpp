@@ -15,7 +15,8 @@ void	Core::CreateTcpIpListeners(set<Listen_Addr> s_addrs)
 	{
 
     	if ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
-			printf("Socket ERR\n");
+			printf("Couldn't create listening socket.\n");
+
 
     	struct sockaddr_in server_addr;
     	memset(&server_addr, 0, sizeof(server_addr));
@@ -23,17 +24,17 @@ void	Core::CreateTcpIpListeners(set<Listen_Addr> s_addrs)
     	server_addr.sin_port = htons((*it).port);
     	server_addr.sin_addr.s_addr = (*it).ip;
 
-    if (bind(fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
-        printf("Bind ERR\n");
-	 
-	if(listen(fd , 100)) //how many ?
-		printf("Listen ERR");
-	
-	struct pollfd pfd;
-	pfd.fd = fd;
-	pfd.events = POLLIN;
+   		if (bind(fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
+   	    printf("Bind ERR\n");
 
-	plfds.push_back(pfd);
+		if(listen(fd , 100)) //how many ?
+			printf("Listen ERR\n");
+
+		struct pollfd pfd;
+		pfd.fd = fd;
+		pfd.events = POLLIN;
+
+		plfds.push_back(pfd);
     }
 }
 
@@ -42,25 +43,50 @@ set<Listen_Addr> Core::getUniqueAddresses(vector<Server> servers)
 
 	set<Listen_Addr> uniques;
 	for (size_t i = 0; i < servers.size(); i++)
-    {
-		if (servers[i].getAddress().ip == 0)
-			uniques.insert(servers[i].getAddress());
+    	uniques.insert(servers[i].getAddress());
+	return uniques;
+}
+
+void	Core::run()
+{
+	 while (1) 
+	 {
+
+	int conn;
+
+	if ( (conn = accept(listener, NULL, NULL)) < 0 )
+	    Error_Quit("Error calling accept()");
+
+
+	/*  Fork child process to service connection  */
+
+	if ( (pid = fork()) == 0 ) {
+
+	    /*  This is now the forked child process, so
+		close listening socket and service request   */
+
+	    if ( close(listener) < 0 )
+		Error_Quit("Error closing listening socket in child.");
+	    
+	    Service_Request(conn);
+
+
+	    /*  Close connected socket and exit  */
+
+	    if ( close(conn) < 0 )
+		Error_Quit("Error closing connection socket.");
+	    exit(EXIT_SUCCESS);
 	}
 
-	for (size_t i = 0; i < servers.size(); i++)
-    {
-		Listen_Addr addr = servers[i].getAddress();
-		if (addr.ip != 0)
-        {
-			set<Listen_Addr>::iterator it;
-			for (it = uniques.begin(); it != uniques.end(); it++)
-            {
-				if (it->ip == 0 && it->port == addr.port)
-                    break;
-			}
-			if (it == uniques.end())
-                uniques.insert(addr);
-		}
-	}
-	return uniques;
+
+	/*  If we get here, we are still in the parent process,
+	    so close the connected socket, clean up child processes,
+	    and go back to accept a new connection.                   */
+
+	if ( close(conn) < 0 )
+	    Error_Quit("Error closing connection socket in parent.");
+
+	waitpid(-1, NULL, WNOHANG);
+    }
+
 }
