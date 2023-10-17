@@ -1,19 +1,26 @@
 #pragma once
 #include "../parse/ParseConfig.hpp"
+#define TIMEOUT_T 40000
 
 class Client
 {
 private :
 	int			_fd;
+	int			_id;
 	bool		_Connected;
 	Listen_Addr	_serverAddr;
 	Listen_Addr	_clientAddr;
+	time_t		_lastTime;
 public :
 	Client(int fd, Listen_Addr Client, Listen_Addr Server);
-	Listen_Addr getClientAddress();
-	Listen_Addr getServerAddress();
-	int			getFd();
-	bool		is_Connected();
+	Listen_Addr getClientAddress() const;
+	Listen_Addr getServerAddress() const;
+	in_addr_t 	getServerIp() const;
+	in_addr_t 	getClientIp() const;
+	int 		getPort() const ;
+	int			getFd() const;
+	int			getId() const;
+	bool		is_Connected() const;
 	void		set_Connect(bool);
-	bool		Timeout();
+	bool		Timeout() const;
 };
