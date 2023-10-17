@@ -6,17 +6,18 @@
 #include <poll.h>
 #include <netinet/in.h>
 
-extern bool runing;
+
 
 class Core
 {
 private :
 
-    vector<struct pollfd>   plfds;
+	vector<struct pollfd>   plfds;
     map<int, Client>        _clients;
     vector<Server>          _servers;
-	ssize_t					_nbr_sockets;
+	size_t					_nbr_sockets;
 public :
+    static	bool			runing;
     Core(vector<ServerContext> configs);
     void				CreateTcpIpListeners();
 	set<Listen_Addr>    getUniqueAddresses(vector<Server>);
