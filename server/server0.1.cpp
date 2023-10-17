@@ -28,15 +28,15 @@ int main() {
     if (listen(sockfd, 10)) {
         printf("Error3\n");
     }
-    // int highestFd = 0;
-    // struct fd_set readfds;
-    // FD_ZERO(&readfds);
+    int highestFd = 0;
+    struct fd_set readfds;
+    FD_ZERO(&readfds);
 
-    // struct pollfd fds[10000];
-    // for (int i = 0; i < 10000; i++) {
-    //     fds[i].fd = -1;
-    // }
-    // int pollFd = 0;
+    struct pollfd fds[10000];
+    for (int i = 0; i < 10000; i++) {
+        fds[i].fd = -1;
+    }
+    int pollFd = 0;
     char recvline[1000]; 
 
     while (1) {
@@ -47,8 +47,8 @@ int main() {
             printf("Error4\n");
         printf("New client accepted\n");
 
-        // FD_SET(new_sock, &readfds);
-        // highestFd = new_sock;
+        FD_SET(new_sock, &readfds);
+        highestFd = new_sock;
 
         // fds[pollFd].fd = new_sock;
         // fds[pollFd].events = POLLIN | POLLOUT | POLLERR;
@@ -71,22 +71,23 @@ int main() {
         //                 printf("Got message %s\n", recvline);
         //             }
         //         }
-                // if ((fds[i].revents & POLLERR) != 0) {
-                //     printf("Client disconnected for %i\n", fds[i].fd);
-                // }
+        //         if ((fds[i].revents & POLLERR) != 0) {
+        //             printf("Client disconnected for %i\n", fds[i].fd);
+        //         }
         //     }
         // }
 
 
-        // if (select(highestFd + 1, &readfds, NULL, NULL, NULL) < 0) {
-        //     printf("Error5\n");
-        // }
-        // printf("Select did select\n");
-        // char recvline[100000];
-        // memset(recvline, 0, 100000);
+        if (select(highestFd + 1, &readfds, NULL, NULL, NULL) < 0) {
+            printf("Error5\n");
+        }
+        printf("Select did select\n");
+        char recvline[100000];
+        memset(recvline, 0, 100000);
         while (recv(new_sock, recvline, 100000 - 1, 0) > 0) {
             printf("%s", recvline);
         }
         printf("End of loop\n");
     }
 }
+

@@ -48,6 +48,7 @@ server {
 	location /about {
 		alias /42intra;
 		index index.html;
+		allowed_method GET;
 	}
 
 	location /autoindex {
