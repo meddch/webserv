@@ -5,6 +5,7 @@
 #include "Server.hpp"
 #include <poll.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 
 
 
@@ -19,10 +20,11 @@ private :
 public :
     static	bool			runing;
     Core(vector<ServerContext> configs);
-    void				CreateTcpIpListeners();
+    int					CreateTcpIpListeners(Listen_Addr addr);
 	set<Listen_Addr>    getUniqueAddresses(vector<Server>);
-	void 				handlePollIN(Client&);
+	void 				handlePl_IN(Client&);
 	Client& 			getClient(int);
+	void				init();
 	void				Add_Client(int);
 	void				run();
 	void				ClearInvalidCnx();
@@ -30,5 +32,6 @@ public :
 	pollfd 				make_PlFd(int , short);
 	Listen_Addr 		getServerAddress(int );	
 	Listen_Addr 		getClientAddress(int );
+	void 				handlePl_Out(Client& client);
 
 };

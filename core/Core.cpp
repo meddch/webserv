@@ -9,35 +9,34 @@ Core::Core(vector<ServerContext> configs)
 		_servers.push_back(Server(configs[i]));
 }
 
-// void	Core::CreateTcpIpListeners(void)
-// {
-// 	int fd;
+int	Core::CreateTcpIpListeners(Listen_Addr addr)
+{
+	int fd;
 
-// 	if ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
-// 		throw runtime_error("socket() failed: " + string(strerror(errno)));
+	if ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
+		throw runtime_error("socket() failed: " + string(strerror(errno)));
 
-// 	int sockopt = 1;
-// 	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, static_cast<const void *>(&sockopt), sizeof(int)) == -1) 
-// 		throw runtime_error("setsockopt() failed: " + string(strerror(errno)));
+	int sockopt = 1;
+	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, static_cast<const void *>(&sockopt), sizeof(int)) == -1) 
+		throw runtime_error("setsockopt() failed: " + string(strerror(errno)));
 	
-// 	sockaddr_in serverAddr;
-// 	memset(&serverAddr, 0, sizeof(serverAddr));
-// 	serverAddr.sin_family = AF_INET;
-// 	serverAddr.sin_port = htons(addr.port);
-// 	serverAddr.sin_addr.s_addr = addr.ip;
+	sockaddr_in serverAddr;
+	memset(&serverAddr, 0, sizeof(serverAddr));
+	serverAddr.sin_family = AF_INET;
+	serverAddr.sin_port = htons(addr.port);
+	serverAddr.sin_addr.s_addr = addr.ip; 
 
-// 	if (bind(fd, reinterpret_cast<sockaddr *>(&serverAddr), sizeof(serverAddr)) < 0) {
-// 		close(fd);
-// 		throw runtime_error("bind() failed: " + string(strerror(errno)));
-// 	}
+	if (bind(fd, reinterpret_cast<sockaddr *>(&serverAddr), sizeof(serverAddr)) < 0) {
+		close(fd);
+		throw runtime_error("bind() failed: " + string(strerror(errno)));
+	}
 
-// 	if (listen(fd, 10)) {
-// 		throw runtime_error("listen() failed: " + string(strerror(errno)));
-// 	}
-
-// 	return ;
-
-// }
+	if (listen(fd, 10)) {
+		throw runtime_error("listen() failed: " + string(strerror(errno)));
+	}
+	
+	return fd;
+}
 
 set<Listen_Addr> Core::getUniqueAddresses(vector<Server> servers)
 {
@@ -48,38 +47,52 @@ set<Listen_Addr> Core::getUniqueAddresses(vector<Server> servers)
 	return uniques;
 }
 
+void	Core::init()
+{
+	set<Listen_Addr> uniques = getUniqueAddresses(_servers);
+	set<Listen_Addr>::iterator it;
+	for (it = uniques.begin(); it != uniques.end(); it++)
+	{
+		int fd = CreateTcpIpListeners(*it);
+		_nbr_sockets++;
+		plfds.push_back(make_PlFd(fd, POLLIN | POLLOUT));
+	}
+}
+
+
 void	Core::run()
 {
 	try 
 	{
-		CreateTcpIpListeners();
+		init();
 		while (runing)
 		{
-		int pollReady = poll(plfds.data(), plfds.size(), 1000);
-		if (pollReady == -1)
-			throw runtime_error("poll() failed");
+			int pollReady = poll(plfds.data(), plfds.size(), 1000);
+			if (pollReady == -1)
+				throw runtime_error("poll() failed");
 
-		for (size_t i = _nbr_sockets; i < plfds.size(); i++)
-		{
-			if (plfds[i].revents & POLLIN)
-				handlePollIN(getClient(i));//request
-			// else if (plfds[i].revents & POLLOUT)
-				// handlePollOut(getClient(i));//reponse
-		}
+			for (size_t i = _nbr_sockets; i < plfds.size(); i++)
+			{
+				if (plfds[i].revents & POLLIN)
+					handlePl_IN(getClient(i));//request
+				else if (plfds[i].revents & POLLOUT)
+					handlePl_Out(getClient(i));//reponse
+			}
 
-		for (size_t i = 0; i < _nbr_sockets; i++)
-			if (plfds[i].revents & POLLIN)
-				Add_Client(plfds[i].fd);
+			for (size_t i = 0; i < _nbr_sockets; i++)
+				if (plfds[i].revents & POLLIN)
+					Add_Client(plfds[i].fd);
+			ClearInvalidCnx();
 		}
-		ClearInvalidCnx();
 	}
+
 	catch(exception &e)
 	{
 		cerr << e.what();
 	}
 }
 
-void Core::handlePollIN(Client& client)
+void Core::handlePl_IN(Client& client)
 {
 	ssize_t buffer_size = 100000;
 
@@ -95,7 +108,7 @@ void Core::handlePollIN(Client& client)
 	try {
 		string Str(buffer, bytesRead);
 		cout << Str;
-		/// parse request and get response
+		// parse request
 		}
 	catch (const exception& e)
 	{
@@ -195,3 +208,9 @@ Listen_Addr Core::getClientAddress(int fd)
 	return addr;
 }
 
+
+void Core::handlePl_Out(Client& client)
+{
+	(void)client;
+	
+}

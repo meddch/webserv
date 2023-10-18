@@ -16,5 +16,4 @@ public:
 	int                 getMaxBodySize() const;
 	bool                bodySizeAllowed(int bytes) const;
 
-
 };

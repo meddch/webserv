@@ -176,7 +176,6 @@ void ParseConfig::ParseLocation(ServerContext& server)
 		location.allowedMethods.push_back("GET");
 
 	// Check for required fields of locaiton context block?
-
 	server.locations.push_back(location);
 }
 

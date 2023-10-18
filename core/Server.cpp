@@ -30,4 +30,3 @@ bool Server::bodySizeAllowed(int bytes) const
 {
 	return getMaxBodySize() == -1 || getMaxBodySize() >= bytes;
 }
-
