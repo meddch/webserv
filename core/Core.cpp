@@ -108,8 +108,8 @@ void Core::handlePl_IN(Client& client)
 	try {
 		string Str(buffer, bytesRead);
 		cout << Str;
-		// parse request
-		}
+
+	}
 	catch (const exception& e)
 	{
 		cerr << e.what();
@@ -211,6 +211,12 @@ Listen_Addr Core::getClientAddress(int fd)
 
 void Core::handlePl_Out(Client& client)
 {
-	(void)client;
+
+	string Str = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 12\r\n\r\nAnas Zameeel";
+	if (client.is_Connected())
+		return;
+	else
+		send(client.getFd(), Str.c_str(), Str.length(), 0);
+	close(client.getFd());
 	
 }
