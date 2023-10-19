@@ -1,0 +1,8 @@
+GET / HTTP/1.1
+User-Agent: PostmanRuntime/7.33.0
+Accept: */*
+Postman-Token: 2c19753d-109f-463e-8a19-8b17884954de
+Host: localhost:5500
+Accept-Encoding: gzip, deflate, br
+Connection: keep-alive
+

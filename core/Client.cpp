@@ -9,6 +9,7 @@ Client::Client(int fd, Listen_Addr Client, Listen_Addr Server)
 	_fd = fd;
 	_serverAddr = Server;
 	_clientAddr = Client;
+	_ready = false;
 	_Connected = true;
 
 	_lastTime = std::time(NULL);
@@ -53,4 +54,14 @@ bool Client::Timeout() const
 void Client::set_Connect(bool status)
 {
 	_Connected = status;
+}
+
+void Client::setReady(bool status)
+{
+	_ready = status;
+}
+
+bool Client::isReady() const
+{
+	return _ready;
 }

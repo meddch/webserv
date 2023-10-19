@@ -32,10 +32,14 @@ ParseConfig::ParseConfig(string const &filename)
     std::ifstream file(filename.c_str());
 	if (file.fail())
 		throw runtime_error("Failed to open file: " + filename);
+
     
 	_config.clear();
     _tokens.clear();
 	string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+	if (content.empty())
+		throw runtime_error("Empty file: " + filename);
+
 	GetTokens(content);
 
     while(!_tokens.empty())
@@ -134,7 +138,14 @@ void	ParseConfig::ParseServer()
 	if (server.root.empty())
 		throw runtime_error("Parser: server has no root!");
 
-	// Fill in the default error pages and '/' location if not provided ?
+	//check if server name  and port match with the other server
+	vector<ServerContext>::iterator it;
+	for (it = _config.begin(); it != _config.end(); it++)
+	{
+		if (it->serverName == server.serverName && it->address.port == server.address.port)
+			throw runtime_error("Parser: duplication server name " + it->serverName + "!");
+	}
+	
 	addDefaultLocation(server);
 
 	_config.push_back(server);
@@ -370,3 +381,14 @@ void ParseConfig::addDefaultLocation(ServerContext& server)
 
 	server.locations.push_back(location);
 }
+
+
+// void	ParseConfig::ParseCgi(LocationContext& location)
+// {
+// 	string token = Accept();
+// 	if (token != "on" && token != "off")
+// 		throw runtime_error("Parser: invalid cgi value!");
+
+// 	location.cgi = token == "on" ? true : false;
+// 	Skip(";");
+// }

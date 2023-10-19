@@ -56,6 +56,8 @@ void	Core::init()
 		int fd = CreateTcpIpListeners(*it);
 		_nbr_sockets++;
 		plfds.push_back(make_PlFd(fd, POLLIN | POLLOUT));
+		cout << "Server is running" << endl;
+		cout << "Listening on port: " << (*it).port << endl;
 	}
 }
 
@@ -65,8 +67,6 @@ void	Core::run()
 	try 
 	{
 		init();
-		cout << "Server is running" << endl;
-		cout << "Listening on port: " << _servers[0].getAddress().port << endl;
 		while (runing)
 		{
 			int pollReady = poll(plfds.data(), plfds.size(), 1000);
@@ -201,10 +201,14 @@ void Core::handlePl_IN(Client& client)
 
 	try {
 		string Str(buffer, bytesRead);
+		std::fstream file;
+		file.open("request.txt" , std::fstream::out);
+		file << Str;
+		client.setReady(true);
 		//parse request
 		//create response
 		// add request to a queue in the client class
-		
+
 
 	}
 	catch (const exception& e)
@@ -218,23 +222,24 @@ void Core::handlePl_Out(Client& client)
 {
 
 	ssize_t bytesSent = 0;
+	string Str = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 20\r\n\r\n<h1>Hello World<h1/>";
 
 	//if a request is ready to be sent
 	//notify the client
 	//send the response
-	
-	string Str = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 20\r\n\r\n<h1>Hello World<h1/>";
 	if (!client.is_Connected())
-		return;
-	else
+			return;
+	if (client.isReady())
 	{
+
 		bytesSent = send(client.getFd(), Str.c_str(), Str.length(), 0);
 		if (bytesSent == -1 || bytesSent == 0)
 		{
 			client.set_Connect(false);
-			return;
+			client.setReady(false);
+			close(client.getFd());
+				return;
 		}
+		client.setReady(false);
 	}
-	close(client.getFd());
-	
 }

@@ -11,6 +11,7 @@ private :
 	Listen_Addr	_serverAddr;
 	Listen_Addr	_clientAddr;
 	time_t		_lastTime;
+	bool		_ready;
 public :
 	Client(int fd, Listen_Addr Client, Listen_Addr Server);
 	Listen_Addr getClientAddress() const;
@@ -23,4 +24,6 @@ public :
 	bool		is_Connected() const;
 	void		set_Connect(bool);
 	bool		Timeout() const;
+	void		setReady(bool);
+	bool		isReady() const;
 };
