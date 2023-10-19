@@ -65,6 +65,8 @@ void	Core::run()
 	try 
 	{
 		init();
+		cout << "Server is running" << endl;
+		cout << "Listening on port: " << _servers[0].getAddress().port << endl;
 		while (runing)
 		{
 			int pollReady = poll(plfds.data(), plfds.size(), 1000);
@@ -92,30 +94,6 @@ void	Core::run()
 	}
 }
 
-void Core::handlePl_IN(Client& client)
-{
-	ssize_t buffer_size = 100000;
-
-	char buffer[buffer_size];// buffer size?
-	ssize_t bytesRead = recv(client.getFd(), buffer, buffer_size, 0);
-
-	if (bytesRead == -1 || bytesRead == 0)
-	{
-		client.set_Connect(true);
-		return;
-	}
-
-	try {
-		string Str(buffer, bytesRead);
-		cout << Str;
-
-	}
-	catch (const exception& e)
-	{
-		cerr << e.what();
-		// send err response 
-	}
-}
 
 Client& Core::getClient(int key)
 {
@@ -133,7 +111,7 @@ void Core::ClearInvalidCnx(void)
 	for (it = _clients.begin(); it != _clients.end(); it++)
 	{
 		Client client = it->second;
-		if (client.is_Connected() || client.Timeout())
+		if (!client.is_Connected() || client.Timeout())
 		{
 			removeIterators.push_back(it);
 			Erase_PlFd(client.getFd());
@@ -208,15 +186,55 @@ Listen_Addr Core::getClientAddress(int fd)
 	return addr;
 }
 
+void Core::handlePl_IN(Client& client)
+{
+	ssize_t buffer_size = 100000;
+
+	char buffer[buffer_size];// buffer size?
+	ssize_t bytesRead = recv(client.getFd(), buffer, buffer_size, 0);
+
+	if (bytesRead == -1 || bytesRead == 0)
+	{
+		client.set_Connect(false);
+		return;
+	}
+
+	try {
+		string Str(buffer, bytesRead);
+		//parse request
+		//create response
+		// add request to a queue in the client class
+		
+
+	}
+	catch (const exception& e)
+	{
+		cerr << e.what();
+		// send err response 
+	}
+}
 
 void Core::handlePl_Out(Client& client)
 {
 
-	string Str = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 12\r\n\r\nAnas Zameeel";
-	if (client.is_Connected())
+	ssize_t bytesSent = 0;
+
+	//if a request is ready to be sent
+	//notify the client
+	//send the response
+	
+	string Str = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 20\r\n\r\n<h1>Hello World<h1/>";
+	if (!client.is_Connected())
 		return;
 	else
-		send(client.getFd(), Str.c_str(), Str.length(), 0);
+	{
+		bytesSent = send(client.getFd(), Str.c_str(), Str.length(), 0);
+		if (bytesSent == -1 || bytesSent == 0)
+		{
+			client.set_Connect(false);
+			return;
+		}
+	}
 	close(client.getFd());
 	
 }

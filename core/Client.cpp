@@ -9,7 +9,7 @@ Client::Client(int fd, Listen_Addr Client, Listen_Addr Server)
 	_fd = fd;
 	_serverAddr = Server;
 	_clientAddr = Client;
-	_Connected = false;
+	_Connected = true;
 
 	_lastTime = std::time(NULL);
 }
