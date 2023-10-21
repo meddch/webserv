@@ -243,3 +243,4 @@ void Core::handlePl_Out(Client& client)
 		client.setReady(false);
 	}
 }
+

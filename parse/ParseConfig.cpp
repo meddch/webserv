@@ -386,14 +386,38 @@ void ParseConfig::addDefaultLocation(ServerContext& server)
 }
 
 
-// void	ParseConfig::ParseCgi(LocationContext& location)
-// {
-// 	string token = Accept();
-// 	if (token != "on" && token != "off")
-// 		throw runtime_error("Parser: invalid cgi value!");
+void	ParseConfig::ParseCgi(LocationContext& location)
+{
+	string token = Accept();
+	if (token != "on" && token != "off")
+		throw runtime_error("Parser: invalid cgi value!");
 
-// 	location.cgi = token == "on" ? true : false;
-// 	Skip(";");
-// }
+	location.cgi = token == "on" ? true : false;
+	Skip(";");
+}
+
+void	ParseConfig::ParseCgiPath(LocationContext& location)
+{
+	string token = Accept();
+	string path = fullPath(ROOT, token);
+
+	// Check if cgi path is accessible and is a directory
+	struct stat pathInfo;
+	if (stat(path.c_str(), &pathInfo) != 0 || !S_ISDIR(pathInfo.st_mode))
+		throw runtime_error("Parser: invalid cgi path " + token + "!");
+
+	location.cgiPath = token;
+	Skip(";");
+}
+
+void	ParseConfig::ParseCgiExtension(LocationContext& location)
+{
+	string token = Accept();
+	if (token[0] != '.')
+		throw runtime_error("Parser: invalid cgi extension " + token + "!");
+
+	location.cgiExtension = token;
+	Skip(";");
+}
 
 

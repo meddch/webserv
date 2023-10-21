@@ -69,6 +69,10 @@ struct LocationContext
 	stringVec				index;
 	string					root;
     std::pair<int, string> 	redirect;
+	bool					cgi;
+	string					cgiPath;
+	string					cgiExtension;
+
 };
 
 struct  ServerContext
@@ -81,6 +85,7 @@ struct  ServerContext
 	ssize_t					clientMaxBodySize;
 	map<int, string>		errorPages;
 	vector<LocationContext>	locations;
+
 };
 
 
@@ -128,6 +133,10 @@ class ParseConfig
 		void ParseAllowedMethods(LocationContext& location);
 		void ParseIndex(LocationContext& location);
 		void ParseRedirect(LocationContext& location);
+		void ParseCgi(LocationContext& location);
+		void ParseCgiPath(LocationContext& location);
+		void ParseCgiExtension(LocationContext& location);
+		
 		
 		
 		void addDefaultLocation(ServerContext& server);
