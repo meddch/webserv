@@ -57,7 +57,7 @@ void	Core::init()
 		_nbr_sockets++;
 		plfds.push_back(make_PlFd(fd, POLLIN | POLLOUT));
 		cout << "Server is running" << endl;
-		cout << "Listening on port: " << (*it).port << endl;
+		cout << "Listening on " << toIPString(it->ip) << ":" << it->port << endl;
 	}
 }
 

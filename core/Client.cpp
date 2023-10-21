@@ -13,6 +13,8 @@ Client::Client(int fd, Listen_Addr Client, Listen_Addr Server)
 	_Connected = true;
 
 	_lastTime = std::time(NULL);
+	cout << "Client " << _id << " bound to " << toIPString(_clientAddr.ip) << ":" << _clientAddr.port << endl;
+	cout << "Client " << _id << " connected to " << toIPString(_serverAddr.ip) << ":" << _serverAddr.port << endl;
 }
 
 int Client::getId() const

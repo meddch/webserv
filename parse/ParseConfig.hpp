@@ -41,6 +41,9 @@ typedef vector<string> stringVec;
 
 #define WHITESPACES 	" /t/n"
 #define ROOT			"Home"
+#define DEFAULT_PORT	80
+#define DEFAULT_INDEX	"index.html"
+
 
 struct Listen_Addr
 {
@@ -64,8 +67,8 @@ struct LocationContext
 	string					alias;
 	stringVec				allowedMethods;
 	stringVec				index;
+	string					root;
     std::pair<int, string> 	redirect;
-
 };
 
 struct  ServerContext
@@ -74,6 +77,7 @@ struct  ServerContext
 	Listen_Addr		        address;
 	stringVec				index;
 	string					serverName;
+	stringVec				allowedMethods;
 	ssize_t					clientMaxBodySize;
 	map<int, string>		errorPages;
 	vector<LocationContext>	locations;

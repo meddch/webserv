@@ -30,3 +30,27 @@ bool Server::bodySizeAllowed(int bytes) const
 {
 	return getMaxBodySize() == -1 || getMaxBodySize() >= bytes;
 }
+
+
+vector<LocationContext> Server::getLocations() const
+{
+	return _config.locations;
+}
+
+vector<string> Server::getMethods() const
+{
+	return _config.allowedMethods;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -103,9 +103,12 @@ ServerContext ParseConfig::CreateServer(void)
 {
 	ServerContext config;
 
-    config.address.ip = 0;
-    config.address.port = 80; 
+    config.address.port = DEFAULT_PORT;; 
 	config.root.clear();
+	config.allowedMethods.clear();
+	config.serverName.clear();
+	config.errorPages.clear();
+	config.index.clear();
 	config.clientMaxBodySize = -1;
 
 	return config;
@@ -209,8 +212,8 @@ void ParseConfig::ParseAddress(ServerContext& server)
     try
     {
 		string token = Accept();
-
 		size_t colonPos = token.find(":");
+		
 		if (colonPos != string::npos)
         {
 			server.address.ip = toIPv4(token.substr(0, colonPos));
@@ -392,3 +395,5 @@ void ParseConfig::addDefaultLocation(ServerContext& server)
 // 	location.cgi = token == "on" ? true : false;
 // 	Skip(";");
 // }
+
+

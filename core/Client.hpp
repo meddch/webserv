@@ -1,5 +1,6 @@
 #pragma once
 #include "../parse/ParseConfig.hpp"
+#include "Server.hpp"
 #define TIMEOUT_T 40000
 
 class Client
