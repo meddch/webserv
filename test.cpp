@@ -51,6 +51,6 @@ int main(int ac, char **av)
     deque<string> _tokens = GetTokens(content);
     
     for (deque<string>::iterator it = _tokens.begin() ; it != _tokens.end();it++)
-        cout << *it << endl;
+        cout << *it << endl;   
    
 }
