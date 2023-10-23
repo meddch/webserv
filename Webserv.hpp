@@ -1,7 +1,7 @@
 #pragma once
 
-#include "parse/ParseConfig.hpp"
-#include "parse/utils.hpp"
+#include "parse/Parse.hpp"
+#include "parse/Utils.hpp"
 #include "core/Client.hpp"
 #include "core/Server.hpp"
 #include "core/Core.hpp"

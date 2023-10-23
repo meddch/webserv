@@ -90,20 +90,24 @@ struct  ServerContext
 
 
 
-class ParseConfig
+class Parse
 {
 	private :
 		deque<string> _tokens;
 		vector<ServerContext> _config;
 
 
-		static const stringVec validServerKeys;
-		static const stringVec validLocationKeys;
+		stringVec validServerKeys;
+		stringVec validLocationKeys;
 		
 	public :
 
 		//Constructor,Geters
-		ParseConfig(string const &filename);
+		Parse(string const &filename);
+		void  C_validServerKeys();
+		void C_validLocationKeys();
+
+
 		vector<ServerContext> GetConfig();
 
 	private :
@@ -112,11 +116,11 @@ class ParseConfig
 		string	Accept(void);
 		void	Skip(const string& token);
 		
-		static bool isValidServerKey(string key);
-		static bool isValidLocationKey(string key);
+		bool isValidServerKey(string key);
+		bool isValidLocationKey(string key);
 
-		ServerContext   CreateServer(void);
-		LocationContext CreateLocation(void);
+		ServerContext   Server(void);
+		LocationContext Location(void);
 
 		void ParseServer(void);
 		void ParseLocation(ServerContext& server);

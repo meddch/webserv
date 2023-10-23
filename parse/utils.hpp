@@ -8,7 +8,7 @@
 #include <fstream>
 #include <sstream>	
 
-#include "ParseConfig.hpp"
+#include "Parse.hpp"
 
 int    		toInt(string str);
 string      toString(int value);

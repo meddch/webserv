@@ -1,5 +1,5 @@
 #pragma once
-#include "../parse/ParseConfig.hpp"
+#include "../parse/Parse.hpp"
 #include "Server.hpp"
 #define TIMEOUT_T 40000
 

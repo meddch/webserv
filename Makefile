@@ -5,9 +5,9 @@ BLUE = \033[0;34m
 NAME = ./microserv
 RM = rm -f
 CPPFLAGS = -Wall -Wextra -Werror -std=c++98
-FILE =  main core/Client  core/Core     core/Server parse/ParseConfig    parse/utils   
+FILE =  main core/Client  core/Core     core/Server parse/Parse    parse/Utils   
 
-HEADERS = .hpp
+HEADERS = Webserv.hpp
 
 SRCS = $(addsuffix .cpp, $(FILE))
 OBJS = $(addsuffix .o, $(FILE))

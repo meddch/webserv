@@ -10,7 +10,7 @@ int main(int ac ,char **av)
 
 	try
 	{
-		ParseConfig conf(filename);
+		Parse conf(filename);
 		Core serv(conf.GetConfig());
 		serv.run();
 	}

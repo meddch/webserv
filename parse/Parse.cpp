@@ -1,33 +1,42 @@
-#include "utils.hpp"
+#include "Utils.hpp"
 
 
 // static helpers *******************************************
 
-const string ServerKeys[] = {"root", "server_name", "listen", "client_max_body_size", "error_page", "location"};
+string ServerKeys[] = {"root", "server_name", "listen", "client_max_body_size", "error_page", "location"};
 
-const string Locationkeys[] = {"autoindex", "alias", "allowed_methods", "index", "return"};
-
-
-const vector<string> ParseConfig::validServerKeys(ServerKeys, ServerKeys + sizeof(ServerKeys) / sizeof(ServerKeys[0]));
-
-const vector<string> ParseConfig::validLocationKeys(Locationkeys, Locationkeys + sizeof(Locationkeys) / sizeof(Locationkeys[0]));
+string LocationKeys[] = {"autoindex", "alias", "allowed_methods", "index", "return"};
 
 
-bool ParseConfig::isValidServerKey(string key)
+void  Parse::C_validServerKeys()
+{
+  for (size_t i = 0; i < sizeof(ServerKeys) / sizeof(ServerKeys[0]); i++)
+    validServerKeys.push_back(ServerKeys[i]);
+}
+
+void Parse::C_validLocationKeys()
+{
+  for (size_t i = 0; i < sizeof(LocationKeys) / sizeof(LocationKeys[0]); i++)
+    validLocationKeys.push_back(LocationKeys[i]);
+}
+
+
+bool Parse::isValidServerKey(string key)
 {
 	return std::find(validServerKeys.begin(), validServerKeys.end(), key) != validServerKeys.end();
 }
 
-bool ParseConfig::isValidLocationKey(string key)
+bool Parse::isValidLocationKey(string key)
 {
 	return std::find(validLocationKeys.begin(), validLocationKeys.end(), key) != validLocationKeys.end();
 }
 
 
 
+
 //Constructor,Geters ******************************************
 
-ParseConfig::ParseConfig(string const &filename)
+Parse::Parse(string const &filename)
 {
     std::ifstream file(filename.c_str());
 	if (file.fail())
@@ -46,7 +55,7 @@ ParseConfig::ParseConfig(string const &filename)
         ParseServer();
 }
 
-vector<ServerContext> ParseConfig::GetConfig()
+vector<ServerContext> Parse::GetConfig()
 {
     return _config;
 }
@@ -54,7 +63,7 @@ vector<ServerContext> ParseConfig::GetConfig()
 
 // Parsiing utils  >> *********************************************
 
-void	ParseConfig::GetTokens(const string& content)
+void	Parse::GetTokens(const string& content)
 {
     const string whitespaces(" \t\r\n"), spc_caratcter("{};");
 	size_t pos = 0;
@@ -79,27 +88,27 @@ void	ParseConfig::GetTokens(const string& content)
 	}
 }
 
-string	ParseConfig::Accept(void)
+string	Parse::Accept(void)
 {
 	if (_tokens.empty())
-		throw runtime_error("Parser: syntax error!");
+		throw runtime_error("Error : Psrser::Syntax error!");
 
 	string token = _tokens.front();
 	_tokens.pop_front();
 	return token;
 }
 
-void	ParseConfig::Skip(const string& token)
+void	Parse::Skip(const string& token)
 {
 	if (_tokens.front() != token)
-		throw runtime_error("can't find " + token + "!");
+		throw runtime_error("Error : Parser::Can't find " + token + "!");
 
 	_tokens.pop_front();
 }
 
 //*******************************************************************
 
-ServerContext ParseConfig::CreateServer(void)
+ServerContext Parse::Server(void)
 {
 	ServerContext config;
 
@@ -114,16 +123,16 @@ ServerContext ParseConfig::CreateServer(void)
 	return config;
 }
 
-void	ParseConfig::ParseServer()
+void	Parse::ParseServer()
 {
-	ServerContext server = CreateServer();
+	ServerContext server = Server();
 	Skip("server"), Skip("{");
 
 	string token;
 	while ((token = Accept()) != "}")
 	{
-		if (!isValidServerKey(token))
-			throw runtime_error("Parser: unknown server key " + token + "!");
+		if (isValidServerKey(token))
+			throw runtime_error("Error : Parser::unknown  key " + token + "!");
 		else if (token == "root")
 			ParseRoot(server);
 		else if (token == "listen")
@@ -138,9 +147,6 @@ void	ParseConfig::ParseServer()
 			ParseLocation(server);
 	}
 
-	if (server.root.empty())
-		throw runtime_error("Parser: server has no root!");
-
 	//check if server name  and port match with the other server
 	vector<ServerContext>::iterator it;
 	for (it = _config.begin(); it != _config.end(); it++)
@@ -154,25 +160,33 @@ void	ParseConfig::ParseServer()
 	_config.push_back(server);
 }
 
-
-void ParseConfig::ParseLocation(ServerContext& server)
+LocationContext Parse::Location(void)
 {
-	LocationContext location = CreateLocation();
+	LocationContext location;
+
+	// Set the default values
+	location.alias = "";
+	location.redirect.second = "";
+
+	return location;
+}
+
+void Parse::ParseLocation(ServerContext& server)
+{
+	LocationContext location = Location();
 	ParseUri(location), Skip("{");
 
 	// Check if location uri already exists
 	vector<LocationContext>::iterator it;
 	for (it = server.locations.begin(); it != server.locations.end(); it++) 
-    {
 		if (it->uri == location.uri)
 			throw runtime_error("Parser: duplication location " + it->uri + "!");
-	}
 
 	string token;
 	while ((token = Accept()) != "}")
     {
 		if (!isValidLocationKey(token))
-			throw runtime_error("Parser: unknown location key " + token + "!");
+			throw runtime_error("Error : Parser::Unknown key " + token + "!");
 		else if (token == "autoindex")
 			ParseAutoindex(location);
 		else if (token == "alias")
@@ -190,24 +204,25 @@ void ParseConfig::ParseLocation(ServerContext& server)
 		location.allowedMethods.push_back("GET");
 
 	// Check for required fields of locaiton context block?
+	// if 
 	server.locations.push_back(location);
 }
 
 
-void ParseConfig::ParseRoot(ServerContext& server)
+void Parse::ParseRoot(ServerContext& server)
 {
     server.root = fullPath(ROOT, Accept());
 	Skip(";");
 }
 
-void ParseConfig::ParseServerName(ServerContext& server)
+void Parse::ParseServerName(ServerContext& server)
 {
 	
     server.serverName = Accept();
 	Skip(";");
 }
 
-void ParseConfig::ParseAddress(ServerContext& server)
+void Parse::ParseAddress(ServerContext& server)
 {
     try
     {
@@ -235,7 +250,7 @@ void ParseConfig::ParseAddress(ServerContext& server)
 	}
 }
 
-void ParseConfig::ParseClientMaxBodySize(ServerContext& server)
+void Parse::ParseClientMaxBodySize(ServerContext& server)
 {
     try
     {
@@ -253,7 +268,7 @@ void ParseConfig::ParseClientMaxBodySize(ServerContext& server)
 }
 
 
-void ParseConfig::ParseErrorPage(ServerContext& server)
+void Parse::ParseErrorPage(ServerContext& server)
 {
     vector<string> tokens;
 	string token;
@@ -281,7 +296,7 @@ void ParseConfig::ParseErrorPage(ServerContext& server)
 }
 
 
-void ParseConfig::ParseUri(LocationContext& location)
+void Parse::ParseUri(LocationContext& location)
 {
 	
     location.uri = Accept();
@@ -289,7 +304,7 @@ void ParseConfig::ParseUri(LocationContext& location)
 	// any illegal characters in the uri?
 }
 
-void ParseConfig::ParseAutoindex(LocationContext& location)
+void Parse::ParseAutoindex(LocationContext& location)
 {
 	string token = Accept();
 	if (token != "on" && token != "off")
@@ -299,7 +314,7 @@ void ParseConfig::ParseAutoindex(LocationContext& location)
 	Skip(";");
 }
 
-void ParseConfig::ParseAlias(LocationContext& location)
+void Parse::ParseAlias(LocationContext& location)
 {
 	try
     {
@@ -321,7 +336,7 @@ void ParseConfig::ParseAlias(LocationContext& location)
     }
 }
 
-void ParseConfig::ParseAllowedMethods(LocationContext& location)
+void Parse::ParseAllowedMethods(LocationContext& location)
 {
 	string token;
 	while ((token = Accept()) != ";")
@@ -335,14 +350,14 @@ void ParseConfig::ParseAllowedMethods(LocationContext& location)
 	}
 }
 
-void ParseConfig::ParseIndex(LocationContext& location)
+void Parse::ParseIndex(LocationContext& location)
 {
 	string token;
 	while ((token = Accept()) != ";") 
 		location.index.push_back(token);
 }
 
-void ParseConfig::ParseRedirect(LocationContext& location)
+void Parse::ParseRedirect(LocationContext& location)
 {
 	try 
     {
@@ -358,26 +373,16 @@ void ParseConfig::ParseRedirect(LocationContext& location)
 
 
 
-LocationContext ParseConfig::CreateLocation(void)
-{
-	LocationContext location;
-
-	// Set the default values
-	location.alias = "";
-	location.redirect.second = "";
-
-	return location;
-}
 
 
-void ParseConfig::addDefaultLocation(ServerContext& server)
+void Parse::addDefaultLocation(ServerContext& server)
 {
 	// Check if the default location already exist
 	for (vector<LocationContext>::iterator it = server.locations.begin(); it != server.locations.end(); it++)
 		if (it->uri == "/")
 			return;
 
-	LocationContext location = CreateLocation();
+	LocationContext location = Location();
 	location.uri = "/";
 	location.allowedMethods.push_back("GET");
 	location.index.push_back("index.html");
@@ -386,7 +391,7 @@ void ParseConfig::addDefaultLocation(ServerContext& server)
 }
 
 
-void	ParseConfig::ParseCgi(LocationContext& location)
+void	Parse::ParseCgi(LocationContext& location)
 {
 	string token = Accept();
 	if (token != "on" && token != "off")
@@ -396,7 +401,7 @@ void	ParseConfig::ParseCgi(LocationContext& location)
 	Skip(";");
 }
 
-void	ParseConfig::ParseCgiPath(LocationContext& location)
+void	Parse::ParseCgiPath(LocationContext& location)
 {
 	string token = Accept();
 	string path = fullPath(ROOT, token);
@@ -410,7 +415,7 @@ void	ParseConfig::ParseCgiPath(LocationContext& location)
 	Skip(";");
 }
 
-void	ParseConfig::ParseCgiExtension(LocationContext& location)
+void	Parse::ParseCgiExtension(LocationContext& location)
 {
 	string token = Accept();
 	if (token[0] != '.')
