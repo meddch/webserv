@@ -21,30 +21,18 @@
 #include <netinet/in.h>
 #include <sys/stat.h>
 
-using std::set;
-using std::map;
-using std::endl;
-using std::cout;
-using std::cerr;
-using std::deque;
-using std::string;
-using std::vector;
-using std::ostream;
-using std::exception;
-using std::runtime_error;
 
 //Typdef
-typedef map<string, string> stringMap;
-typedef vector<string> stringVec;
+typedef std::map<std::string, std::string> stringMap;
+typedef std::vector<std::string> stringVec;
 
-
-
-#define WHITESPACES 	" /t/n"
-#define ROOT			"Home"
+//Constants
 #define DEFAULT_PORT	80
 #define DEFAULT_INDEX	"index.html"
+#define ROOT			"Home"
 
 
+//Structs
 struct Listen_Addr
 {
 	in_addr_t	ip;
@@ -62,39 +50,40 @@ struct Listen_Addr
 
 struct LocationContext
 {
-    bool					autoindex;
-	string					uri;
-	string					alias;
-	stringVec				allowedMethods;
-	stringVec				index;
-	string					root;
-    std::pair<int, string> 	redirect;
-	bool					cgi;
-	string					cgiPath;
-	string					cgiExtension;
+    bool						autoindex;
+	std::string					uri;
+	std::string					alias;
+	stringVec					allowedMethods;
+	stringVec					index;
+	std::string					root;
+	bool						cgi;
+	std::string					cgiPath;
+	std::string					cgiExtension;
+    std::pair<int, std::string> redirect;
 
 };
 
 struct  ServerContext
 {
-    string					root;
-	Listen_Addr		        address;
-	stringVec				index;
-	string					serverName;
-	stringVec				allowedMethods;
-	ssize_t					clientMaxBodySize;
-	map<int, string>		errorPages;
-	vector<LocationContext>	locations;
+    std::string						root;
+	Listen_Addr		        		address;
+	stringVec						index;
+	std::string						serverName;
+	stringVec						allowedMethods;
+	ssize_t							clientMaxBodySize;
+	std::map<int, std::string>		errorPages;
+	std::vector<LocationContext>	locations;
 
 };
 
-
+//Parse Class
 
 class Parse
 {
+
 	private :
-		deque<string> _tokens;
-		vector<ServerContext> _config;
+		std::deque<std::string> _tokens;
+		std::vector<ServerContext> _config;
 
 
 		stringVec validServerKeys;
@@ -103,21 +92,21 @@ class Parse
 	public :
 
 		//Constructor,Geters
-		Parse(string const &filename);
+		Parse(std::string const &filename);
 		void  C_validServerKeys();
 		void C_validLocationKeys();
 
 
-		vector<ServerContext> GetConfig();
+		std::vector<ServerContext> GetConfig();
 
 	private :
 		//Parse utils
-		void	GetTokens(const string& content);
-		string	Accept(void);
-		void	Skip(const string& token);
+		void		GetTokens(const std::string& content);
+		void		Skip(const std::string& token);
+		std::string	Accept(void);
 		
-		bool isValidServerKey(string key);
-		bool isValidLocationKey(string key);
+		bool isValidServerKey(std::string key);
+		bool isValidLocationKey(std::string key);
 
 		ServerContext   Server(void);
 		LocationContext Location(void);
@@ -142,7 +131,7 @@ class Parse
 		void ParseCgiExtension(LocationContext& location);
 		
 		
-		
+
 		void addDefaultLocation(ServerContext& server);
 
 

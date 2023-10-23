@@ -2,7 +2,7 @@
 
 bool Core::runing = true;
 
-Core::Core(vector<ServerContext> configs)
+Core::Core(std::vector<ServerContext> configs)
 {
 	_nbr_sockets = 0;
 	for (size_t i = 0; i < configs.size() ; i++)
@@ -14,11 +14,11 @@ int	Core::CreateTcpIpListeners(Listen_Addr addr)
 	int fd;
 
 	if ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
-		throw runtime_error("socket() failed: " + string(strerror(errno)));
+		throw std::runtime_error("socket() failed: " + std::string(strerror(errno)));
 
 	int sockopt = 1;
 	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, static_cast<const void *>(&sockopt), sizeof(int)) == -1) 
-		throw runtime_error("setsockopt() failed: " + string(strerror(errno)));
+		throw std::runtime_error("setsockopt() failed: " + std::string(strerror(errno)));
 	
 	sockaddr_in serverAddr;
 	memset(&serverAddr, 0, sizeof(serverAddr));
@@ -28,20 +28,20 @@ int	Core::CreateTcpIpListeners(Listen_Addr addr)
 
 	if (bind(fd, reinterpret_cast<sockaddr *>(&serverAddr), sizeof(serverAddr)) < 0) {
 		close(fd);
-		throw runtime_error("bind() failed: " + string(strerror(errno)));
+		throw std::runtime_error("bind() failed: " + std::string(strerror(errno)));
 	}
 
 	if (listen(fd, 10)) {
-		throw runtime_error("listen() failed: " + string(strerror(errno)));
+		throw std::runtime_error("listen() failed: " + std::string(strerror(errno)));
 	}
 	
 	return fd;
 }
 
-set<Listen_Addr> Core::getUniqueAddresses(vector<Server> servers)
+std::set<Listen_Addr> Core::getUniqueAddresses(std::vector<Server> servers)
 {
 
-	set<Listen_Addr> uniques;
+	std::set<Listen_Addr> uniques;
 	for (size_t i = 0; i < servers.size(); i++)
     	uniques.insert(servers[i].getAddress());
 	return uniques;
@@ -49,15 +49,17 @@ set<Listen_Addr> Core::getUniqueAddresses(vector<Server> servers)
 
 void	Core::init()
 {
-	set<Listen_Addr> uniques = getUniqueAddresses(_servers);
-	set<Listen_Addr>::iterator it;
+	std::set<Listen_Addr> uniques = getUniqueAddresses(_servers);
+	std::set<Listen_Addr>::iterator it;
 	for (it = uniques.begin(); it != uniques.end(); it++)
 	{
 		int fd = CreateTcpIpListeners(*it);
 		_nbr_sockets++;
 		plfds.push_back(make_PlFd(fd, POLLIN | POLLOUT));
-		cout << "Server is running" << endl;
-		cout << "Listening on " << toIPString(it->ip) << ":" << it->port << endl;
+		std::cout << "Server is running" <<std:: endl;
+		std::cout << "Server name: " << _servers[0].getName() << std::endl;
+		std::cout << "Server root: " << _servers[0].getRoot() << std::endl;
+		std::cout << "Listening on " << toIPString(it->ip) << ":" << it->port << std::endl;
 	}
 }
 
@@ -71,7 +73,7 @@ void	Core::run()
 		{
 			int pollReady = poll(plfds.data(), plfds.size(), 1000);
 			if (pollReady == -1)
-				throw runtime_error("poll() failed");
+				throw std::runtime_error("poll() failed");
 
 			for (size_t i = _nbr_sockets; i < plfds.size(); i++)
 			{
@@ -88,16 +90,16 @@ void	Core::run()
 		}
 	}
 
-	catch(exception &e)
+	catch(std::exception &e)
 	{
-		cerr << e.what();
+		std::cerr << e.what();
 	}
 }
 
 
 Client& Core::getClient(int key)
 {
-	map<int, Client>::iterator it;
+	std::map<int, Client>::iterator it;
 	it = _clients.find(plfds[key].fd);
 	Client& client = it->second;
 	return client;
@@ -105,8 +107,8 @@ Client& Core::getClient(int key)
 
 void Core::ClearInvalidCnx(void)
 {
-	map<int, Client>::iterator it;
-	vector<map<int, Client>::iterator> removeIterators;
+	std::map<int, Client>::iterator it;
+	std::vector<std::map<int, Client>::iterator> removeIterators;
 
 	for (it = _clients.begin(); it != _clients.end(); it++)
 	{
@@ -162,7 +164,7 @@ Listen_Addr Core::getServerAddress(int fd)
 	sockaddr_in serverAddress;
 	socklen_t addrLen = sizeof(serverAddress);
 	if (getsockname(fd, reinterpret_cast<sockaddr*>(&serverAddress), &addrLen) == -1)
-		throw runtime_error("getsockname() failed: " + string(strerror(errno)));
+		throw std::runtime_error("getsockname() failed: " + std::string(strerror(errno)));
 
 	Listen_Addr addr;
 	addr.ip = serverAddress.sin_addr.s_addr;
@@ -177,7 +179,7 @@ Listen_Addr Core::getClientAddress(int fd)
 	sockaddr_in clientAddress;
 	socklen_t addrLen = sizeof(clientAddress);
 	if (getpeername(fd, reinterpret_cast<sockaddr*>(&clientAddress), &addrLen) == -1)
-		throw runtime_error("getpeername() failed: " + string(strerror(errno)));
+		throw std::runtime_error("getpeername() failed: " + std::string(strerror(errno)));
 
 	Listen_Addr addr;
 	addr.ip = clientAddress.sin_addr.s_addr;
@@ -195,12 +197,13 @@ void Core::handlePl_IN(Client& client)
 
 	if (bytesRead == -1 || bytesRead == 0)
 	{
+		std::cout << "Client " << client.getId() << " disconnected" << std::endl;
 		client.set_Connect(false);
 		return;
 	}
 
 	try {
-		string Str(buffer, bytesRead);
+		std::string Str(buffer, bytesRead);
 		std::fstream file;
 		file.open("request.txt" , std::fstream::out);
 		file << Str;
@@ -211,9 +214,9 @@ void Core::handlePl_IN(Client& client)
 
 
 	}
-	catch (const exception& e)
+	catch (const std::exception& e)
 	{
-		cerr << e.what();
+		std::cerr << e.what();
 		// send err response 
 	}
 }
@@ -222,7 +225,7 @@ void Core::handlePl_Out(Client& client)
 {
 
 	ssize_t bytesSent = 0;
-	string Str = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 20\r\n\r\n<h1>Hello World<h1/>";
+	std::string Str = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 20\r\n\r\n<h1>Hello World<h1/>";
 
 	//if a request is ready to be sent
 	//notify the client
@@ -236,6 +239,7 @@ void Core::handlePl_Out(Client& client)
 		if (bytesSent == -1 || bytesSent == 0)
 		{
 			client.set_Connect(false);
+			std::cout << "Client " << client.getId() << " disconnected" << std::endl;
 			client.setReady(false);
 			close(client.getFd());
 				return;

@@ -9,14 +9,19 @@ Listen_Addr Server::getAddress() const
     return _config.address;
 }
 
-string Server::getName() const
+std::string Server::getName() const
 { 
     return _config.serverName;
 }
 
-string Server::getErrorPage(int code) const
+std::string Server::getRoot() const
 {
-	map<int, string>::const_iterator it = _config.errorPages.find(code);
+	return _config.root;
+}
+
+std::string Server::getErrorPage(int code) const
+{
+	std::map<int, std::string>::const_iterator it = _config.errorPages.find(code);
 	return it == _config.errorPages.end() ? "" : fullPath(ROOT, it->second);
 }
 
@@ -32,12 +37,12 @@ bool Server::bodySizeAllowed(int bytes) const
 }
 
 
-vector<LocationContext> Server::getLocations() const
+std::vector<LocationContext> Server::getLocations() const
 {
 	return _config.locations;
 }
 
-vector<string> Server::getMethods() const
+std::vector<std::string> Server::getMethods() const
 {
 	return _config.allowedMethods;
 }

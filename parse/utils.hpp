@@ -7,16 +7,18 @@
 #include <unistd.h>
 #include <fstream>
 #include <sstream>	
+#include <string>
+
 
 #include "Parse.hpp"
 
-int    		toInt(string str);
-string      toString(int value);
-in_addr_t   toIPv4(string str);
-string toIPString(in_addr_t ip);
-bool		isAllDigit(string str);
+int    			toInt(std::string str);
+std::string     toString(int value);
+in_addr_t   	toIPv4(std::string str);
+std::string 	toIPString(in_addr_t ip);
+bool			isAllDigit(std::string str);
 
-string		fullPath(string root, string path);
-string		getExtension(string path);
-Listen_Addr	getAddressFromFd(int fd);
+std::string		fullPath(std::string root, std::string path);
+std::string		getExtension(std::string path);
+Listen_Addr		getAddressFromFd(int fd);
 

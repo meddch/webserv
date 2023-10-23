@@ -6,7 +6,7 @@ int main(int ac ,char **av)
 	if (ac != 2)
 		return 1;
 
-	const string filename(av[1]);
+	const std::string filename(av[1]);
 
 	try
 	{
@@ -14,8 +14,8 @@ int main(int ac ,char **av)
 		Core serv(conf.GetConfig());
 		serv.run();
 	}
-	catch (exception &e)
+	catch (std::exception &e)
 	{
-		cerr << e.what();
+		std::cerr << e.what();
 	}
 }

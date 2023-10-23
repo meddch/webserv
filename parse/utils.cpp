@@ -1,7 +1,7 @@
 #include "Utils.hpp"
 
 
-string toString(int value)
+std::string toString(int value)
 {
 	std::stringstream ss;
 	ss << value;
@@ -11,23 +11,23 @@ string toString(int value)
 	return ss.str();
 }
 
-int toInt(string str)
+int toInt(std::string str)
 {
 	std::istringstream iss(str);
 	int result;
 	char remainingChar;
 
 	if (!(iss >> result) || (iss.get(remainingChar))) 
-		throw runtime_error("convert " + str + " toInt fails");
+		throw std::runtime_error("convert " + str + " toInt fails");
 
 	if (result == 0 && str != "0" && str != "+0" && str != "-0")
-		throw runtime_error("convert " + str + " toInt fails");
+		throw std::runtime_error("convert " + str + " toInt fails");
 
 	if (result == INT_MAX && str != "2147483647" && str != "+2147483647")
-		throw runtime_error("convert " + str + " toInt fails");
+		throw std::runtime_error("convert " + str + " toInt fails");
 
 	if (result == INT_MIN && str != "-2147483648")
-		throw runtime_error("convert " + str + " toInt fails");
+		throw std::runtime_error("convert " + str + " toInt fails");
 
 	return result;
 }
@@ -46,7 +46,7 @@ std::string toIPString(in_addr_t ip)
 }
 
 
-bool isAllDigit(string str)
+bool isAllDigit(std::string str)
 {
 	for (size_t i = 0; i < str.length(); i++)
 		if (!std::isdigit(str[i]))
@@ -55,19 +55,19 @@ bool isAllDigit(string str)
 }
 
 
-in_addr_t toIPv4(string str)
+in_addr_t toIPv4(std::string str)
 {
 	in_addr_t result = 0;
 
 	for (int i = 0; i < 4; i++)
     {
-		if (i < 3 && str.find('.') == string::npos)
-			throw runtime_error("failed to convert " + str);
+		if (i < 3 && str.find('.') == std::string::npos)
+			throw std::runtime_error("failed to convert " + str);
 
-		string token = i < 3 ? str.substr(0, str.find('.')) : str;
+		std::string token = i < 3 ? str.substr(0, str.find('.')) : str;
 		int value = toInt(token);
 		if (!isAllDigit(token) || value < 0 || value > 255)
-			throw runtime_error("failed to convert " + str);
+			throw std::runtime_error("failed to convert " + str);
 
 		result = (result << 8) | value;
 
@@ -79,7 +79,7 @@ in_addr_t toIPv4(string str)
 }
 
 
-string fullPath(string root, string path)
+std::string fullPath(std::string root, std::string path)
 {
 
 	try
@@ -96,11 +96,11 @@ string fullPath(string root, string path)
 	return root + "/" + path;
 }
 
-string getExtension(string path)
+std::string getExtension(std::string path)
 {
 	size_t pos = path.find_last_of('.');
 
-	if (pos != string::npos && pos != 0)
+	if (pos != std::string::npos && pos != 0)
 		return path.substr(pos);
 
 	return "";
@@ -111,7 +111,7 @@ Listen_Addr getAddressFromFd(int fd)
 	struct sockaddr_in serverAddress;
 	socklen_t addrLen = sizeof(serverAddress);
 	if (getsockname(fd, (struct sockaddr*)&serverAddress, &addrLen) == -1)
-		throw runtime_error("getsockname() failed");
+		throw std::runtime_error("getsockname() failed");
 
 	Listen_Addr addr;
 	addr.ip = ntohl(serverAddress.sin_addr.s_addr);

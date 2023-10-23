@@ -13,25 +13,27 @@ class Core
 {
 private :
 
-	vector<struct pollfd>   plfds;
-    map<int, Client>        _clients;
-    vector<Server>          _servers;
-	size_t					_nbr_sockets;
+	std::vector<struct pollfd>   		plfds;
+   	std::map<int, Client>       		_clients;
+    std::vector<Server>         		_servers;
+	size_t								_nbr_sockets;
+    static	bool						runing;
 public :
-    static	bool			runing;
-    Core(vector<ServerContext> configs);
-    int					CreateTcpIpListeners(Listen_Addr addr);
-	set<Listen_Addr>    getUniqueAddresses(vector<Server>);
-	void 				handlePl_IN(Client&);
-	Client& 			getClient(int);
-	void				init();
-	void				Add_Client(int);
-	void				run();
-	void				ClearInvalidCnx();
-	void 				Erase_PlFd(int);
-	pollfd 				make_PlFd(int , short);
-	Listen_Addr 		getServerAddress(int );	
-	Listen_Addr 		getClientAddress(int );
-	void 				handlePl_Out(Client& client);
+    Core(std::vector<ServerContext> configs);
+
+	static bool 			isRuning();
+    int						CreateTcpIpListeners(Listen_Addr addr);
+	std::set<Listen_Addr>   getUniqueAddresses(std::vector<Server>);
+	void 					handlePl_IN(Client&);
+	Client& 				getClient(int);
+	void					init();
+	void					Add_Client(int);
+	void					run();
+	void					ClearInvalidCnx();
+	void 					Erase_PlFd(int);
+	pollfd 					make_PlFd(int , short);
+	Listen_Addr 			getServerAddress(int );	
+	Listen_Addr 			getClientAddress(int );
+	void 					handlePl_Out(Client& client);
 
 };

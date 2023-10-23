@@ -15,8 +15,6 @@ private :
 	bool		_ready;
 public :
 	Client(int fd, Listen_Addr Client, Listen_Addr Server);
-	Listen_Addr getClientAddress() const;
-	Listen_Addr getServerAddress() const;
 	in_addr_t 	getServerIp() const;
 	in_addr_t 	getClientIp() const;
 	int 		getPort() const ;

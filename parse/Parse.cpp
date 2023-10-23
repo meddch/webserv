@@ -1,11 +1,12 @@
+#include "Parse.hpp"
 #include "Utils.hpp"
 
 
 // static helpers *******************************************
 
-string ServerKeys[] = {"root", "server_name", "listen", "client_max_body_size", "error_page", "location"};
+std::string ServerKeys[] = {"root", "server_name", "listen", "client_max_body_size", "error_page", "location"};
 
-string LocationKeys[] = {"autoindex", "alias", "allowed_methods", "index", "return"};
+std::string LocationKeys[] = {"autoindex", "alias", "allowed_methods", "index", "return"};
 
 
 void  Parse::C_validServerKeys()
@@ -21,14 +22,14 @@ void Parse::C_validLocationKeys()
 }
 
 
-bool Parse::isValidServerKey(string key)
+bool Parse::isValidServerKey(std::string key)
 {
-	return std::find(validServerKeys.begin(), validServerKeys.end(), key) != validServerKeys.end();
+	return std::find(validServerKeys.begin(), validServerKeys.end(), key) == validServerKeys.end();
 }
 
-bool Parse::isValidLocationKey(string key)
+bool Parse::isValidLocationKey(std::string key)
 {
-	return std::find(validLocationKeys.begin(), validLocationKeys.end(), key) != validLocationKeys.end();
+	return std::find(validLocationKeys.begin(), validLocationKeys.end(), key) == validLocationKeys.end();
 }
 
 
@@ -36,18 +37,18 @@ bool Parse::isValidLocationKey(string key)
 
 //Constructor,Geters ******************************************
 
-Parse::Parse(string const &filename)
+Parse::Parse(std::string const &filename)
 {
     std::ifstream file(filename.c_str());
 	if (file.fail())
-		throw runtime_error("Failed to open file: " + filename);
+		throw std::runtime_error("Failed to open file: " + filename);
 
     
 	_config.clear();
     _tokens.clear();
-	string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+	std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 	if (content.empty())
-		throw runtime_error("Empty file: " + filename);
+		throw std::runtime_error("Empty file: " + filename);
 
 	GetTokens(content);
 
@@ -55,7 +56,7 @@ Parse::Parse(string const &filename)
         ParseServer();
 }
 
-vector<ServerContext> Parse::GetConfig()
+std::vector<ServerContext> Parse::GetConfig()
 {
     return _config;
 }
@@ -63,16 +64,16 @@ vector<ServerContext> Parse::GetConfig()
 
 // Parsiing utils  >> *********************************************
 
-void	Parse::GetTokens(const string& content)
+void	Parse::GetTokens(const std::string& content)
 {
-    const string whitespaces(" \t\r\n"), spc_caratcter("{};");
+    const std::string whitespaces(" \t\r\n"), spc_caratcter("{};");
 	size_t pos = 0;
 
 	while (pos < content.size())
 	{
 		if (spc_caratcter.find(content[pos]) != spc_caratcter.npos)
 		{
-			_tokens.push_back(string(1, content[pos]));
+			_tokens.push_back(std::string(1, content[pos]));
 			pos++;
 		}
 		else if (whitespaces.find(content[pos]) != whitespaces.npos)
@@ -80,7 +81,7 @@ void	Parse::GetTokens(const string& content)
 		else
 		{
 			size_t tokEnd = content.find_first_of(whitespaces + spc_caratcter, pos);
-			if (tokEnd == string::npos)
+			if (tokEnd == std::string::npos)
 				tokEnd = content.size();
 			_tokens.push_back(content.substr(pos, tokEnd - pos));
 			pos += _tokens.back().size();
@@ -88,25 +89,25 @@ void	Parse::GetTokens(const string& content)
 	}
 }
 
-string	Parse::Accept(void)
+std::string	Parse::Accept(void)
 {
 	if (_tokens.empty())
-		throw runtime_error("Error : Psrser::Syntax error!");
+		throw std::runtime_error("Error : Psrser::Syntax error!");
 
-	string token = _tokens.front();
+	std::string token = _tokens.front();
 	_tokens.pop_front();
 	return token;
 }
 
-void	Parse::Skip(const string& token)
+void	Parse::Skip(const std::string& token)
 {
 	if (_tokens.front() != token)
-		throw runtime_error("Error : Parser::Can't find " + token + "!");
+		throw std::runtime_error("Error : Parser::Can't find " + token + "!");
 
 	_tokens.pop_front();
 }
 
-//*******************************************************************
+//********************************************************************
 
 ServerContext Parse::Server(void)
 {
@@ -128,11 +129,11 @@ void	Parse::ParseServer()
 	ServerContext server = Server();
 	Skip("server"), Skip("{");
 
-	string token;
+	std::string token;
 	while ((token = Accept()) != "}")
 	{
-		if (isValidServerKey(token))
-			throw runtime_error("Error : Parser::unknown  key " + token + "!");
+		if (!isValidServerKey(token))
+			throw std::runtime_error("Error : Parser::unknown  key " + token + "!");
 		else if (token == "root")
 			ParseRoot(server);
 		else if (token == "listen")
@@ -145,18 +146,18 @@ void	Parse::ParseServer()
 			ParseErrorPage(server);
 		else if (token == "location")
 			ParseLocation(server);
+
 	}
 
 	//check if server name  and port match with the other server
-	vector<ServerContext>::iterator it;
+	std::vector<ServerContext>::iterator it;
 	for (it = _config.begin(); it != _config.end(); it++)
 	{
 		if (it->serverName == server.serverName && it->address.port == server.address.port)
-			throw runtime_error("Parser: duplication server name " + it->serverName + "!");
+			throw std::runtime_error("Parser: duplication server name " + it->serverName + "!");
 	}
 	
 	addDefaultLocation(server);
-
 	_config.push_back(server);
 }
 
@@ -164,9 +165,16 @@ LocationContext Parse::Location(void)
 {
 	LocationContext location;
 
-	// Set the default values
-	location.alias = "";
-	location.redirect.second = "";
+	location.allowedMethods.clear();
+	location.index.clear();
+	location.alias.clear();
+	location.redirect.second.clear();
+	location.redirect.first = 0;
+	location.autoindex = false;
+	location.cgi = false;
+	location.cgiPath.clear();
+	location.cgiExtension.clear();
+
 
 	return location;
 }
@@ -177,16 +185,16 @@ void Parse::ParseLocation(ServerContext& server)
 	ParseUri(location), Skip("{");
 
 	// Check if location uri already exists
-	vector<LocationContext>::iterator it;
+	std::vector<LocationContext>::iterator it;
 	for (it = server.locations.begin(); it != server.locations.end(); it++) 
 		if (it->uri == location.uri)
-			throw runtime_error("Parser: duplication location " + it->uri + "!");
+			throw std::runtime_error("Parser: duplication location " + it->uri + "!");
 
-	string token;
+	std::string token;
 	while ((token = Accept()) != "}")
     {
 		if (!isValidLocationKey(token))
-			throw runtime_error("Error : Parser::Unknown key " + token + "!");
+			throw std::runtime_error("Error : Parser::Unknown key " + token + "!");
 		else if (token == "autoindex")
 			ParseAutoindex(location);
 		else if (token == "alias")
@@ -197,6 +205,12 @@ void Parse::ParseLocation(ServerContext& server)
 			ParseIndex(location);
 		else if (token == "return")
             ParseRedirect(location);
+		else if (token == "cgi")
+			ParseCgi(location);
+		else if (token == "cgi_path")
+			ParseCgiPath(location);
+		else if (token == "cgi_extension")
+			ParseCgiExtension(location);
 	}
 
 	// Add default method (GET) if no allowed method is specified
@@ -204,14 +218,14 @@ void Parse::ParseLocation(ServerContext& server)
 		location.allowedMethods.push_back("GET");
 
 	// Check for required fields of locaiton context block?
-	// if 
 	server.locations.push_back(location);
 }
 
 
 void Parse::ParseRoot(ServerContext& server)
 {
-    server.root = fullPath(ROOT, Accept());
+    
+	server.root = fullPath(ROOT, Accept());
 	Skip(";");
 }
 
@@ -226,10 +240,10 @@ void Parse::ParseAddress(ServerContext& server)
 {
     try
     {
-		string token = Accept();
+		std::string token = Accept();
 		size_t colonPos = token.find(":");
 		
-		if (colonPos != string::npos)
+		if (colonPos != std::string::npos)
         {
 			server.address.ip = toIPv4(token.substr(0, colonPos));
 			token.erase(token.begin(), token.begin() + colonPos + 1);
@@ -239,14 +253,14 @@ void Parse::ParseAddress(ServerContext& server)
 
 		int port = toInt(token);
 		if (port <= 0 || port > 65535)
-			throw runtime_error("Parser : Invalid Port!");
+			throw std::runtime_error("Parser : Invalid Port!");
 		server.address.port = port;
 
 		Skip(";"); 
 	}
 	catch (...)
     {
-		throw runtime_error("Parser: invalid listen!");
+		throw std::runtime_error("Parser: invalid listen!");
 	}
 }
 
@@ -256,42 +270,42 @@ void Parse::ParseClientMaxBodySize(ServerContext& server)
     {
 		int value = toInt(Accept());
 		if (value < 0)
-			throw runtime_error("negative value");
+			throw std::runtime_error("negative value");
 
 		server.clientMaxBodySize = value;
 		Skip(";");
 	}
-	catch (exception& e)
+	catch (std::exception& e)
     {
-		throw runtime_error("Parser: body size, " + string(e.what()) + "!");
+		throw std::runtime_error("Parser: body size, " + std::string(e.what()) + "!");
 	}
 }
 
 
 void Parse::ParseErrorPage(ServerContext& server)
 {
-    vector<string> tokens;
-	string token;
+    std::vector<std::string> tokens;
+	std::string token;
 
 	while ((token = Accept()) != ";")
         tokens.push_back(token);
 
 	if (tokens.size() < 2) 
-		throw runtime_error("Parser: syntax error!");
+		throw std::runtime_error("Parser: syntax error!");
 
 	try {
 		for (size_t i = 0; i < tokens.size() - 1; i++)
         {
 			int code = toInt(tokens[i]);
-			map<int, string>::iterator it;
+			std::map<int, std::string>::iterator it;
 			if (server.errorPages.find(code) != server.errorPages.end())
 				continue ;
-			server.errorPages.insert(make_pair(code, tokens.back()));
+			server.errorPages.insert(std::make_pair(code, tokens.back()));
 		}
 	}
-	catch (exception& e)
+	catch (std::exception& e)
     {
-		throw runtime_error("Parser: error page, " + string(e.what()) + "!");
+		throw std::runtime_error("Parser: error page, " + std::string(e.what()) + "!");
 	}
 }
 
@@ -300,15 +314,18 @@ void Parse::ParseUri(LocationContext& location)
 {
 	
     location.uri = Accept();
-	// validate, it has to start with '/'?
-	// any illegal characters in the uri?
+	if (location.uri.empty() || location.uri[0] != '/')
+		throw std::runtime_error("Parser: invalid uri!");
+	else if (location.uri.size() > 1 && location.uri[0] == '/' && location.uri[1] == '/')
+		throw std::runtime_error("Parser: invalid uri!");
+	
 }
 
 void Parse::ParseAutoindex(LocationContext& location)
 {
-	string token = Accept();
+	std::string token = Accept();
 	if (token != "on" && token != "off")
-		throw runtime_error("Parser: invalid autoindex value!");
+		throw std::runtime_error("Parser: invalid autoindex value!");
 
 	location.autoindex = token == "on" ? true : false;
 	Skip(";");
@@ -318,13 +335,13 @@ void Parse::ParseAlias(LocationContext& location)
 {
 	try
     {
-		string token = Accept();
-		string path = fullPath(ROOT, token);
+		std::string token = Accept();
+		std::string path = fullPath(ROOT, token);
 
 		// Check if alias is accessible and is a directory
 		struct stat pathInfo;
 		if (stat(path.c_str(), &pathInfo) != 0 || !S_ISDIR(pathInfo.st_mode))
-			throw runtime_error("Parser: invalid alias " + token + "!");
+			throw std::runtime_error("Parser: invalid alias " + token + "!");
 
 
 		location.alias = token; // path or alias?
@@ -338,13 +355,11 @@ void Parse::ParseAlias(LocationContext& location)
 
 void Parse::ParseAllowedMethods(LocationContext& location)
 {
-	string token;
+	std::string token;
 	while ((token = Accept()) != ";")
     {
-        // Define all allowed methods somewhere else in an array?
-		// Potentially more and need to be accessible in other places
 		if (token != "GET" && token != "POST" && token != "DELETE" ) 
-			throw runtime_error("Parser: unknown method " + token);
+			throw std::runtime_error("Error Parser::unknown method " + token);
 
 		location.allowedMethods.push_back(token);
 	}
@@ -352,7 +367,7 @@ void Parse::ParseAllowedMethods(LocationContext& location)
 
 void Parse::ParseIndex(LocationContext& location)
 {
-	string token;
+	std::string token;
 	while ((token = Accept()) != ";") 
 		location.index.push_back(token);
 }
@@ -363,11 +378,10 @@ void Parse::ParseRedirect(LocationContext& location)
     {
 		location.redirect.first = toInt(Accept());
 		location.redirect.second = Accept(); 
-		Skip(";");
 	}
-	catch (exception& e) 
+	catch (std::exception& e) 
     {
-		throw runtime_error("Parser: " + string(e.what()) + "!");
+		throw std::runtime_error("Parser: " + std::string(e.what()) + "!");
 	}
 }
 
@@ -378,7 +392,7 @@ void Parse::ParseRedirect(LocationContext& location)
 void Parse::addDefaultLocation(ServerContext& server)
 {
 	// Check if the default location already exist
-	for (vector<LocationContext>::iterator it = server.locations.begin(); it != server.locations.end(); it++)
+	for (std::vector<LocationContext>::iterator it = server.locations.begin(); it != server.locations.end(); it++)
 		if (it->uri == "/")
 			return;
 
@@ -393,9 +407,9 @@ void Parse::addDefaultLocation(ServerContext& server)
 
 void	Parse::ParseCgi(LocationContext& location)
 {
-	string token = Accept();
+	std::string token = Accept();
 	if (token != "on" && token != "off")
-		throw runtime_error("Parser: invalid cgi value!");
+		throw std::runtime_error("Parser: invalid cgi value!");
 
 	location.cgi = token == "on" ? true : false;
 	Skip(";");
@@ -403,13 +417,13 @@ void	Parse::ParseCgi(LocationContext& location)
 
 void	Parse::ParseCgiPath(LocationContext& location)
 {
-	string token = Accept();
-	string path = fullPath(ROOT, token);
+	std::string token = Accept();
+	std::string path = fullPath(ROOT, token);
 
 	// Check if cgi path is accessible and is a directory
 	struct stat pathInfo;
 	if (stat(path.c_str(), &pathInfo) != 0 || !S_ISDIR(pathInfo.st_mode))
-		throw runtime_error("Parser: invalid cgi path " + token + "!");
+		throw std::runtime_error("Parser: invalid cgi path " + token + "!");
 
 	location.cgiPath = token;
 	Skip(";");
@@ -417,9 +431,9 @@ void	Parse::ParseCgiPath(LocationContext& location)
 
 void	Parse::ParseCgiExtension(LocationContext& location)
 {
-	string token = Accept();
+	std::string token = Accept();
 	if (token[0] != '.')
-		throw runtime_error("Parser: invalid cgi extension " + token + "!");
+		throw std::runtime_error("Parser: invalid cgi extension " + token + "!");
 
 	location.cgiExtension = token;
 	Skip(";");
