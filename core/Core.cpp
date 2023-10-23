@@ -207,6 +207,8 @@ void Core::handlePl_IN(Client& client)
 		std::fstream file;
 		file.open("request.txt" , std::fstream::out);
 		file << Str;
+		Request request(Str);
+		request.parseRequest();
 		client.setReady(true);
 		//parse request
 		//create response

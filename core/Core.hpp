@@ -6,6 +6,7 @@
 #include <poll.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include "../request/Request.hpp"
 
 
 

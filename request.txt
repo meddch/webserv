@@ -1,7 +1,9 @@
-GET / HTTP/1.1
+POST / HTTP/1.1
+user-agent: got (https://github.com/sindresorhus/got)
+content-length: 7
 accept-encoding: gzip, deflate, br
-Accept: */*
-User-Agent: Thunder Client (https://www.thunderclient.com)
+Content-Type: application/x-www-form-urlencoded
 Host: localhost:5500
 Connection: close
 
+op=jett
