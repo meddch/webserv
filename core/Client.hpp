@@ -2,6 +2,7 @@
 #include "../parse/Parse.hpp"
 #include "Server.hpp"
 #define TIMEOUT_T 40000
+#define POST "POST"
 
 class Client
 {

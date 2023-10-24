@@ -208,13 +208,22 @@ void Core::handlePl_IN(Client& client)
 		file.open("request.txt" , std::fstream::out);
 		file << Str;
 		Request request(Str);
-		request.parseRequest();
+		std::string req = request.getRequestString();
+		request.parseRequestLine(req.substr(0,req.find("\r\n")));
+		if (request.getErrorCode())
+	   		return ;
+    	// parsing Request Headers
+		request.parseRequestHeaders();
+		if (request.getErrorCode())
+	    	return ;
+    	// parsing Request Body in POST request
+    	if (request.getRequestMethod() == POST)
+       		request.parseRequestBody();
+		request.toString();
 		client.setReady(true);
 		//parse request
 		//create response
 		// add request to a queue in the client class
-
-
 	}
 	catch (const std::exception& e)
 	{

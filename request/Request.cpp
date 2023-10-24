@@ -6,7 +6,7 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 15:21:09 by azari             #+#    #+#             */
-/*   Updated: 2023/10/23 17:15:39 by azari            ###   ########.fr       */
+/*   Updated: 2023/10/24 13:51:37 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ Request::~Request(){
 	_headers.clear();
 }
 
-Request::Request(std::string _request):  _POST(false), _REQ(_request), _lastHeaderPos(0), _errorCode(0), _parsePos(0){
+Request::Request(std::string _request):  _errorCode(0), _bodyRead(false), _REQ(_request), _lastHeaderPos(0) , _parsePos(0), _contentLength(0){
 	_Boundaries.clear();
 }
 
@@ -25,22 +25,12 @@ BoundRequest::BoundRequest(std::string boundary, std::string _REQ): Request(_REQ
 	_headers.clear();
 }
 
-void Request::parseRequest(){
+void	Request::toString(){
 
-    // Parsing Request line
+
+	std::cout << "\n\%\%\%\%\%\%\%\% Request \%\%\%\%\%\%\%\%\%%\n" << std::endl;
 	std::cout << _REQ << std::endl;
-	parseRequestLine(_REQ.substr(0,_REQ.find("\r\n")));
-	if (_errorCode)
-	    return ;
-
-    // parsing Request Headers
-	parseRequestHeaders();
-	if (_errorCode)
-	    return ;
-    // parsing Request Body
-    if (_POST)
-        parseRequestBody();
-
+		
 	puts("\n\%\%\%\%\%\%\%\% Headers \%\%\%\%\%\%\%\%\%%\n");
     for(std::map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
         std::cout << "[" << it->first << "]--[" << it->second << "]" << std::endl;
@@ -53,8 +43,6 @@ void Request::parseRequest(){
 		std::cout << "[" << it->_name << "]--[" << it->_filename << "]" << std::endl;
 		std::cout << "[" << it->_body << "]" << std::endl;
 	}
-
-
 }
 
 void Request::parseRequestLine(std::string requestLine){
@@ -67,11 +55,11 @@ void Request::parseRequestLine(std::string requestLine){
     methods[2] = "DELETE";    
 
     line >> _headers["Method"] >> _headers["URI"] >> _headers["httpVersion"];
+	_requestMethod = _headers["Method"];
     for (i = 0; i < 3; i++)
         if (methods[i] == _headers["Method"])
             break;
     (i >= 3) && (_errorCode = 501); // 501: Method Not Implemented
-    (i == 1) && (_POST = true);
     if (_headers["URI"].find("?") != std::string::npos){
         std::string newURI = _headers["URI"].substr(0, _headers["URI"].find("?"));
         _headers["Queries"] = _headers["URI"].substr(_headers["URI"].find("?") + 1, _headers["URI"].npos);
@@ -88,6 +76,7 @@ void	Request::parseRequestHeaders(){
 
 		headerKey =_REQ.substr(_parsePos,_REQ.find(":", _parsePos) - _parsePos);
 		headerValue =_REQ.substr(_REQ.find(":", _parsePos) + 2,_REQ.find("\r\n", _parsePos) -_REQ.find(":", _parsePos) - 2);
+		(headerKey == "content-length") && (_contentLength = std::stoi(headerValue));
 		_headers[headerKey] = headerValue;
 	    _parsePos = _REQ.find("\r\n", _parsePos) + 2;
 	}
@@ -98,7 +87,7 @@ void	Request::parseRequestHeaders(){
 void    Request::parseRequestBody(){
     
     std::string key, value;
-	if (_headers.find("content-length") != _headers.end() && _headers.find("Transfer-Encoding") == _headers.end() && _headers["content-length"] != "0")
+	if (_headers.find("content-length") != _headers.end() && _headers.find("Transfer-Encoding") == _headers.end())
     	_body =_REQ.substr(_parsePos, std::stoi(_headers["content-length"]));
     else if (_headers["content-type"].find("multipart/form-data") != std::string::npos){
         
@@ -127,14 +116,14 @@ void    Request::parseRequestBody(){
 		}
 	}
     else if (_headers.find("Transfer-Incoding") != _headers.end() && _headers["Transfer-Encoding"].find("chunked") != std::string::npos){
-		
+
 		std::string chunk_size;
 		std::string chunk_data;
 		size_t pos = 0;
 		size_t pos_end =_REQ.find("0\r\n\r\n");
-		
+
 		while (pos < pos_end){
-			
+
 			chunk_size =_REQ.substr(pos,_REQ.find("\r\n", pos) - pos);
 			chunk_data =_REQ.substr(_REQ.find("\r\n", pos) + 2, std::stoi(chunk_size, 0, 16));
 			pos =_REQ.find("\r\n", pos) + 2 + std::stoi(chunk_size, 0, 16);
@@ -147,4 +136,49 @@ void    Request::parseRequestBody(){
         _errorCode = 415; // 415: Unsupported Media Type;
 
 	// find how to treat CGI
+}
+
+
+size_t Request::getErrorCode() const{
+	return _errorCode;
+}
+
+std::string Request::getRequestMethod() const{
+	return _requestMethod;
+}
+
+std::string Request::getRequestString() const{
+	return _REQ;
+}
+
+size_t Request::getContentLength() const{
+	return _contentLength;
+}
+
+size_t Request::getLastHeaderPos() const{
+	return _lastHeaderPos;
+}
+
+size_t Request::getBodyPosition() const{
+	return _lastHeaderPos + 4;
+}
+
+void Request::setRequestMethod(std::string Method){
+	_requestMethod = Method;
+}
+
+void Request::setRequestString(std::string requestString){
+	_REQ = requestString;
+}
+
+void Request::setContentLength(size_t contentLength){
+	_contentLength = contentLength;
+}
+
+void Request::setLastHeaderPos(size_t lastHeaderPos){
+	_lastHeaderPos = lastHeaderPos;
+}
+
+void Request::setErrorCode(size_t errorCode){
+	_errorCode = errorCode;
 }
