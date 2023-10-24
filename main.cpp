@@ -3,10 +3,10 @@
 
 int main(int ac ,char **av)
 {
-	if (ac != 2)
+	if (ac > 2)
 		return 1;
 
-	const std::string filename(av[1]);
+	const std::string filename((ac == 2) ? av[1] : "conf.config");
 
 	try
 	{

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
+/*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 13:12:03 by azari             #+#    #+#             */
-/*   Updated: 2023/10/24 18:59:15 by azari            ###   ########.fr       */
+/*   Updated: 2023/10/24 19:49:00 by mechane          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ class Request
 		void toString();
 		std::string getRequestMethod() const;
 		std::string getRequestString() const;
-		size_t getContentLength() const;
+		ssize_t getContentLength() const;
 		size_t getLastHeaderPos() const;
 		size_t getBodyPosition() const;
 		size_t getErrorCode() const;

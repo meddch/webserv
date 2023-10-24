@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
+/*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 15:21:09 by azari             #+#    #+#             */
-/*   Updated: 2023/10/24 19:24:43 by azari            ###   ########.fr       */
+/*   Updated: 2023/10/24 20:27:40 by mechane          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,9 @@ Request::Request():  _errorCode(0), _bodyRead(false), _REQ(""), _lastHeaderPos(0
 }
 
 
-BoundRequest::BoundRequest(std::string boundary, std::string _REQ): _boundary(boundary), _boundaryEndPos(0), _boundaryNextPos(0){
+BoundRequest::BoundRequest(std::string boundary, std::string _REQ):  _boundary(boundary), _boundaryEndPos(0), _boundaryNextPos(0){
 	_headers.clear();
+	this->_REQ = _REQ;
 }
 
 void	Request::toString(){
@@ -151,7 +152,7 @@ std::string Request::getRequestString() const{
 	return _REQ;
 }
 
-size_t Request::getContentLength() const{
+ssize_t Request::getContentLength() const{
 	return _contentLength;
 }
 

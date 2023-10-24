@@ -11,7 +11,7 @@ Client::Client(int fd, Listen_Addr Client, Listen_Addr Server)
 	_clientAddr = Client;
 	_ready = false;
 	_Connected = true;
-	_requestIsReady = true;
+	_requestIsReady = false;
 	_requestParsed = false;
 	_recvChunk = false;
 	_httpBuffer.clear();
@@ -19,6 +19,7 @@ Client::Client(int fd, Listen_Addr Client, Listen_Addr Server)
 	_body.clear();
 	_bytesRecved = 0;
 	_bytesExpected = 0;
+
 
 	_lastTime = std::time(NULL);
 	std::cout << "Client " << _id << " bound to " << toIPString(_clientAddr.ip) << ":" << _clientAddr.port << std::endl;
@@ -84,14 +85,14 @@ void Client::getREQ(std::string& buffer)
 		return;
 
 	// Header buffer is ready, proceed to parse
+	request.setRequestString(buffer);
 	request.parseRequestLine(buffer.substr(0, buffer.find("\r\n")));
 	request.parseRequestHeaders();
 	if (!request.getErrorCode())
 		_requestParsed = true;
-	else
-		return; // Send error response
-	
-	if (request.getRequestMethod() != "POST"){
+// Send error response	
+	if (request.getRequestMethod() != "POST")
+	{
 		_requestIsReady = true;
 		return; // success exit
 	}
@@ -99,7 +100,8 @@ void Client::getREQ(std::string& buffer)
 	buffer = buffer.substr(buffer.find("\r\n\r\n") + 4);
 
 	// Check Content-Length and set expecting bytes
-	if (request.getContentLength() != -1){
+	if (request.getContentLength() != -1)
+	{
 		_bytesExpected = request.getContentLength();
 		_requestIsReady = false;
 		return;
@@ -159,4 +161,7 @@ void Client::reset()
 	_requestParsed = false;
 	_httpBuffer.clear();
 	_recvChunk = false;
+	_chunkedBuffer.clear();
+	_body.clear();
+
 }
