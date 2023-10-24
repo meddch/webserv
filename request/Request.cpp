@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
+/*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 15:21:09 by azari             #+#    #+#             */
-/*   Updated: 2023/10/24 14:27:05 by mechane          ###   ########.fr       */
+/*   Updated: 2023/10/24 19:06:56 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,12 +16,12 @@ Request::~Request(){
 	_headers.clear();
 }
 
-Request::Request(std::string _request):  _errorCode(0), _bodyRead(false), _REQ(_request), _lastHeaderPos(0) , _parsePos(0), _contentLength(0){
+Request::Request():  _errorCode(0), _bodyRead(false), _REQ(""), _lastHeaderPos(0) , _parsePos(0), _contentLength(-1){
 	_Boundaries.clear();
 }
 
 
-BoundRequest::BoundRequest(std::string boundary, std::string _REQ): Request(_REQ), _boundary(boundary), _boundaryEndPos(0), _boundaryNextPos(0){
+BoundRequest::BoundRequest(std::string boundary, std::string _REQ): _boundary(boundary), _boundaryEndPos(0), _boundaryNextPos(0){
 	_headers.clear();
 }
 

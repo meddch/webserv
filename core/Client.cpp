@@ -84,25 +84,32 @@ void Client::getREQ(std::string& buffer)
 		return;
 
 	// Header buffer is ready, proceed to parse
-	_requestParsed = true;
-	//Parse Header and set !_requestIsReady if method is POST
-	_requestIsReady = true;
+	request.parseRequestLine(buffer.substr(0, buffer.find("\r\n")));
+	request.parseRequestHeaders();
+	if (!request.getErrorCode())
+		_requestParsed = true;
+	else
+		return; // Send error response
+	
+	if (request.getRequestMethod() != "POST"){
+		_requestIsReady = true;
+		return; // success exit
+	}
 
-	// Update buffer
 	buffer = buffer.substr(buffer.find("\r\n\r\n") + 4);
 
 	// Check Content-Length and set expecting bytes
-	
-		// _bytesExpected = toInt(_request.headers["Content-Length"]);
-		// _requestIsReady = false;
-
-	// Check Transfer-Encoding and set chunked
-	// if header.find("");
-	// {
-		// _recvChunk = true;
-		// _requestIsReady = false;
-	// }
-//	
+	if (request.getContentLength() != -1){
+		_bytesExpected = request.getContentLength();
+		_requestIsReady = false;
+		return;
+	}
+	if (request._headers.find("Transfer-Encoding") != request._headers.end() && request._headers["Transfer-Encoding"] == "chunked")
+	{
+		_recvChunk = true;
+		_requestIsReady = false;
+		return;
+	}
 }
 
 void Client::getBody(std::string& buffer)
@@ -141,6 +148,7 @@ void Client::getBody(std::string& buffer)
 			_requestIsReady = true;
 	}
 }
+
 
 
 void Client::reset()

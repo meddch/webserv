@@ -204,12 +204,16 @@ void Core::handlePl_IN(Client& client)
 	try {
 		//if connection true and timeoute disconnect
 		std::string Str(buffer, bytesRead);
-		//if (client.isReady())
-		//  return;
-		// if (!client.request.parsed)
-		//parse Header
-		//if (!client.request.ready)
-		//get BODY
+		if (client.isReady())
+		 return;
+		if (!client._requestParsed)
+			client.getREQ(Str);
+		if (!client._requestIsReady)
+			client.getBody(Str);
+		if (client._requestIsReady){
+			client.request.setRequestString(client._body);
+			client.request.parseRequestBody();
+		}
 	
 		
 

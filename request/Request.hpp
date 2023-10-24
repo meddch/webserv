@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
+/*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 13:12:03 by azari             #+#    #+#             */
-/*   Updated: 2023/10/24 14:27:13 by mechane          ###   ########.fr       */
+/*   Updated: 2023/10/24 18:59:15 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,16 +28,16 @@ class Request
         size_t _errorCode;
 		bool   _bodyRead;
 	protected :
-        std::map <std::string, std::string> _headers;
 		std::map<std::string, std::string> _formdata;
 		std::string _requestMethod;
 		std::string _body;
         std::string _REQ;
         size_t _lastHeaderPos;
         size_t _parsePos;
-		size_t _contentLength;
+		ssize_t _contentLength;
     public:
-        Request(std::string _REQ);
+        std::map <std::string, std::string> _headers;
+        Request();
         ~Request();
         void parseRequest();
         void parseRequestLine(std::string requestLine);
