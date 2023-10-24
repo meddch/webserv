@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
+/*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 13:12:03 by azari             #+#    #+#             */
-/*   Updated: 2023/10/24 19:49:00 by mechane          ###   ########.fr       */
+/*   Updated: 2023/10/24 21:16:42 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,8 @@ class BoundRequest : public Request
 		std::string _filename;
 		std::string _name;
 		size_t _boundaryEndPos;
-		size_t _boundaryNextPos;
+		size_t _boundaryNumber;
+		size_t _BoundaryNext;
 	public:
 		BoundRequest(std::string _boundary, std::string _REQ);
 };

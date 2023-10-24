@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
+/*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 15:21:09 by azari             #+#    #+#             */
-/*   Updated: 2023/10/24 20:27:40 by mechane          ###   ########.fr       */
+/*   Updated: 2023/10/24 22:23:57 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ Request::Request():  _errorCode(0), _bodyRead(false), _REQ(""), _lastHeaderPos(0
 }
 
 
-BoundRequest::BoundRequest(std::string boundary, std::string _REQ):  _boundary(boundary), _boundaryEndPos(0), _boundaryNextPos(0){
+BoundRequest::BoundRequest(std::string boundary, std::string _REQ):  _boundary(boundary), _boundaryEndPos(0), _boundaryNumber(0){
 	_headers.clear();
 	this->_REQ = _REQ;
 }
@@ -29,20 +29,23 @@ BoundRequest::BoundRequest(std::string boundary, std::string _REQ):  _boundary(b
 void	Request::toString(){
 
 
-	std::cout << "\n\%\%\%\%\%\%\%\% Request \%\%\%\%\%\%\%\%\%%\n" << std::endl;
-	std::cout << _REQ << std::endl;
+	// std::cout << "\n\%\%\%\%\%\%\%\% Request \%\%\%\%\%\%\%\%\%%\n" << std::endl;
+	// std::cout << _REQ << std::endl;
 		
-	puts("\n\%\%\%\%\%\%\%\% Headers \%\%\%\%\%\%\%\%\%%\n");
-    for(std::map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
-        std::cout << "[" << it->first << "]--[" << it->second << "]" << std::endl;
+	// puts("\n\%\%\%\%\%\%\%\% Headers \%\%\%\%\%\%\%\%\%%\n");
+    // for(std::map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
+    //     std::cout << "[" << it->first << "]--[" << it->second << "]" << std::endl;
 
-	puts("\n\%\%\%\%\%\%\%\% Body \%\%\%\%\%\%\%\%\%%\n");
-	std::cout << "[" << _body << "]" << std::endl;
+	// puts("\n\%\%\%\%\%\%\%\% Body \%\%\%\%\%\%\%\%\%%\n");
+	// std::cout << "[" << _body << "]" << std::endl;
 
 	puts("\n\%\%\%\%\%\%\%\% Boundaries \%\%\%\%\%\%\%\%\%%\n");
 	for (std::vector<BoundRequest>::iterator it = _Boundaries.begin(); it != _Boundaries.end(); ++it){
-		std::cout << "[" << it->_name << "]--[" << it->_filename << "]" << std::endl;
-		std::cout << "[" << it->_body << "]" << std::endl;
+		for (std::map<std::string, std::string>::const_iterator it2 = it->_headers.begin(); it2 != it->_headers.end(); ++it2){
+			std::cout << "[" << it2->first << "]--[" << it2->second << "]" << std::endl;
+			std::cout << "[" << it->_body << "]" << std::endl;	
+		}
+		puts("________________________________________________________________");
 	}
 }
 
@@ -78,42 +81,40 @@ void	Request::parseRequestHeaders(){
 		headerKey =_REQ.substr(_parsePos,_REQ.find(":", _parsePos) - _parsePos);
 		headerValue =_REQ.substr(_REQ.find(":", _parsePos) + 2,_REQ.find("\r\n", _parsePos) -_REQ.find(":", _parsePos) - 2);
 		(headerKey == "content-length") && (_contentLength = std::stoi(headerValue));
-		_headers[headerKey] = headerValue;
+		this->_headers[headerKey] = headerValue;
 	    _parsePos = _REQ.find("\r\n", _parsePos) + 2;
 	}
-	_parsePos = 0;
 }
 
 
 void    Request::parseRequestBody(){
+
+	std::cout << _REQ << std::endl;
     
     std::string key, value;
-	if (_headers.find("content-length") != _headers.end() && _headers.find("Transfer-Encoding") == _headers.end())
+	if (_headers.find("content-length") != _headers.end() && _headers.find("Transfer-Encoding") == _headers.end() && _headers["content-type"].find("multipart/form-data") == std::string::npos)
     	_body =_REQ.substr(_parsePos, std::stoi(_headers["content-length"]));
     else if (_headers["content-type"].find("multipart/form-data") != std::string::npos){
         
         BoundRequest obj("--" + _headers["content-type"].substr(_headers["content-type"].find("boundary=") + 9, _headers["content-type"].npos), _REQ);
 		obj._boundaryEndPos = _REQ.find(obj._boundary + "--");
-		
-		while (_parsePos < obj._boundaryEndPos){
-			obj._parsePos = _REQ.find(obj._boundary, _parsePos) + obj._boundary.length() + 2;
-			obj._lastHeaderPos = _REQ.find("\r\n\r\n", _parsePos);
-			obj._boundaryNextPos = _REQ.find(obj._boundary , _parsePos);
-			parseRequestHeaders();
+		size_t pos = _REQ.find(obj._boundary);
+		while (pos < obj._boundaryEndPos){
+			obj._boundaryNumber++;
+			pos = _REQ.find(obj._boundary, pos + obj._boundary.length() + 2);
+		}
+		_parsePos = 0;
+		while (obj._boundaryNumber--){
 
-			if (obj._headers.find("Content-Disposition") != obj._headers.end() && obj._headers["Content-Disposition"].find("filename=") != std::string::npos){
-				obj._filename = obj._headers["Content-Disposition"].substr(obj._headers["Content-Disposition"].find("filename=") + 10, obj._headers["Content-Disposition"].npos - 11);
-				obj._name = obj._headers["Content-Disposition"].substr(obj._headers["Content-Disposition"].find("name=") + 6, obj._headers["Content-Disposition"].find(";") - obj._headers["Content-Disposition"].find("name=") - 7);
-			}
-			else if (obj._headers.find("Content-Disposition") != obj._headers.end() && obj._headers["Content-Disposition"].find("name=") != std::string::npos)
-				obj._name = obj._headers["Content-Disposition"].substr(obj._headers["Content-Disposition"].find("name=") + 6, obj._headers["Content-Disposition"].npos - 7);
-				
-			while (obj._parsePos < obj._boundaryNextPos){
-				obj._body += _REQ[obj._parsePos];
-				obj._parsePos++;
-			}
+			obj._parsePos = _REQ.find(obj._boundary, _parsePos) + obj._boundary.length() + 2;
+			obj._lastHeaderPos = _REQ.find("\r\n\r\n", obj._parsePos);
+			obj.parseRequestHeaders();
+			obj._parsePos = _REQ.find(obj._boundary, _parsePos) + obj._boundary.length() + 2;
+			obj._BoundaryNext = _REQ.find(obj._boundary, obj._parsePos);
+			obj._parsePos = _REQ.find("\r\n\r\n", obj._parsePos) + 4;
+			obj._body = _REQ.substr(obj._parsePos, obj._BoundaryNext - obj._parsePos - 2);
 			_Boundaries.push_back(obj);
-			_parsePos = obj._boundaryNextPos;
+			_parsePos = obj._BoundaryNext;
 		}
 	}
     else if (_headers.find("Transfer-Incoding") != _headers.end() && _headers["Transfer-Encoding"].find("chunked") != std::string::npos){
