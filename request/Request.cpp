@@ -6,7 +6,7 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 15:21:09 by azari             #+#    #+#             */
-/*   Updated: 2023/10/24 19:06:56 by azari            ###   ########.fr       */
+/*   Updated: 2023/10/24 19:24:43 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,7 +80,7 @@ void	Request::parseRequestHeaders(){
 		_headers[headerKey] = headerValue;
 	    _parsePos = _REQ.find("\r\n", _parsePos) + 2;
 	}
-	_parsePos = _lastHeaderPos + 4;
+	_parsePos = 0;
 }
 
 
@@ -169,6 +169,7 @@ void Request::setRequestMethod(std::string Method){
 
 void Request::setRequestString(std::string requestString){
 	_REQ = requestString;
+	_parsePos = 0;
 }
 
 void Request::setContentLength(size_t contentLength){
