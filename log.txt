@@ -1,0 +1,57 @@
+POST / HTTP/1.1
+content-type: multipart/form-data; boundary=--------------------------248667850738925867929815
+content-length: 476
+accept-encoding: gzip, deflate, br
+Accept: */*
+User-Agent: Thunder Client (https://www.thunderclient.com)
+Host: localhost:5500
+Connection: close
+
+----------------------------248667850738925867929815
+Content-Disposition: form-data; name="bcx"
+
+cbx
+----------------------------248667850738925867929815
+Content-Disposition: form-data; name="bcx"
+
+
+bcx
+----------------------------248667850738925867929815
+Content-Disposition: form-data; name="bcx"
+
+bcx
+----------------------------248667850738925867929815
+Content-Disposition: form-data; name="bcx"
+
+bcx
+----------------------------248667850738925867929815--
+
+POST / HTTP/1.1
+accept-encoding: gzip, deflate, br
+Accept: */*
+User-Agent: Thunder Client (https://www.thunderclient.com)
+Host: localhost:5500
+Connection: close
+Content-Length: 0
+
+
+POST / HTTP/1.1
+content-type: multipart/form-data; boundary=--------------------------473766633706407057653244
+content-length: 263
+accept-encoding: gzip, deflate, br
+Accept: */*
+User-Agent: Thunder Client (https://www.thunderclient.com)
+Host: localhost:5500
+Connection: close
+
+----------------------------473766633706407057653244
+Content-Disposition: form-data; name="gjf"
+
+
+gjf
+----------------------------473766633706407057653244
+Content-Disposition: form-data; name="gfj"
+
+
+----------------------------473766633706407057653244--
+

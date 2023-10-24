@@ -24,7 +24,7 @@ public :
 
 	static bool 			isRuning();
     int						CreateTcpIpListeners(Listen_Addr addr);
-	std::set<Listen_Addr>   getUniqueAddresses(std::vector<Server>);
+	std::set<Listen_Addr>   getUniqueAddresses();
 	void 					handlePl_IN(Client&);
 	Client& 				getClient(int);
 	void					init();

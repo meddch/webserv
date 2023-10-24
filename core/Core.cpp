@@ -16,8 +16,8 @@ int	Core::CreateTcpIpListeners(Listen_Addr addr)
 	if ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
 		throw std::runtime_error("socket() failed: " + std::string(strerror(errno)));
 
-	int sockopt = 1;
-	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, static_cast<const void *>(&sockopt), sizeof(int)) == -1) 
+	int sock_opt = 1;
+	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, static_cast<const void *>(&sock_opt), sizeof(int)) == -1) 
 		throw std::runtime_error("setsockopt() failed: " + std::string(strerror(errno)));
 	
 	sockaddr_in serverAddr;
@@ -28,28 +28,27 @@ int	Core::CreateTcpIpListeners(Listen_Addr addr)
 
 	if (bind(fd, reinterpret_cast<sockaddr *>(&serverAddr), sizeof(serverAddr)) < 0) {
 		close(fd);
-		throw std::runtime_error("bind() failed: " + std::string(strerror(errno)));
+		throw std::runtime_error("Error: Bind failed: " + std::string(strerror(errno)));
 	}
 
-	if (listen(fd, 10)) {
-		throw std::runtime_error("listen() failed: " + std::string(strerror(errno)));
-	}
+	if (listen(fd, 10))
+		throw std::runtime_error("Error: Listen failed: " + std::string(strerror(errno)));
 	
 	return fd;
 }
 
-std::set<Listen_Addr> Core::getUniqueAddresses(std::vector<Server> servers)
+std::set<Listen_Addr> Core::getUniqueAddresses()
 {
 
-	std::set<Listen_Addr> uniques;
-	for (size_t i = 0; i < servers.size(); i++)
-    	uniques.insert(servers[i].getAddress());
-	return uniques;
+	std::set<Listen_Addr> unique;
+	for (size_t i = 0; i < _servers.size(); i++)
+    	unique.insert(_servers[i].getAddress());
+	return unique;
 }
 
 void	Core::init()
 {
-	std::set<Listen_Addr> uniques = getUniqueAddresses(_servers);
+	std::set<Listen_Addr> uniques = getUniqueAddresses();
 	std::set<Listen_Addr>::iterator it;
 	for (it = uniques.begin(); it != uniques.end(); it++)
 	{
@@ -203,27 +202,24 @@ void Core::handlePl_IN(Client& client)
 	}
 
 	try {
+		//if connection true and timeoute disconnect
 		std::string Str(buffer, bytesRead);
-		std::fstream file;
-		file.open("request.txt" , std::fstream::out);
-		file << Str;
-		Request request(Str);
-		std::string req = request.getRequestString();
-		request.parseRequestLine(req.substr(0,req.find("\r\n")));
-		if (request.getErrorCode())
-	   		return ;
-    	// parsing Request Headers
-		request.parseRequestHeaders();
-		if (request.getErrorCode())
-	    	return ;
-    	// parsing Request Body in POST request
-    	if (request.getRequestMethod() == POST)
-       		request.parseRequestBody();
-		request.toString();
-		client.setReady(true);
-		//parse request
-		//create response
-		// add request to a queue in the client class
+		//if (client.isReady())
+		//  return;
+		// if (!client.request.parsed)
+		//parse Header
+		//if (!client.request.ready)
+		//get BODY
+	
+		
+
+	
+		// if (client.response.isReady())
+		// {
+			//client.setready(true);
+			// client.reset();
+			// return;
+		// }
 	}
 	catch (const std::exception& e)
 	{

@@ -14,6 +14,15 @@ private :
 	Listen_Addr	_clientAddr;
 	time_t		_lastTime;
 	bool		_ready;
+	Request		request;
+	std::string	_httpBuffer;
+	std::string	_chunkedBuffer;
+	std::string	_body;
+	bool 		_requestIsReady;
+	bool 		_requestParsed;
+	bool		_recvChunk;
+	int 		_bytesRecved;
+	int 		_bytesExpected;
 public :
 	Client(int fd, Listen_Addr Client, Listen_Addr Server);
 	in_addr_t 	getServerIp() const;
@@ -26,4 +35,8 @@ public :
 	bool		Timeout() const;
 	void		setReady(bool);
 	bool		isReady() const;
+	void 		getREQ(std::string&);
+	void 		reset();
+	void 		getBody(std::string&);
+
 };

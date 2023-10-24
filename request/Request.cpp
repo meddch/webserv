@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
+/*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 15:21:09 by azari             #+#    #+#             */
-/*   Updated: 2023/10/24 13:51:37 by azari            ###   ########.fr       */
+/*   Updated: 2023/10/24 14:27:05 by mechane          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -181,4 +181,14 @@ void Request::setLastHeaderPos(size_t lastHeaderPos){
 
 void Request::setErrorCode(size_t errorCode){
 	_errorCode = errorCode;
+}
+
+bool Request::getBodyRead() const
+{
+	return _bodyRead;
+}
+
+void Request::setBodyRead(bool bodyRead)
+{
+	_bodyRead = bodyRead;
 }

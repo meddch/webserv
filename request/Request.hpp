@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
+/*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 13:12:03 by azari             #+#    #+#             */
-/*   Updated: 2023/10/24 13:46:55 by azari            ###   ########.fr       */
+/*   Updated: 2023/10/24 14:27:13 by mechane          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,8 @@ class Request
 		void setContentLength(size_t contentLength);
 		void setLastHeaderPos(size_t lastHeaderPos);
 		void setErrorCode(size_t errorCode);
+		bool getBodyRead() const;
+		void setBodyRead(bool bodyRead);
 };
 
 class BoundRequest : public Request
