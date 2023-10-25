@@ -6,7 +6,7 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 15:21:09 by azari             #+#    #+#             */
-/*   Updated: 2023/10/24 22:23:57 by azari            ###   ########.fr       */
+/*   Updated: 2023/10/24 22:30:52 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,9 +43,8 @@ void	Request::toString(){
 	for (std::vector<BoundRequest>::iterator it = _Boundaries.begin(); it != _Boundaries.end(); ++it){
 		for (std::map<std::string, std::string>::const_iterator it2 = it->_headers.begin(); it2 != it->_headers.end(); ++it2){
 			std::cout << "[" << it2->first << "]--[" << it2->second << "]" << std::endl;
-			std::cout << "[" << it->_body << "]" << std::endl;	
+			std::cout << "[" << it->_body << "]\n\n\n" << std::endl;	
 		}
-		puts("________________________________________________________________");
 	}
 }
 
