@@ -1,9 +1,0 @@
-POST / HTTP/1.1
-user-agent: got (https://github.com/sindresorhus/got)
-content-length: 7
-accept-encoding: gzip, deflate, br
-Content-Type: application/x-www-form-urlencoded
-Host: localhost:5500
-Connection: close
-
-Agent=H

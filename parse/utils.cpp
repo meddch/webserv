@@ -119,3 +119,25 @@ Listen_Addr getAddressFromFd(int fd)
 	return addr;
 }
 
+
+
+in_addr_t toIpNum(std::string str)
+{
+	in_addr_t result = 0;
+
+	for (int i = 0; i < 4; i++) {
+		if (i < 3 && str.find('.') == std::string::npos)
+			throw std::runtime_error("failed to convert " + str);
+
+		std::string token = i < 3 ? str.substr(0, str.find('.')) : str;
+		int value = toInt(token);
+		if (!isAllDigit(token) || value < 0 || value > 255)
+			throw std::runtime_error("failed to convert " + str);
+
+		result = (result << 8) | value;
+		if (i < 3)
+			str.erase(str.begin(), str.begin() + str.find('.') + 1);
+	}
+
+	return htonl(result);
+}
