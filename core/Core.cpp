@@ -258,46 +258,42 @@ Server&	Core::getServer(Client client)
 	
 	if (client.request._headers.find("Host") != client.request._headers.end())
 		Host = client.request._headers["Host"];
+	else
+		std::runtime_error("Error: No Host found");
 
 	try {
-		// Host header ip resolution
-		if (Host.find(":") != std::string::npos)
-		{
-	
-			size_t colonPos = Host.find(':');
-			in_addr_t ip = colonPos != std::string::npos ? toIpNum(Host.substr(0, colonPos)): toIpNum(Host);
-			int port = colonPos != std::string::npos ? toInt(Host.substr(colonPos + 1)): 80;
-
-			if (port <= 0 || port > 65535)
-				throw std::runtime_error("port out of range");
-
-			for (size_t i = 0; i < _servers.size(); i++)
-			{
-				Listen_Addr addr = _servers[i].getAddress();
-				if (addr.ip == ip && addr.port == port)
-					return _servers[i];
-			}
-		}
-
-
 		if (Host.find(":") != std::string::npos)
 			Host = Host.substr(0, Host.find(":"));
 		for (size_t i = 0; i < _servers.size(); i++)
 		{
-			if (_servers[i].getAddress().ip == client.getServerIp() && _servers[i].getAddress().port == client.getServerPort())
+			if (_servers[i].getAddress().port == client.getServerPort())
 				servers.push_back(_servers[i]);
 		}
 		if (servers.size() == 0)
 			throw std::runtime_error("Error: No server found");
-		id = servers[0].getId();
+		id = -1;
 		for (size_t i = 0; i < servers.size(); i++)
 		{
+			std::cout << servers[i].getName() << std::endl;
 			if (servers[i].getName() == Host)
 				id = servers[i].getId();
 		}
 		for (size_t i = 0; i < _servers.size(); i++)
 		{
 			if (_servers[i].getId() == id)
+				return _servers[i];
+		}
+		Host = client.request._headers["Host"];
+	
+		size_t colonPos = Host.find(':');
+		in_addr_t ip = colonPos != std::string::npos ? toIpNum(Host.substr(0, colonPos)): toIpNum(Host);
+		int port = colonPos != std::string::npos ? toInt(Host.substr(colonPos + 1)): 80;
+		if (port <= 0 || port > 65535)
+			throw std::runtime_error("port out of range");
+		for (size_t i = 0; i < _servers.size(); i++)
+		{
+			Listen_Addr addr = _servers[i].getAddress();
+			if (addr.ip == ip && addr.port == port)
 				return _servers[i];
 		}
 
