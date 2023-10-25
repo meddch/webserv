@@ -20,6 +20,7 @@ private :
 	bool		_recvChunk;
 	int 		_bytesRecved;
 	int 		_bytesExpected;
+	Server		_server;
 public :
 	Request		request;
 	std::string	_body;
@@ -28,7 +29,7 @@ public :
 	Client(int fd, Listen_Addr Client, Listen_Addr Server);
 	in_addr_t 	getServerIp() const;
 	in_addr_t 	getClientIp() const;
-	int 		getPort() const ;
+	int 		getServerPort() const ;
 	int			getFd() const;
 	int			getId() const;
 	bool		is_Connected() const;
@@ -39,5 +40,5 @@ public :
 	void 		getREQ(std::string&);
 	void 		reset();
 	void 		getBody(std::string&);
-
+	void		setServer(Server&);
 };

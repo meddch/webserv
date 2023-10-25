@@ -56,8 +56,6 @@ void	Core::init()
 		_nbr_sockets++;
 		plfds.push_back(make_PlFd(fd, POLLIN | POLLOUT));
 		std::cout << "Server is running" <<std:: endl;
-		std::cout << "Server name: " << _servers[0].getName() << std::endl;
-		std::cout << "Server root: " << _servers[0].getRoot() << std::endl;
 		std::cout << "Listening on " << toIPString(it->ip) << ":" << it->port << std::endl;
 	}
 }
@@ -215,6 +213,7 @@ void Core::handlePl_IN(Client& client)
 			client.request.toString();
 			client.setReady(true);
 			client.reset();
+			client.setServer(getServer(client));
 		}
 	}
 	catch (const std::exception& e)
@@ -249,5 +248,36 @@ void Core::handlePl_Out(Client& client)
 		}
 		client.setReady(false);
 	}
+}
+
+Server&	Core::getServer(Client client)
+{
+	std::string Host;
+	std::vector<Server> servers;
+	int		id;
+	
+	if (client.request._headers.find("Host") != client.request._headers.end())
+		Host = client.request._headers["Host"];
+	if (Host.find(":") != std::string::npos)
+		Host = Host.substr(0, Host.find(":"));
+	for (size_t i = 0; i < _servers.size(); i++)
+	{
+		if (_servers[i].getAddress().ip == client.getServerIp() && _servers[i].getAddress().port == client.getServerPort())
+			servers.push_back(_servers[i]);
+	}
+	if (servers.size() == 0)
+		throw std::runtime_error("Error: No server found");
+	id = servers[0].getId();
+	for (size_t i = 0; i < servers.size(); i++)
+	{
+		if (servers[i].getName() == Host)
+			id = servers[i].getId();
+	}
+	for (size_t i = 0; i < _servers.size(); i++)
+	{
+		if (_servers[i].getId() == id)
+			return _servers[i];
+	}
+	return _servers[0];
 }
 

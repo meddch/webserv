@@ -1,6 +1,6 @@
 #include "Client.hpp"
 
-Client::Client(int fd, Listen_Addr Client, Listen_Addr Server)
+Client::Client(int fd, Listen_Addr Client, Listen_Addr Server) 
 {
 	static int clientID = 1;
 	_id = clientID;
@@ -22,8 +22,7 @@ Client::Client(int fd, Listen_Addr Client, Listen_Addr Server)
 
 
 	_lastTime = std::time(NULL);
-	std::cout << "Client " << _id << " bound to " << toIPString(_clientAddr.ip) << ":" << _clientAddr.port << std::endl;
-	std::cout << "Client " << _id << " connected to " << toIPString(_serverAddr.ip) << ":" << _serverAddr.port << std::endl;
+
 }
 
 int Client::getId() const
@@ -36,7 +35,7 @@ int Client::getFd() const
 	return _fd;
 }
 
-int Client::getPort() const 
+int Client::getServerPort() const 
 {
 	return _serverAddr.port;
 }
@@ -164,4 +163,12 @@ void Client::reset()
 	_chunkedBuffer.clear();
 	_body.clear();
 
+}
+
+void Client::setServer(Server& server)
+{
+	_server = server;
+	std::cout << "Client " << _id << " connected to server " << _server.getName() << std::endl;
+	std::cout << "Client " << _id << " bound to " << toIPString(_clientAddr.ip) << ":" << _clientAddr.port << std::endl;
+	std::cout << "Client " << _id << " connected to " << toIPString(_serverAddr.ip) << ":" << _serverAddr.port << std::endl;
 }
