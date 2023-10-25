@@ -1,8 +1,15 @@
 #include "Server.hpp"
 
+Server::Server()
+{}
 
 Server::Server(const ServerContext config) : _config(config)
-{}
+{
+	std::cout << "Server " << _config.serverName << " created" << std::endl;
+	static int serverID = 1;
+	_id = serverID;
+	serverID++;
+}
 
 Listen_Addr Server::getAddress() const
 {
@@ -47,9 +54,10 @@ std::vector<std::string> Server::getMethods() const
 	return _config.allowedMethods;
 }
 
-
-
-
+int Server::getId() const
+{
+	return _id;
+}
 
 
 

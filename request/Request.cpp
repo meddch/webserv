@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
+/*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 15:21:09 by azari             #+#    #+#             */
-/*   Updated: 2023/10/24 22:23:57 by azari            ###   ########.fr       */
+/*   Updated: 2023/10/25 10:29:01 by mechane          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,12 +32,12 @@ void	Request::toString(){
 	// std::cout << "\n\%\%\%\%\%\%\%\% Request \%\%\%\%\%\%\%\%\%%\n" << std::endl;
 	// std::cout << _REQ << std::endl;
 		
-	// puts("\n\%\%\%\%\%\%\%\% Headers \%\%\%\%\%\%\%\%\%%\n");
-    // for(std::map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
-    //     std::cout << "[" << it->first << "]--[" << it->second << "]" << std::endl;
+	puts("\n\%\%\%\%\%\%\%\% Headers \%\%\%\%\%\%\%\%\%%\n");
+    for(std::map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
+        std::cout << "[" << it->first << "]--[" << it->second << "]" << std::endl;
 
-	// puts("\n\%\%\%\%\%\%\%\% Body \%\%\%\%\%\%\%\%\%%\n");
-	// std::cout << "[" << _body << "]" << std::endl;
+	puts("\n\%\%\%\%\%\%\%\% Body \%\%\%\%\%\%\%\%\%%\n");
+	std::cout << "[" << _body << "]" << std::endl;
 
 	puts("\n\%\%\%\%\%\%\%\% Boundaries \%\%\%\%\%\%\%\%\%%\n");
 	for (std::vector<BoundRequest>::iterator it = _Boundaries.begin(); it != _Boundaries.end(); ++it){
@@ -87,10 +87,8 @@ void	Request::parseRequestHeaders(){
 }
 
 
-void    Request::parseRequestBody(){
-
-	std::cout << _REQ << std::endl;
-    
+void    Request::parseRequestBody()
+{
     std::string key, value;
 	if (_headers.find("content-length") != _headers.end() && _headers.find("Transfer-Encoding") == _headers.end() && _headers["content-type"].find("multipart/form-data") == std::string::npos)
     	_body =_REQ.substr(_parsePos, std::stoi(_headers["content-length"]));

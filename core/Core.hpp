@@ -35,6 +35,6 @@ public :
 	pollfd 					make_PlFd(int , short);
 	Listen_Addr 			getServerAddress(int );	
 	Listen_Addr 			getClientAddress(int );
-	void 					handlePl_Out(Client& client);
-
+	void 					handlePl_Out(Client& );
+	Server&					getServer(Client);
 };
