@@ -53,12 +53,11 @@ struct LocationContext
     bool						autoindex;
 	std::string					uri;
 	std::string					alias;
+	std::string					uploadPath;
 	stringVec					allowedMethods;
 	stringVec					index;
 	std::string					root;
-	bool						cgi;
 	std::string					cgiPath;
-	std::string					cgiExtension;
     std::pair<int, std::string> redirect;
 
 };
@@ -66,6 +65,7 @@ struct LocationContext
 struct  ServerContext
 {
     std::string						root;
+	bool							upload;
 	Listen_Addr		        		address;
 	stringVec						index;
 	std::string						serverName;
@@ -119,16 +119,17 @@ class Parse
 		void ParseAddress(ServerContext& server);
 		void ParseClientMaxBodySize(ServerContext& server);
 		void ParseErrorPage(ServerContext& server);
+		void	ParseUpload(ServerContext &server);
+
 		
 		void ParseUri(LocationContext& location);
+		void ParseRoot(LocationContext& location);
 		void ParseAutoindex(LocationContext& location);
 		void ParseAlias(LocationContext& location);
 		void ParseAllowedMethods(LocationContext& location);
 		void ParseIndex(LocationContext& location);
 		void ParseRedirect(LocationContext& location);
-		void ParseCgi(LocationContext& location);
 		void ParseCgiPath(LocationContext& location);
-		void ParseCgiExtension(LocationContext& location);
 		
 		
 

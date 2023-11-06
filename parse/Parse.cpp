@@ -4,9 +4,9 @@
 
 // static helpers *******************************************
 
-std::string ServerKeys[] = {"root", "server_name", "listen", "client_max_body_size", "error_page", "location"};
+std::string ServerKeys[] = {"root", "server_name", "listen", "client_max_body_size", "error_page", "location", "upload"};
 
-std::string LocationKeys[] = {"autoindex", "alias", "allowed_methods", "index", "return"};
+std::string LocationKeys[] = {"autoindex", "alias", "allowed_methods", "index", "return", "root"};
 
 
 void  Parse::C_validServerKeys()
@@ -120,6 +120,7 @@ ServerContext Parse::Server(void)
 	config.errorPages.clear();
 	config.index.clear();
 	config.clientMaxBodySize = -1;
+	config.upload = false;
 
 	return config;
 }
@@ -146,6 +147,8 @@ void	Parse::ParseServer()
 			ParseErrorPage(server);
 		else if (token == "location")
 			ParseLocation(server);
+		else if (token == "upload")
+			ParseUpload(server);
 
 	}
 
@@ -171,9 +174,8 @@ LocationContext Parse::Location(void)
 	location.redirect.second.clear();
 	location.redirect.first = 0;
 	location.autoindex = false;
-	location.cgi = false;
 	location.cgiPath.clear();
-	location.cgiExtension.clear();
+	location.uploadPath.clear();
 
 
 	return location;
@@ -205,12 +207,10 @@ void Parse::ParseLocation(ServerContext& server)
 			ParseIndex(location);
 		else if (token == "return")
             ParseRedirect(location);
-		else if (token == "cgi")
-			ParseCgi(location);
 		else if (token == "cgi_path")
 			ParseCgiPath(location);
-		else if (token == "cgi_extension")
-			ParseCgiExtension(location);
+		else if (token == "root")
+			ParseRoot(location);
 	}
 
 	// Add default method (GET) if no allowed method is specified
@@ -226,6 +226,13 @@ void Parse::ParseRoot(ServerContext& server)
 {
     
 	server.root = fullPath(ROOT, Accept());
+	Skip(";");
+}
+
+void Parse::ParseRoot(LocationContext& location)
+{
+    
+	location.root = fullPath(ROOT, Accept());
 	Skip(";");
 }
 
@@ -281,6 +288,16 @@ void Parse::ParseClientMaxBodySize(ServerContext& server)
 	}
 }
 
+
+void	Parse::ParseUpload(ServerContext &server)
+{
+	std::string token = Accept();
+	if (token != "on" && token != "off")
+		throw std::runtime_error("Parser: invalid upload value!");
+
+	server.upload = token == "on" ? true : false;
+	Skip(";");
+}
 
 void Parse::ParseErrorPage(ServerContext& server)
 {
@@ -405,38 +422,18 @@ void Parse::addDefaultLocation(ServerContext& server)
 }
 
 
-void	Parse::ParseCgi(LocationContext& location)
-{
-	std::string token = Accept();
-	if (token != "on" && token != "off")
-		throw std::runtime_error("Parser: invalid cgi value!");
-
-	location.cgi = token == "on" ? true : false;
-	Skip(";");
-}
 
 void	Parse::ParseCgiPath(LocationContext& location)
 {
-	std::string token = Accept();
-	std::string path = fullPath(ROOT, token);
+	std::string path = Accept();
 
-	// Check if cgi path is accessible and is a directory
 	struct stat pathInfo;
 	if (stat(path.c_str(), &pathInfo) != 0 || !S_ISDIR(pathInfo.st_mode))
-		throw std::runtime_error("Parser: invalid cgi path " + token + "!");
+		throw std::runtime_error("Parser: invalid cgi path " + path + "!");
 
-	location.cgiPath = token;
+	location.cgiPath = path;
 	Skip(";");
 }
 
-void	Parse::ParseCgiExtension(LocationContext& location)
-{
-	std::string token = Accept();
-	if (token[0] != '.')
-		throw std::runtime_error("Parser: invalid cgi extension " + token + "!");
-
-	location.cgiExtension = token;
-	Skip(";");
-}
 
 
