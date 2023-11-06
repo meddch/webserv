@@ -119,7 +119,7 @@ class Parse
 		void ParseAddress(ServerContext& server);
 		void ParseClientMaxBodySize(ServerContext& server);
 		void ParseErrorPage(ServerContext& server);
-		void	ParseUpload(ServerContext &server);
+		void ParseUpload(ServerContext &server);
 
 		
 		void ParseUri(LocationContext& location);
@@ -130,6 +130,7 @@ class Parse
 		void ParseIndex(LocationContext& location);
 		void ParseRedirect(LocationContext& location);
 		void ParseCgiPath(LocationContext& location);
+		void ParseUploadPath(LocationContext& location);
 		
 		
 

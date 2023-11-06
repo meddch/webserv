@@ -6,7 +6,7 @@
 
 std::string ServerKeys[] = {"root", "server_name", "listen", "client_max_body_size", "error_page", "location", "upload"};
 
-std::string LocationKeys[] = {"autoindex", "alias", "allowed_methods", "index", "return", "root"};
+std::string LocationKeys[] = {"autoindex", "alias", "allowed_methods", "index", "return", "root", "cgi_path", "upload_path"};
 
 
 void  Parse::C_validServerKeys()
@@ -211,6 +211,8 @@ void Parse::ParseLocation(ServerContext& server)
 			ParseCgiPath(location);
 		else if (token == "root")
 			ParseRoot(location);
+		else if (token == "upload_path")
+			ParseUploadPath(location);
 	}
 
 	// Add default method (GET) if no allowed method is specified
@@ -426,14 +428,20 @@ void Parse::addDefaultLocation(ServerContext& server)
 void	Parse::ParseCgiPath(LocationContext& location)
 {
 	std::string path = Accept();
-
-	struct stat pathInfo;
-	if (stat(path.c_str(), &pathInfo) != 0 || !S_ISDIR(pathInfo.st_mode))
-		throw std::runtime_error("Parser: invalid cgi path " + path + "!");
-
 	location.cgiPath = path;
 	Skip(";");
 }
 
 
+void Parse::ParseUploadPath(LocationContext &location)
+{
+	std::string path = Accept();
+
+	struct stat pathInfo;
+	if (stat(path.c_str(), &pathInfo) != 0 || !S_ISDIR(pathInfo.st_mode))
+		throw std::runtime_error("Parser: invalid upload path " + path + "!");
+
+	location.uploadPath = path;
+	Skip(";");
+}
 
