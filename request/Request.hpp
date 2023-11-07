@@ -6,7 +6,7 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 13:12:03 by azari             #+#    #+#             */
-/*   Updated: 2023/10/24 21:16:42 by azari            ###   ########.fr       */
+/*   Updated: 2023/11/06 15:55:00 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,19 +24,19 @@ class BoundRequest;
 class Request
 {
     private:
-        std::vector<BoundRequest> _Boundaries;
         size_t _errorCode;
 		bool   _bodyRead;
 	protected :
-		std::map<std::string, std::string> _formdata;
 		std::string _requestMethod;
-		std::string _body;
         std::string _REQ;
         size_t _lastHeaderPos;
         size_t _parsePos;
 		ssize_t _contentLength;
     public:
+        std::vector<BoundRequest> _Boundaries;
         std::map <std::string, std::string> _headers;
+		std::map<std::string, std::string> _formdata;
+		std::string _body;
         Request();
         ~Request();
         void parseRequest();

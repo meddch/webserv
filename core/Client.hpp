@@ -2,8 +2,7 @@
 #include "../parse/Parse.hpp"
 #include "Server.hpp"
 #include "../request/Request.hpp"
-#define TIMEOUT_T 40000
-#define POST "POST"
+#include "MACS.hpp"
 
 class Client
 {
@@ -23,9 +22,11 @@ private :
 	Server		_server;
 public :
 	Request		request;
+	Server 		server;
 	std::string	_body;
 	bool 		_requestIsReady;
 	bool 		_requestParsed;
+	LocationContext	_location;
 	Client(int fd, Listen_Addr Client, Listen_Addr Server);
 	in_addr_t 	getServerIp() const;
 	in_addr_t 	getClientIp() const;
@@ -41,4 +42,9 @@ public :
 	void 		reset();
 	void 		getBody(std::string&);
 	void		setServer(Server&);
+	void		matchLocation(std::vector<LocationContext>);
+	void		createUploadFile(std::string filename, std::string content);
+	void 		handleRequestMethod();
+	bool 		isMethodAllowed();
+
 };

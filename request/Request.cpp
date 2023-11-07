@@ -6,7 +6,7 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 15:21:09 by azari             #+#    #+#             */
-/*   Updated: 2023/10/25 14:54:33 by azari            ###   ########.fr       */
+/*   Updated: 2023/11/07 15:18:02 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,8 +29,8 @@ BoundRequest::BoundRequest(std::string boundary, std::string _REQ):  _boundary(b
 void	Request::toString(){
 
 
-	// std::cout << "\n\%\%\%\%\%\%\%\% Request \%\%\%\%\%\%\%\%\%%\n" << std::endl;
-	// std::cout << _REQ << std::endl;
+	std::cout << "\n\%\%\%\%\%\%\%\% Request \%\%\%\%\%\%\%\%\%%\n" << std::endl;
+	std::cout << _REQ << std::endl;
 		
 	puts("\n\%\%\%\%\%\%\%\% Headers \%\%\%\%\%\%\%\%\%%\n");
     for(std::map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
@@ -129,11 +129,9 @@ void    Request::parseRequestBody()
 			_body += chunk_data;
 		}
 
-		std::cout << "[" <<_body << "]" << std::endl;
 	}
     else
         _errorCode = 415; // 415: Unsupported Media Type;
-
 	// find how to treat CGI
 }
 
@@ -167,8 +165,7 @@ void Request::setRequestMethod(std::string Method){
 }
 
 void Request::setRequestString(std::string requestString){
-	_REQ = requestString;
-	_parsePos = 0;
+	_REQ.append(requestString);
 }
 
 void Request::setContentLength(size_t contentLength){

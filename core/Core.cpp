@@ -209,11 +209,13 @@ void Core::handlePl_IN(Client& client)
 		if (client._requestIsReady)
 		{
 			client.request.setRequestString(client._body);
+			std::cout << "Body " << client._body << std::endl;
 			client.request.parseRequestBody();
 			client.request.toString();
 			client.setReady(true);
-			client.reset();
 			client.setServer(getServer(client));
+			client.handleRequestMethod();
+			client.reset();
 		}
 	}
 	catch (const std::exception& e)

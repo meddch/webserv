@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../parse/Utils.hpp"
+#include "../parse/utils.hpp"
 
 class Server
 {

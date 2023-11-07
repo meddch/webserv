@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../parse/Utils.hpp"
+#include "../parse/utils.hpp"
 #include "Client.hpp"
 #include "Server.hpp"
 #include <poll.h>

@@ -172,3 +172,85 @@ void Client::setServer(Server& server)
 	std::cout << "Client " << _id << " bound to " << toIPString(_clientAddr.ip) << ":" << _clientAddr.port << std::endl;
 	std::cout << "Client " << _id << " connected to " << toIPString(_serverAddr.ip) << ":" << _serverAddr.port << std::endl;
 }
+
+void	Client::createUploadFile(std::string filename, std::string content)
+{
+	std::ofstream file(filename.c_str());
+	if (!file.is_open())
+	{
+		std::cout << "Error opening file" << std::endl;
+		// _errorCode = 500;
+		return;
+	}
+	file << content;
+	file.close();
+	// _errorCode = 201;
+}
+
+
+
+void Client::handleRequestMethod(){
+
+	Request r = this->request;
+	if (r._headers["method"] == POST && isMethodAllowed())
+	{
+		if (r._headers["content-type"].find("multipart/form-data") != std::string::npos)
+		{
+			for (std::vector<BoundRequest>::iterator it = r._Boundaries.begin(); it != r._Boundaries.end(); ++it)
+			{
+				if (it->_headers.find("Content-Disposition") != it->_headers.end() && it->_headers["Content-Disposition"].find("filename=") != std::string::npos)
+				{
+					std::string filename = "tmp/" + std::string(USER) + it->_headers["Content-Disposition"].substr(it->_headers["Content-Disposition"].find("filename=") + 10, it->_headers["Content-Disposition"].npos);
+					createUploadFile(filename, it->_body);
+				}
+				else if (it->_headers.find("Content-Disposition") != it->_headers.end() && it->_headers["Content-Disposition"].find("name=") != std::string::npos)
+				{
+					std::string name = it->_headers["Content-Disposition"].substr(it->_headers["Content-Disposition"].find("name=") + 6, it->_headers["Content-Disposition"].npos);
+					r._formdata[name] = it->_body;
+				}
+			}
+		}
+	}
+	// else if (r._headers["method"] == DELETE){
+	// 	// delete file
+	// }
+	// else if (r._headers["method"] == GET){
+	// 	// get file
+	// }
+}
+
+bool Client::isMethodAllowed()
+{
+	return true;
+}
+
+void Client::matchLocation(std::vector<LocationContext> locations)
+{
+	bool FULL_MATCH = false;
+	Request r = this->request;
+
+	std::string URI = r._headers["URI"];
+	for (std::vector<LocationContext>::iterator it = locations.begin(); it != locations.end(); ++it)
+	{
+		if (!it->uri.compare(URI)){
+				FULL_MATCH = true;
+				_location = *it;
+				break;
+		}
+	}
+	if (!FULL_MATCH)
+	{
+		for (std::vector<LocationContext>::iterator it = locations.begin(); it != locations.end(); ++it)
+		{
+			if (!it->uri.compare(URI.substr(URI.rfind("."), URI.length()))){
+				FULL_MATCH = true;
+				_location = *it;
+				break;
+			}
+		}
+		if (!FULL_MATCH){
+
+		}
+	}
+
+}
