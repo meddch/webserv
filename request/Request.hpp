@@ -6,7 +6,7 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 13:12:03 by azari             #+#    #+#             */
-/*   Updated: 2023/11/06 15:55:00 by azari            ###   ########.fr       */
+/*   Updated: 2023/11/09 12:14:04 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,7 @@ class Request
 		void setErrorCode(size_t errorCode);
 		bool getBodyRead() const;
 		void setBodyRead(bool bodyRead);
+		Request& operator=(const Request& other);
 };
 
 class BoundRequest : public Request

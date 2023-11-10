@@ -19,10 +19,7 @@ Client::Client(int fd, Listen_Addr Client, Listen_Addr Server)
 	_body.clear();
 	_bytesRecved = 0;
 	_bytesExpected = 0;
-
-
 	_lastTime = std::time(NULL);
-
 }
 
 int Client::getId() const
@@ -192,31 +189,23 @@ void	Client::createUploadFile(std::string filename, std::string content)
 void Client::handleRequestMethod(){
 
 	Request r = this->request;
-	if (r._headers["method"] == POST && isMethodAllowed())
+	if (r._headers["Method"] == POST)
 	{
 		if (r._headers["content-type"].find("multipart/form-data") != std::string::npos)
 		{
 			for (std::vector<BoundRequest>::iterator it = r._Boundaries.begin(); it != r._Boundaries.end(); ++it)
 			{
-				if (it->_headers.find("Content-Disposition") != it->_headers.end() && it->_headers["Content-Disposition"].find("filename=") != std::string::npos)
+				if (it->_headers["content-disposition"].find("filename=") != std::string::npos)
 				{
-					std::string filename = "tmp/" + std::string(USER) + it->_headers["Content-Disposition"].substr(it->_headers["Content-Disposition"].find("filename=") + 10, it->_headers["Content-Disposition"].npos);
-					createUploadFile(filename, it->_body);
+					std::string filename = "/tmp/" + it->_headers["content-disposition"].substr(it->_headers["content-disposition"].find("filename=") + 10, it->_headers["content-disposition"].rfind('\"', std::string::npos) - (it->_headers["content-disposition"].find("filename=") + 10));
+					std::string content = it->_body;
+					createUploadFile(filename, content);
 				}
-				else if (it->_headers.find("Content-Disposition") != it->_headers.end() && it->_headers["Content-Disposition"].find("name=") != std::string::npos)
-				{
-					std::string name = it->_headers["Content-Disposition"].substr(it->_headers["Content-Disposition"].find("name=") + 6, it->_headers["Content-Disposition"].npos);
-					r._formdata[name] = it->_body;
-				}
+				else
+					createUploadFile("RandomFile", it->_body);
 			}
 		}
 	}
-	// else if (r._headers["method"] == DELETE){
-	// 	// delete file
-	// }
-	// else if (r._headers["method"] == GET){
-	// 	// get file
-	// }
 }
 
 bool Client::isMethodAllowed()
@@ -254,3 +243,4 @@ void Client::matchLocation(std::vector<LocationContext> locations)
 	}
 
 }
+

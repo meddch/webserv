@@ -6,7 +6,7 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 15:21:09 by azari             #+#    #+#             */
-/*   Updated: 2023/11/07 15:18:02 by azari            ###   ########.fr       */
+/*   Updated: 2023/11/09 12:14:42 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,6 +72,11 @@ void Request::parseRequestLine(std::string requestLine){
 	_lastHeaderPos = _REQ.find("\r\n\r\n");
 }
 
+std::string stringToLowercase(std::string str){
+	std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+	return str;
+}
+
 void	Request::parseRequestHeaders(){
 
 	std::string headerKey, headerValue;
@@ -80,7 +85,7 @@ void	Request::parseRequestHeaders(){
 		headerKey =_REQ.substr(_parsePos,_REQ.find(":", _parsePos) - _parsePos);
 		headerValue =_REQ.substr(_REQ.find(":", _parsePos) + 2,_REQ.find("\r\n", _parsePos) -_REQ.find(":", _parsePos) - 2);
 		(headerKey == "content-length") && (_contentLength = std::stoi(headerValue));
-		this->_headers[headerKey] = headerValue;
+		this->_headers[stringToLowercase(headerKey)] = headerValue;
 	    _parsePos = _REQ.find("\r\n", _parsePos) + 2;
 	}
 }
@@ -89,7 +94,7 @@ void	Request::parseRequestHeaders(){
 void    Request::parseRequestBody()
 {
     std::string key, value;
-	if (_headers.find("content-length") != _headers.end() && _headers.find("Transfer-Encoding") == _headers.end() && _headers["content-type"].find("multipart/form-data") == std::string::npos)
+	if (_headers.find("content-length") != _headers.end() && _headers.find("transfer-encoding") == _headers.end() && _headers["content-type"].find("multipart/form-data") == std::string::npos)
     	_body =_REQ.substr(_parsePos, std::stoi(_headers["content-length"]));
     else if (_headers["content-type"].find("multipart/form-data") != std::string::npos){
         
@@ -114,7 +119,7 @@ void    Request::parseRequestBody()
 			_parsePos = obj._BoundaryNext;
 		}
 	}
-    else if (_headers.find("Transfer-Incoding") != _headers.end() && _headers["Transfer-Encoding"].find("chunked") != std::string::npos){
+    else if (_headers.find("transfer-encoding") != _headers.end() && _headers["transfer-encoding"].find("chunked") != std::string::npos){
 
 		std::string chunk_size;
 		std::string chunk_data;
@@ -128,7 +133,6 @@ void    Request::parseRequestBody()
 			pos =_REQ.find("\r\n", pos) + 2 + std::stoi(chunk_size, 0, 16);
 			_body += chunk_data;
 		}
-
 	}
     else
         _errorCode = 415; // 415: Unsupported Media Type;
@@ -165,7 +169,8 @@ void Request::setRequestMethod(std::string Method){
 }
 
 void Request::setRequestString(std::string requestString){
-	_REQ.append(requestString);
+	_REQ = requestString;
+	_parsePos = 0;
 }
 
 void Request::setContentLength(size_t contentLength){
@@ -188,4 +193,17 @@ bool Request::getBodyRead() const
 void Request::setBodyRead(bool bodyRead)
 {
 	_bodyRead = bodyRead;
+}
+
+Request& Request::operator=(const Request& request){
+	_errorCode = request._errorCode;
+	_bodyRead = request._bodyRead;
+	_REQ = request._REQ;
+	_lastHeaderPos = request._lastHeaderPos;
+	_parsePos = request._parsePos;
+	_contentLength = request._contentLength;
+	_Boundaries = request._Boundaries;
+	_headers = request._headers;
+	_body = request._body;
+	return *this;
 }
