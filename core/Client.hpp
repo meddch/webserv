@@ -2,6 +2,7 @@
 #include "../parse/Parse.hpp"
 #include "Server.hpp"
 #include "../request/Request.hpp"
+#include "../response/response.hpp"
 #include "MACS.hpp"
 
 class Client
@@ -23,6 +24,7 @@ private :
 public :
 	Request		request;
 	Server 		server;
+	Response	response;
 	std::string	_body;
 	bool 		_requestIsReady;
 	bool 		_requestParsed;

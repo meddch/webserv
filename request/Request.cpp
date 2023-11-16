@@ -6,7 +6,7 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 15:21:09 by azari             #+#    #+#             */
-/*   Updated: 2023/11/09 12:14:42 by azari            ###   ########.fr       */
+/*   Updated: 2023/11/16 15:12:11 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ Request::~Request(){
 	_headers.clear();
 }
 
-Request::Request():  _errorCode(0), _bodyRead(false), _REQ(""), _lastHeaderPos(0) , _parsePos(0), _contentLength(-1){
+Request::Request():  _StatusCode(0), _bodyRead(false), _REQ(""), _lastHeaderPos(0) , _parsePos(0), _contentLength(-1){
 	_Boundaries.clear();
 }
 
@@ -62,7 +62,7 @@ void Request::parseRequestLine(std::string requestLine){
     for (i = 0; i < 3; i++)
         if (methods[i] == _headers["Method"])
             break;
-    (i >= 3) && (_errorCode = 501); // 501: Method Not Implemented
+    (i >= 3) && (_StatusCode = 501); // 501: Method Not Implemented
     if (_headers["URI"].find("?") != std::string::npos){
         std::string newURI = _headers["URI"].substr(0, _headers["URI"].find("?"));
         _headers["Queries"] = _headers["URI"].substr(_headers["URI"].find("?") + 1, _headers["URI"].npos);
@@ -134,14 +134,11 @@ void    Request::parseRequestBody()
 			_body += chunk_data;
 		}
 	}
-    else
-        _errorCode = 415; // 415: Unsupported Media Type;
-	// find how to treat CGI
 }
 
 
-size_t Request::getErrorCode() const{
-	return _errorCode;
+size_t Request::getStatusCode() const{
+	return _StatusCode;
 }
 
 std::string Request::getRequestMethod() const{
@@ -181,8 +178,8 @@ void Request::setLastHeaderPos(size_t lastHeaderPos){
 	_lastHeaderPos = lastHeaderPos;
 }
 
-void Request::setErrorCode(size_t errorCode){
-	_errorCode = errorCode;
+void Request::setStatusCode(size_t Code){
+	_StatusCode = Code;
 }
 
 bool Request::getBodyRead() const
@@ -196,7 +193,7 @@ void Request::setBodyRead(bool bodyRead)
 }
 
 Request& Request::operator=(const Request& request){
-	_errorCode = request._errorCode;
+	_StatusCode = request._StatusCode;
 	_bodyRead = request._bodyRead;
 	_REQ = request._REQ;
 	_lastHeaderPos = request._lastHeaderPos;

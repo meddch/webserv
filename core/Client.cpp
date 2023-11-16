@@ -84,7 +84,7 @@ void Client::getREQ(std::string& buffer)
 	request.setRequestString(buffer);
 	request.parseRequestLine(buffer.substr(0, buffer.find("\r\n")));
 	request.parseRequestHeaders();
-	if (!request.getErrorCode())
+	if (!request.getStatusCode())
 		_requestParsed = true;
 // Send error response	
 	if (request.getRequestMethod() != "POST")

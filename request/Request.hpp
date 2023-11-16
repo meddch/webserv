@@ -6,7 +6,7 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 13:12:03 by azari             #+#    #+#             */
-/*   Updated: 2023/11/09 12:14:04 by azari            ###   ########.fr       */
+/*   Updated: 2023/11/13 14:48:14 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ class BoundRequest;
 class Request
 {
     private:
-        size_t _errorCode;
+        size_t _StatusCode;
 		bool   _bodyRead;
 	protected :
 		std::string _requestMethod;
@@ -49,12 +49,12 @@ class Request
 		ssize_t getContentLength() const;
 		size_t getLastHeaderPos() const;
 		size_t getBodyPosition() const;
-		size_t getErrorCode() const;
+		size_t getStatusCode() const;
 		void setRequestMethod(std::string requestMethod);
 		void setRequestString(std::string requestString);
 		void setContentLength(size_t contentLength);
 		void setLastHeaderPos(size_t lastHeaderPos);
-		void setErrorCode(size_t errorCode);
+		void setStatusCode(size_t Code);
 		bool getBodyRead() const;
 		void setBodyRead(bool bodyRead);
 		Request& operator=(const Request& other);

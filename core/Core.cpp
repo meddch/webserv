@@ -210,12 +210,13 @@ void Core::handlePl_IN(Client& client)
 		{
 			client.request.setRequestString(client._body);
 			client.request.parseRequestBody();
-			// client.request.toString();
+			client.setReady(true);
+			client.setServer(getServer(client));
 			client.handleRequestMethod();
-			// client.setReady(true);
-			// client.setServer(getServer(client));
-			// client.reset();
+			client.response.generateResponse(client.request);
+			client.request.toString();
 		}
+		// client.reset();
 	}
 	catch (const std::exception& e)
 	{
@@ -228,8 +229,7 @@ void Core::handlePl_Out(Client& client)
 {
 
 	ssize_t bytesSent = 0;
-	std::string Str = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 20\r\n\r\n<h1>Hello World<h1/>";
-
+	// std::string Str = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 20\r\n\r\n<h1>Hello World<h1/>";
 	//if a request is ready to be sent
 	//notify the client
 	//send the response
@@ -237,6 +237,7 @@ void Core::handlePl_Out(Client& client)
 			return;
 	if (client.isReady())
 	{
+	std::string Str = client.response.generateResponse(client.request);
 
 		bytesSent = send(client.getFd(), Str.c_str(), Str.length(), 0);
 		if (bytesSent == -1 || bytesSent == 0)
