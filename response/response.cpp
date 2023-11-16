@@ -6,43 +6,57 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/25 12:05:29 by azari             #+#    #+#             */
-/*   Updated: 2023/11/16 15:18:40 by azari            ###   ########.fr       */
+/*   Updated: 2023/11/16 17:24:30 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "response.hpp"
 
-Response::Response():
+Response::Response(Request& request):
 
+	_statusCode(request.getStatusCode()),
 	_version(""),
 	_status(""),
 	_body(""),
 	_response("")
 {}
 
-std::string Response::generateResponse(Request& request){
+bool Response::handleResponseError(Request& request){
 	
 	_version = request._headers["httpVersion"];
-	// if (_version.compare("HTTP/1.1"))
-	// 	// raise error 505 HTTP Version Not Supported
-	// 	// return;
+	if (_version.compare("HTTP/1.1"))
+		if (!_statusCode)
+			_statusCode = 505; // HTTP Version Not Supported
 
+	if (_statusCode && _statusCode != 200){
+		_status = generateStatusPhrase(request.getStatusCode());
+		std::string errorBody = "<html><head><title>" + _status + "</title></head><body><center><h1>" + _status + "</h1></center><hr><center>Webserv/1.0.0 (mechane-azari)</center></body></html>";
+		_contentLength = std::to_string(errorBody.length());
+		return true;
+	}
+	return false;
+}
 
-	// _status = generateStatusPhrase(200);
-	_status = generateStatusPhrase(request.getStatusCode());
+void Response::initResponseHeaders(){
+
 	_response.append(_version + _status + "\r\n");
-	// find pathfile to put in mime type
-	
-	
 	
 	_headers["Content-Type"] = findMimeType(".html");
-	_headers["Content-Length"] = "867"; // to Implement
+	_headers["Content-Length"] = _contentLength; // to Implement
 	_headers["Server"] = "Webserv/1.0.0 (mechane-azari)";
 	_headers["Date"] = generateResponseDate();
 	_headers["Connection"] = "keep-alive"; // to Implement
 	for(std::unordered_map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
 		_response.append(it->first + ": " + it->second + "\r\n");
 	_response.append("\r\n");
+	
+}
+
+std::string Response::generateResponse(Request& request){
+	
+	if (handleResponseError(request))
+		return _response;
+	initResponseHeaders();
 	std::string bodyfile = "/Users/azari/Desktop/webserv/samples/index.html";
 	std::ifstream file(bodyfile.c_str());
 	if (file.fail())
