@@ -6,7 +6,7 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/25 12:05:29 by azari             #+#    #+#             */
-/*   Updated: 2023/11/16 15:18:40 by azari            ###   ########.fr       */
+/*   Updated: 2023/11/17 15:07:44 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ Response::Response():
 
 std::string Response::generateResponse(Request& request){
 	
+	puts("here");
 	_version = request._headers["httpVersion"];
 	// if (_version.compare("HTTP/1.1"))
 	// 	// raise error 505 HTTP Version Not Supported
@@ -32,7 +33,6 @@ std::string Response::generateResponse(Request& request){
 	_status = generateStatusPhrase(request.getStatusCode());
 	_response.append(_version + _status + "\r\n");
 	// find pathfile to put in mime type
-	
 	
 	
 	_headers["Content-Type"] = findMimeType(".html");
