@@ -213,8 +213,7 @@ void Core::handlePl_IN(Client& client)
 			client.setReady(true);
 			client.setServer(getServer(client));
 			client.handleRequestMethod();
-			client.response.generateResponse(client.request);
-			client.request.toString();
+			// client.request.toString();
 		}
 		// client.reset();
 	}
@@ -237,7 +236,7 @@ void Core::handlePl_Out(Client& client)
 			return;
 	if (client.isReady())
 	{
-	std::string Str = client.response.generateResponse(client.request);
+		std::string Str = client.response.generateResponse(client.request);
 
 		bytesSent = send(client.getFd(), Str.c_str(), Str.length(), 0);
 		if (bytesSent == -1 || bytesSent == 0)

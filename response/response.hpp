@@ -6,7 +6,7 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/09 15:01:48 by azari             #+#    #+#             */
-/*   Updated: 2023/11/17 14:52:38 by azari            ###   ########.fr       */
+/*   Updated: 2023/11/17 15:27:51 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ class Response
 		std::string generateStatusPhrase(size_t status);
 		std::string generateResponseDate();
 		bool handleResponseError(Request& request);
-		void initResponseHeaders(Request& request);
+		void initResponseHeaders();
 		bool isConnectionKeepAlive();
 		void setStatusCode(size_t statusCode);
 };
