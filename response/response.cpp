@@ -6,18 +6,18 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/25 12:05:29 by azari             #+#    #+#             */
-/*   Updated: 2023/11/16 17:24:30 by azari            ###   ########.fr       */
+/*   Updated: 2023/11/17 14:53:37 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "response.hpp"
 
-Response::Response(Request& request):
-
-	_statusCode(request.getStatusCode()),
+Response::Response():
+	_statusCode(0),
 	_version(""),
 	_status(""),
 	_body(""),
+	_KEEPALIVE(false),
 	_response("")
 {}
 
@@ -37,26 +37,31 @@ bool Response::handleResponseError(Request& request){
 	return false;
 }
 
-void Response::initResponseHeaders(){
+bool Response::isConnectionKeepAlive(){
+	if (_KEEPALIVE)
+		return true;
+	return false;
+}
 
+void Response::initResponseHeaders(Request& request){
+
+	(void)request;
 	_response.append(_version + _status + "\r\n");
-	
 	_headers["Content-Type"] = findMimeType(".html");
 	_headers["Content-Length"] = _contentLength; // to Implement
 	_headers["Server"] = "Webserv/1.0.0 (mechane-azari)";
 	_headers["Date"] = generateResponseDate();
-	_headers["Connection"] = "keep-alive"; // to Implement
+	_headers["Connection"] = isConnectionKeepAlive() ? "keep-alive" : "close"; // to Implement
 	for(std::unordered_map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
 		_response.append(it->first + ": " + it->second + "\r\n");
 	_response.append("\r\n");
-	
 }
 
 std::string Response::generateResponse(Request& request){
 	
 	if (handleResponseError(request))
 		return _response;
-	initResponseHeaders();
+	initResponseHeaders(request);
 	std::string bodyfile = "/Users/azari/Desktop/webserv/samples/index.html";
 	std::ifstream file(bodyfile.c_str());
 	if (file.fail())

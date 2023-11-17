@@ -6,7 +6,7 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/09 15:01:48 by azari             #+#    #+#             */
-/*   Updated: 2023/11/16 17:19:07 by azari            ###   ########.fr       */
+/*   Updated: 2023/11/17 14:52:38 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,10 +25,11 @@ class Response
 		std::string _body;
 		std::string _reasonPhrase;
 		std::string _contentLength;
+		bool		_KEEPALIVE;
 		std::unordered_map<std::string, std::string> _headers;
 	public:
 
-		Response(Request& request);
+		Response();
 		std::string _response;
 		std::string generateResponse(Request& request);
 		std::string getResponse() const;
@@ -36,6 +37,8 @@ class Response
 		std::string generateStatusPhrase(size_t status);
 		std::string generateResponseDate();
 		bool handleResponseError(Request& request);
-		void initResponseHeaders();
+		void initResponseHeaders(Request& request);
+		bool isConnectionKeepAlive();
+		void setStatusCode(size_t statusCode);
 };
 
