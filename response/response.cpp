@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
+/*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/25 12:05:29 by azari             #+#    #+#             */
-/*   Updated: 2023/11/17 16:59:04 by azari            ###   ########.fr       */
+/*   Updated: 2023/11/24 23:40:29 by mechane          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,32 +21,32 @@ Response::Response():
 	_response("")
 {}
 
-std::string Response::generateResponse(Request& request){
+// std::string Response::generateResponse(Request& request){
 	
-	_version = request._headers["httpVersion"];
-	// if (_version.compare("HTTP/1.1"))
-	// 	// raise error 505 HTTP Version Not Supported
-	// 	// return;
+// 	_version = request._headers["httpVersion"];
+// 	// if (_version.compare("HTTP/1.1"))
+// 	// 	// raise error 505 HTTP Version Not Supported
+// 	// 	// return;
 
 
-	// _status = generateStatusPhrase(200);
-	_status = generateStatusPhrase(request.getStatusCode());
-	_response.append(_version + _status + "\r\n");
-	// find pathfile to put in mime type
+// 	// _status = generateStatusPhrase(200);
+// 	_status = generateStatusPhrase(request.getStatusCode());
+// 	_response.append(_version + _status + "\r\n");
+// 	// find pathfile to put in mime type
 	
 	
 	
-	_headers["Content-Type"] = findMimeType(".html");
-	_headers["Content-Length"] = _contentLength;
-	if (_contentLength.empty())
-		_headers["Content-Length"] = "761";
-	_headers["Server"] = "Webserv/1.0.0 (mechane-azari)";
-	_headers["Date"] = generateResponseDate();
-	_headers["Connection"] = isConnectionKeepAlive() ? "keep-alive" : "close"; // to Implement
-	for(std::unordered_map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
-		_response.append(it->first + ": " + it->second + "\r\n");
-	_response.append("\r\n");
-}
+// 	_headers["Content-Type"] = findMimeType(".html");
+// 	_headers["Content-Length"] = _contentLength;
+// 	if (_contentLength.empty())
+// 		_headers["Content-Length"] = "761";
+// 	_headers["Server"] = "Webserv/1.0.0 (mechane-azari)";
+// 	_headers["Date"] = generateResponseDate();
+// 	_headers["Connection"] = isConnectionKeepAlive() ? "keep-alive" : "close"; // to Implement
+// 	for(std::unordered_map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
+// 		_response.append(it->first + ": " + it->second + "\r\n");
+// 	_response.append("\r\n");
+// }
 
 bool Response::handleResponseError(Request& request){
 	
