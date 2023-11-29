@@ -1,4 +1,5 @@
 #include "Server.hpp"
+#include <iostream>
 
 Server::Server()
 {}
@@ -52,13 +53,15 @@ int Server::getId() const
 }
 
 
-LocationContext Server::getLocation(std::string uri)
+LocationContext &Server::getLocation(std::string uri)
 {
 	std::vector<LocationContext>::iterator it;
 
 	for (it = _config.locations.begin(); it != _config.locations.end(); it++)
+	{
 		if (it->uri == uri)
 			return *it;
+	}
 
 	size_t backPos = uri.find_last_of('/');
 	uri = backPos == 0 ? "/" : uri.substr(0, uri.find_last_of('/'));

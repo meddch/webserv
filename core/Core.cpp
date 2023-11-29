@@ -2,6 +2,7 @@
 #include "Server.hpp"
 #include <iostream>
 #include <netinet/in.h>
+#include <sys/_types/_ssize_t.h>
 
 bool Core::runing = true;
 
@@ -59,7 +60,7 @@ void	Core::init()
 	{
 		int fd = CreateTcpIpListeners(*it);
 		_nbr_sockets++;
-		plfds.push_back(make_PlFd(fd, POLLIN | POLLOUT));
+		plfds.push_back(make_PlFd(fd, POLLIN));
 		std::cout << "Server is running" << std:: endl;
 		std::cout << "Listening on " << toIPString(it->ip) << ":" << it->port << std::endl;
 	}
@@ -211,7 +212,7 @@ void Core::handlePl_IN(Client& client)
 
 	char buffer[buffer_size];
 	ssize_t bytesRead = recv(client.getFd(), buffer, buffer_size - 1, 0);
-	if (bytesRead == -1 || bytesRead == 0)
+	if (bytesRead == -1)
 	{
 		std::cout << "Client " << client.getId() << " disconnected" << std::endl;
 		client.set_Connect(false);
@@ -224,11 +225,8 @@ void Core::handlePl_IN(Client& client)
 		std::string Str(buffer, bytesRead);
 		if (!client._requestParsed)
 		{
-			puts("IN");
 			client.getREQ(Str);
-			client.setServer(getServer(client));
-			client._location = client.server.getLocation(client.request.getRequestURI());
-			client.request.toString();
+			client._location = getServer(client).getLocation(client.request.getRequestURI());
 		}
 		if (!client._requestIsReady)
 			client.getBody(Str);
@@ -236,9 +234,11 @@ void Core::handlePl_IN(Client& client)
 		{
 			client.request.setRequestString(client._body);
 			client.request.parseRequestBody();
-			client.setReady(true);
 			client.handleRequestMethod();
 			client.response.generateResponse(client.request);
+			client.setReady(true);
+			plfds[client.getId() + _nbr_sockets - 1].events = POLLOUT;
+
 		}
 		// client.reset();
 	}
@@ -251,13 +251,26 @@ void Core::handlePl_IN(Client& client)
 void Core::handlePl_Out(Client& client)
 {
 
-	ssize_t bytesSent = 0;
+
 
 	if (!client.is_Connected())
 			return;
 	if (client.isReady())
 	{
-		puts("IN");
+		
+		std::string Str = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 20\r\n\r\n<h1>Hello World<h1/>";
+		ssize_t bytesSent = 0;
+
+		bytesSent = send(client.getFd(), Str.c_str(), Str.length(), 0);
+		if (bytesSent == -1 || bytesSent == 0)
+		{
+			client.set_Connect(false);
+			return;
+		}
+		close(client.getFd());
+
+		
+		// ssize_t bytesSent = 0;
 		// if (client.response._headerSent == false)
 		// {
 		// std::fstream file(client.response.filePath.c_str(), std::ios::binary);
@@ -266,7 +279,7 @@ void Core::handlePl_Out(Client& client)
     	// // Close the file
     	// file.close();
 
-    	// // Return the contents of the stringstream as a string
+    	// // // Return the contents of the stringstream as a string
     	// client._buffer = stream.str();
 		// 	std::string Str;
 		// 	puts("INIF");
@@ -288,7 +301,7 @@ void Core::handlePl_Out(Client& client)
 		// 	std::cout << "bytesRead: " << bytesRead << std::endl;
     	// 	buffer[bytesRead] = '\0';
 
-		// 	// file.read(buffer, 4096);
+		// 	file.read(buffer, 4096);
 
 
 		// 	std::fstream file(client.response.filePath.c_str(), std::ios::binary);
@@ -347,8 +360,8 @@ Server&	Core::getServer(Client client)
 	std::vector<Server> servers;
 	int		id;
 	
-	if (client.request._headers.find("Host") != client.request._headers.end())
-		Host = client.request._headers["Host"];
+	if (client.request._headers.find("host") != client.request._headers.end())
+		Host = client.request._headers["host"];
 	else
 		std::runtime_error("Error: No Host found");
 
@@ -373,7 +386,7 @@ Server&	Core::getServer(Client client)
 			if (_servers[i].getId() == id)
 				return _servers[i];
 		}
-		Host = client.request._headers["Host"];
+		Host = client.request._headers["host"];
 	
 		size_t colonPos = Host.find(':');
 		in_addr_t ip = colonPos != std::string::npos ? toIpNum(Host.substr(0, colonPos)): toIpNum(Host);

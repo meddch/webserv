@@ -19,7 +19,7 @@ public:
 	std::vector<std::string>		getMethods() const;
 	std::string						getRoot() const;
 	int								getId() const;
-	LocationContext 				getLocation(std::string);
+	LocationContext 				&getLocation(std::string);
 
 
 };
