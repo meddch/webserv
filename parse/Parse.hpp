@@ -29,7 +29,7 @@ typedef std::vector<std::string> stringVec;
 //Constants
 #define DEFAULT_PORT	80
 #define DEFAULT_INDEX	"index.html"
-#define ROOT			"/Samples"
+#define ROOT			"/Session"
 #define NONE			"none"
 
 
