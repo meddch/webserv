@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
+/*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 15:21:09 by azari             #+#    #+#             */
-/*   Updated: 2023/11/29 19:19:20 by mechane          ###   ########.fr       */
+/*   Updated: 2023/11/29 20:59:46 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,12 +26,24 @@ BoundRequest::BoundRequest(std::string boundary, std::string _REQ):  _boundary(b
 	this->_REQ = _REQ;
 }
 
+bool hasInvalidCharacter(const std::string& str)
+{
+    std::string set = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%";
+
+    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it)
+	{
+        if (set.find(*it) == std::string::npos)
+            return true;
+    }
+    return false;
+}
+
 std::string Request::parseURI(std::string uri){
 	
 	std::ostringstream decoded_uri;
-	
+
 	// checking valid characters
-	// if (uri.find("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%") == std::string::npos)
+	// if (hasInvalidCharacter(uri))
 	// 	throw std::runtime_error("400");
 	
 	// decoding URI
@@ -45,6 +57,7 @@ std::string Request::parseURI(std::string uri){
 			decoded_uri << ' ';
 		else
 			decoded_uri << uri[i];
+		
 	}
 	
 	uri = decoded_uri.str();
@@ -90,7 +103,6 @@ void Request::parseRequestLine(std::string requestLine){
 	_lastHeaderPos = _REQ.find("\r\n\r\n");
 }
 
-
 std::string stringToLowercase(std::string str){
 	std::transform(str.begin(), str.end(), str.begin(), ::tolower);
 	return str;
@@ -98,13 +110,15 @@ std::string stringToLowercase(std::string str){
 
 void Request::markExistance(const std::string& headerKey){
 	
-	if (headerKey == "content-length")
+	if (headerKey == "content-length" || headerKey == "Content-Length")
 		(_contentLengthExist = true);
-	if (headerKey == "transfer-encoding")
+	if (headerKey == "transfer-encoding" || headerKey == "Transfer-Encoding")
 		(_transferEncodingExist = true);
-	if (headerKey == "Host")
+	if (headerKey == "Host" || headerKey == "host")
 		_hostExist = true;
 	if (_transferEncodingExist == true && _headers["transfer-encoding"].find("chunked") != std::string::npos)
+		_chunked = true;
+	else if (_transferEncodingExist == true && _headers["Transfer-Encoding"].find("chunked") != std::string::npos)
 		_chunked = true;
 }
 
