@@ -29,7 +29,7 @@ std::string Server::getRoot() const
 std::string Server::getErrorPage(int code) const
 {
 	std::map<int, std::string>::const_iterator it = _config.errorPages.find(code);
-	return it == _config.errorPages.end() ? "" : fullPath(ROOT, it->second);
+	return it->second;
 }
 
 int Server::getMaxBodySize() const
@@ -44,15 +44,7 @@ bool Server::bodySizeAllowed(int bytes) const
 }
 
 
-std::vector<LocationContext> Server::getLocations() const
-{
-	return _config.locations;
-}
 
-std::vector<std::string> Server::getMethods() const
-{
-	return _config.allowedMethods;
-}
 
 int Server::getId() const
 {
@@ -60,10 +52,18 @@ int Server::getId() const
 }
 
 
+LocationContext Server::getLocation(std::string uri)
+{
+	std::vector<LocationContext>::iterator it;
 
+	for (it = _config.locations.begin(); it != _config.locations.end(); it++)
+		if (it->uri == uri)
+			return *it;
 
-
-
+	size_t backPos = uri.find_last_of('/');
+	uri = backPos == 0 ? "/" : uri.substr(0, uri.find_last_of('/'));
+	return getLocation(uri);
+}
 
 
 

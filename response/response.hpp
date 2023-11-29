@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
+/*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/09 15:01:48 by azari             #+#    #+#             */
-/*   Updated: 2023/11/28 13:34:25 by azari            ###   ########.fr       */
+/*   Updated: 2023/11/29 16:30:39 by mechane          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include <map>
 #include <unordered_map>
 #include "../request/Request.hpp"
+#include <dirent.h>
 
 class Response
 {

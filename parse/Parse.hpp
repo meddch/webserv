@@ -68,9 +68,7 @@ struct  ServerContext
     std::string						root;
 	bool							upload;
 	Listen_Addr		        		address;
-	stringVec						index;
 	std::string						serverName;
-	stringVec						allowedMethods;
 	ssize_t							clientMaxBodySize;
 	std::map<int, std::string>		errorPages;
 	std::vector<LocationContext>	locations;

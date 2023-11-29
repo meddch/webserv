@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
+/*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 15:21:09 by azari             #+#    #+#             */
-/*   Updated: 2023/11/29 12:35:35 by azari            ###   ########.fr       */
+/*   Updated: 2023/11/29 17:10:11 by mechane          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -231,6 +231,10 @@ bool Request::getBodyRead() const
 void Request::setBodyRead(bool bodyRead)
 {
 	_bodyRead = bodyRead;
+}
+
+std::string Request::getRequestURI() const{
+	return _headers.find("URI")->second;
 }
 
 Request& Request::operator=(const Request& request){

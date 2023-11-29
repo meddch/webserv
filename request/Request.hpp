@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
+/*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 13:12:03 by azari             #+#    #+#             */
-/*   Updated: 2023/11/29 12:29:04 by azari            ###   ########.fr       */
+/*   Updated: 2023/11/29 17:07:35 by mechane          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,7 @@ class Request
 		void setStatusCode(size_t Code);
 		bool getBodyRead() const;
 		void setBodyRead(bool bodyRead);
+		std::string getRequestURI() const;
 		Request& operator=(const Request& other);
 };
 

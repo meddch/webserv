@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
+/*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/25 12:05:29 by azari             #+#    #+#             */
-/*   Updated: 2023/11/28 16:50:15 by azari            ###   ########.fr       */
+/*   Updated: 2023/11/29 16:32:35 by mechane          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,4 +85,27 @@ std::string Response::generateResponse(Request& request){
 		return response;
 
 	return response;
+}
+
+std::string generate_auto_index(std::string path)
+{
+	std::string auto_index = "<html><head><title>Index of " + path + "</title></head><body><h1>Index of " + path + "</h1><hr><pre>";
+	DIR *dir;
+	struct dirent *ent;
+	if ((dir = opendir (path.c_str())) != NULL) 
+	{
+		while ((ent = readdir (dir)) != NULL)
+		{
+			auto_index += "<a href=\"" + path + "/" + ent->d_name + "\">" + ent->d_name + "</a><br>";
+		}
+		closedir (dir);
+	}
+	else 
+	{
+		perror ("");
+		return "";
+	}
+	auto_index += "</pre><hr><center>Webserv/1.0.0 (mechane-azari)</center></body></html>";
+	return auto_index;
+
 }

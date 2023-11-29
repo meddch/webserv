@@ -1,4 +1,5 @@
 #include "Client.hpp"
+#include <sys/_types/_ssize_t.h>
 
 Client::Client(int fd, Listen_Addr Client, Listen_Addr Server) 
 {
@@ -112,6 +113,9 @@ void Client::getREQ(std::string& buffer)
 
 void Client::getBody(std::string& buffer)
 {
+	if (_bytesExpected > server.getMaxBodySize())
+		throw std::runtime_error("413");
+	
 	if (_recvChunk)
 	{
 		// Handle chunked encoding
@@ -130,12 +134,11 @@ void Client::getBody(std::string& buffer)
 				_chunkedBuffer.clear();
 				break;
 			}
-			// 1894198616\r\n0\r\n\r\n
-			// if (_chunkedBuffer.size() < pos + 2 + size + 2)
-			// 	break;
-
+			
 			_body.append(_chunkedBuffer.substr(pos + 2, size));
 			_chunkedBuffer.erase(0, pos + 2 + size + 2);
+			if (_body.size() >= (unsigned long)server.getMaxBodySize())
+				throw std::runtime_error("413");
 		}
 	}
 	else {

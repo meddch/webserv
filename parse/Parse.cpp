@@ -125,10 +125,8 @@ ServerContext Parse::Server(void)
 
     config.address.port = -1; 
 	config.root.clear();
-	config.allowedMethods.clear();
 	config.serverName.clear();
 	config.errorPages.clear();
-	config.index.clear();
 	config.clientMaxBodySize = -1;
 	config.upload = false;
 
@@ -464,6 +462,7 @@ void Parse::addDefaultLocation(ServerContext& server)
 
 	LocationContext location = Location();
 	location.uri = "/";
+	location.root = server.root;
 	location.allowedMethods.push_back("GET");
 	location.index.push_back("index.html");
 

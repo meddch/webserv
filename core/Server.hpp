@@ -17,8 +17,9 @@ public:
 	int                				getMaxBodySize() const;
 	bool               				bodySizeAllowed(int bytes) const;
 	std::vector<std::string>		getMethods() const;
-	std::vector<LocationContext>	getLocations() const;
 	std::string						getRoot() const;
 	int								getId() const;
+	LocationContext 				getLocation(std::string);
+
 
 };

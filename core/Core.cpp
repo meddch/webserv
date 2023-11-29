@@ -1,4 +1,5 @@
 #include "Core.hpp"
+#include "Server.hpp"
 
 bool Core::runing = true;
 
@@ -24,7 +25,8 @@ int	Core::CreateTcpIpListeners(Listen_Addr addr)
 	memset(&serverAddr, 0, sizeof(serverAddr));
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_port = htons(addr.port);
-	serverAddr.sin_addr.s_addr = addr.ip; 
+	serverAddr.sin_addr.s_addr = addr.ip;
+	fcntl(fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
 
 	if (bind(fd, reinterpret_cast<sockaddr *>(&serverAddr), sizeof(serverAddr)) < 0) {
 		close(fd);
@@ -76,10 +78,10 @@ void	Core::run()
 			{
 				if (i >= _nbr_sockets)
 				{
+					std::cout << i << std::endl;
 					if (plfds[i].revents & POLLIN)
 					{
 						handlePl_IN(getClient(i));//request
-						plfds[i].events = POLLOUT;
 					}
 					else if (plfds[i].revents & POLLOUT)
 						handlePl_Out(getClient(i));//re
@@ -89,10 +91,8 @@ void	Core::run()
 				{
 					if (plfds[i].revents & POLLIN)
 					{
-					
-					puts("new client");
-					Add_Client(plfds[i].fd);
-					plfds[i].revents = 0;
+						Add_Client(plfds[i].fd);
+						plfds[i].revents = 0;
 					}
 				}
 				}
@@ -164,11 +164,14 @@ pollfd Core::make_PlFd(int fd, short events)
 void Core::Add_Client(int listenFd)
 {
 	int clientFd = accept(listenFd, NULL, NULL);
-
+	if (clientFd == -1)
+		throw std::runtime_error("accept() failed: " + std::string(strerror(errno)));
+	// fcntl(clientFd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
 	Client client(clientFd, getClientAddress(clientFd), getServerAddress(listenFd));
 	_clients.insert(std::make_pair(clientFd, client));
 
 	plfds.push_back(make_PlFd(clientFd, POLLIN | POLLOUT));
+	std::cout << "Client " << client.getId() << " connected" << std::endl; 
 }
 
 Listen_Addr Core::getServerAddress(int fd)
@@ -202,23 +205,28 @@ Listen_Addr Core::getClientAddress(int fd)
 
 void Core::handlePl_IN(Client& client)
 {
-	ssize_t buffer_size = 100000;
+	ssize_t buffer_size = 4097;
 
-	char buffer[buffer_size];// buffer size?
-	ssize_t bytesRead = recv(client.getFd(), buffer, buffer_size, 0);
-
+	puts("IN");
+	char buffer[buffer_size];
+	ssize_t bytesRead = recv(client.getFd(), buffer, buffer_size - 1, 0);
 	if (bytesRead == -1 || bytesRead == 0)
 	{
 		std::cout << "Client " << client.getId() << " disconnected" << std::endl;
 		client.set_Connect(false);
 		return;
 	}
+	buffer[bytesRead] = '\0';
 
 	try {
 		//if connection true and timeout disconnect
 		std::string Str(buffer, bytesRead);
 		if (!client._requestParsed)
+		{
 			client.getREQ(Str);
+			client.setServer(getServer(client));
+			client._location = client.server.getLocation(client.request.getRequestURI());
+		}
 		if (!client._requestIsReady)
 			client.getBody(Str);
 		if (client._requestIsReady)
@@ -226,10 +234,9 @@ void Core::handlePl_IN(Client& client)
 			client.request.setRequestString(client._body);
 			client.request.parseRequestBody();
 			client.setReady(true);
-			client.setServer(getServer(client));
 			client.handleRequestMethod();
+			client.request.toString();
 			client.response.generateResponse(client.request);
-			// client.request.toString();
 		}
 		// client.reset();
 	}
@@ -383,4 +390,5 @@ Server&	Core::getServer(Client client)
 	}
 	return _servers[0];
 }
+
 
