@@ -6,7 +6,7 @@
 /*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 15:21:09 by azari             #+#    #+#             */
-/*   Updated: 2023/11/29 17:10:11 by mechane          ###   ########.fr       */
+/*   Updated: 2023/11/29 18:46:05 by mechane          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,8 @@ std::string Request::parseURI(std::string uri){
 	std::ostringstream decoded_uri;
 	
 	// checking valid characters
-	if (uri.find("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%") != std::string::npos)
-		throw std::runtime_error("400");
+	// if (uri.find("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%") == std::string::npos)
+	// 	throw std::runtime_error("400");
 	
 	// decoding URI
 	for (std::size_t i = 0; i < uri.length(); i++){
@@ -98,9 +98,12 @@ std::string stringToLowercase(std::string str){
 
 void Request::markExistance(const std::string& headerKey){
 	
-	(headerKey == "content-length") && (_contentLengthExist = true);
-	(headerKey == "transfer-encoding") && (_transferEncodingExist = true);
-	(headerKey == "host") && (_hostExist = true);
+	if (headerKey == "content-length")
+		(_contentLengthExist = true);
+	if (headerKey == "transfer-encoding")
+		(_transferEncodingExist = true);
+	if (headerKey == "Host")
+		_hostExist = true;
 	if (_transferEncodingExist == true && _headers["transfer-encoding"].find("chunked") != std::string::npos)
 		_chunked = true;
 }
@@ -118,6 +121,7 @@ void Request::checkExistance(void){
 void	Request::parseRequestHeaders(){
 
 	std::string headerKey, headerValue;
+	std::cout << "REQ: " << _REQ << std::endl;
 	while (_parsePos < _lastHeaderPos){
 
 		headerKey =_REQ.substr(_parsePos,_REQ.find(":", _parsePos) - _parsePos);
