@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
+/*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/25 12:05:29 by azari             #+#    #+#             */
-/*   Updated: 2023/11/24 23:40:29 by mechane          ###   ########.fr       */
+/*   Updated: 2023/11/28 16:50:15 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,50 +18,38 @@ Response::Response():
 	_status(""),
 	_body(""),
 	_KEEPALIVE(false),
-	_response("")
+	_isfileRead(false),
+	response(""),
+	// _contentLength(""),
+	_headerSent(false)
 {}
 
-// std::string Response::generateResponse(Request& request){
-	
-// 	_version = request._headers["httpVersion"];
-// 	// if (_version.compare("HTTP/1.1"))
-// 	// 	// raise error 505 HTTP Version Not Supported
-// 	// 	// return;
+void Response::initResponseHeaders(){
 
-
-// 	// _status = generateStatusPhrase(200);
-// 	_status = generateStatusPhrase(request.getStatusCode());
-// 	_response.append(_version + _status + "\r\n");
-// 	// find pathfile to put in mime type
-	
-	
-	
-// 	_headers["Content-Type"] = findMimeType(".html");
-// 	_headers["Content-Length"] = _contentLength;
-// 	if (_contentLength.empty())
-// 		_headers["Content-Length"] = "761";
-// 	_headers["Server"] = "Webserv/1.0.0 (mechane-azari)";
-// 	_headers["Date"] = generateResponseDate();
-// 	_headers["Connection"] = isConnectionKeepAlive() ? "keep-alive" : "close"; // to Implement
-// 	for(std::unordered_map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
-// 		_response.append(it->first + ": " + it->second + "\r\n");
-// 	_response.append("\r\n");
-// }
+	response ="HTTP/1.1" + _status + "\r\n";
+	_headers["Content-Type"] = findMimeType(filePath.substr(filePath.find_last_of(".")));
+	if (_contentLength.empty())
+		_headers["Content-Length"] = _contentLength;
+	_headers["Server"] = "Webserv/1.0.0 (mechane-azari)";
+	_headers["Connection"] = isConnectionKeepAlive() ? "keep-alive" : "close"; 
+	for(std::unordered_map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
+		response.append(it->first + ": " + it->second + "\r\n");
+	response.append("\r\n");
+}
 
 bool Response::handleResponseError(Request& request){
 	
 	_version = request._headers["httpVersion"];
 	if (_version.compare("HTTP/1.1"))
-		if (!_statusCode)
-			_statusCode = 505; // HTTP Version Not Supported
-	// _statusCode = 502;
+		setStatusCode(505); // HTTP Version Not Supported code :
+
 	_status = generateStatusPhrase(_statusCode);
 	if (_statusCode && _statusCode != 200){
 
 		std::string errorBody = "<html><head><title>" + _status + "</title></head><body><center><h1>" + _status + "</h1></center><hr><center>Webserv/1.0.0 (mechane-azari)</center></body></html>";
 		_contentLength = std::to_string(errorBody.length());
 		initResponseHeaders();
-		_response.append(errorBody);
+		response.append(errorBody);
 		return true;
 	}
 	return false;
@@ -75,25 +63,26 @@ bool Response::isConnectionKeepAlive(){
 
 
 std::string Response::generateResponse(Request& request){
+
+	if (_statusCode){
 	
-	_statusCode = request.getStatusCode();
-	if (handleResponseError(request)){
-
-		return _response;
+		handleResponseError(request);
+		return response;
 	}
+	std::string uri = request._headers["URI"];
+	_statusCode = request.getStatusCode();
+	_status = generateStatusPhrase(_statusCode);
+
+	filePath = "/Users/azari/Desktop/webserv/samples/index.html";
+	if (uri == "/John_wick.mp4" && uri != "/favicon.ico")
+		filePath = "/Users/azari/goinfre/John_wick.mp4";
+	else if (uri != "/" && uri != "/favicon.ico")
+		filePath = "/Users/azari/Desktop/webserv/samples" + uri;
+	
 	initResponseHeaders();
-	std::string bodyfile = "/Users/azari/Desktop/webserv/samples/index.html";
-	std::ifstream file(bodyfile.c_str());
-	if (file.fail())
-		throw std::runtime_error("Failed to open file: " + bodyfile);
+	
+	if (handleResponseError(request))
+		return response;
 
-	std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-	if (content.empty())
-		throw std::runtime_error("Empty file: " + bodyfile);
-	_body = content;
-	_response.append(_body);
-
-	std::cout << "[\n" << _response << "]" << std::endl;
-	return _response;
+	return response;
 }
-

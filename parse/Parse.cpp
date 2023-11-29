@@ -1,5 +1,9 @@
 #include "Parse.hpp"
-#include "Utils.hpp"
+#include "utils.hpp"
+#include <cstddef>
+#include <cstdlib>
+#include <sys/_types/_ssize_t.h>
+#include <sys/stat.h>
 
 
 // static helpers *******************************************
@@ -39,21 +43,27 @@ bool Parse::isValidLocationKey(std::string key)
 
 Parse::Parse(std::string const &filename)
 {
-    std::ifstream file(filename.c_str());
-	if (file.fail())
-		throw std::runtime_error("Failed to open file: " + filename);
-
-    
 	_config.clear();
     _tokens.clear();
-	std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+
+
+    std::ifstream file(filename.c_str());
+	if (file.fail())
+    	throw std::runtime_error("Could not open file: " + filename);
+
+	std::string line;
+	std::string content;
+	while (std::getline(file, line)) 
+    	content += line;
+
 	if (content.empty())
-		throw std::runtime_error("Empty file: " + filename);
+    	throw std::runtime_error("Empty file: " + filename);
 
 	GetTokens(content);
-
     while(!_tokens.empty())
         ParseServer();
+	if (_config.empty())
+		throw std::runtime_error("Config Error : " + filename);
 }
 
 std::vector<ServerContext> Parse::GetConfig()
@@ -92,7 +102,7 @@ void	Parse::GetTokens(const std::string& content)
 std::string	Parse::Accept(void)
 {
 	if (_tokens.empty())
-		throw std::runtime_error("Error : Psrser::Syntax error!");
+		throw std::runtime_error("Error : Parser::Syntax error!");
 
 	std::string token = _tokens.front();
 	_tokens.pop_front();
@@ -113,7 +123,7 @@ ServerContext Parse::Server(void)
 {
 	ServerContext config;
 
-    config.address.port = DEFAULT_PORT;; 
+    config.address.port = -1; 
 	config.root.clear();
 	config.allowedMethods.clear();
 	config.serverName.clear();
@@ -136,7 +146,7 @@ void	Parse::ParseServer()
 		if (!isValidServerKey(token))
 			throw std::runtime_error("Error : Parser::unknown  key " + token + "!");
 		else if (token == "root")
-			ParseRoot(server);
+			ParseServerRoot(server);
 		else if (token == "listen")
 			ParseAddress(server);
 		else if (token == "server_name")
@@ -152,13 +162,24 @@ void	Parse::ParseServer()
 
 	}
 
-	//check if server name  and port match with the other server
+	if (server.serverName.empty())
+		return;
+	if (server.root.empty())
+		server.root = realpath(".", NULL) + std::string(ROOT);
+
+	if (server.address.port == -1)
+		server.address.port = DEFAULT_PORT;
+
+
+	// Check if server name already exists and port matches
 	std::vector<ServerContext>::iterator it;
 	for (it = _config.begin(); it != _config.end(); it++)
 	{
 		if (it->serverName == server.serverName && it->address.port == server.address.port)
 			throw std::runtime_error("Parser: duplication server name " + it->serverName + "!");
 	}
+
+
 	
 	addDefaultLocation(server);
 	_config.push_back(server);
@@ -210,44 +231,75 @@ void Parse::ParseLocation(ServerContext& server)
 		else if (token == "cgi_path")
 			ParseCgiPath(location);
 		else if (token == "root")
-			ParseRoot(location);
+			ParseLocationRoot(location);
 		else if (token == "upload_path")
 			ParseUploadPath(location);
 	}
 
-	// Add default method (GET) if no allowed method is specified
 	if (location.allowedMethods.empty())
 		location.allowedMethods.push_back("GET");
 
-	// Check for required fields of locaiton context block?
 	server.locations.push_back(location);
 }
 
 
-void Parse::ParseRoot(ServerContext& server)
+void Parse::ParseServerRoot(ServerContext& server)
 {
     
-	server.root = fullPath(ROOT, Accept());
+	std::string path = Accept();
+	if (!server.root.empty())
+	{
+		Skip(";");
+		return;
+	}
+	std::string realroot = realpath(".", NULL) + std::string(ROOT);
+	if (path.substr(0, realroot.size()) == realroot)
+		server.root = path;
+	else
+		server.root = NONE ;
+
 	Skip(";");
 }
 
-void Parse::ParseRoot(LocationContext& location)
+void Parse::ParseLocationRoot(LocationContext& location)
 {
-    
-	location.root = fullPath(ROOT, Accept());
+	std::string path = Accept();
+	if (!location.alias.empty())
+	{
+		Skip(";");
+		return;
+	}
+	std::string realroot = realpath(".", NULL) + std::string(ROOT);
+	if (path.substr(0, realroot.size()) == realroot)
+		location.root = path;
+	else
+		location.root = NONE ;
 	Skip(";");
 }
 
 void Parse::ParseServerName(ServerContext& server)
 {
-	
+	if (!server.serverName.empty())
+	{
+		Accept();
+		Skip(";");
+		return;
+	}
+
     server.serverName = Accept();
 	Skip(";");
 }
 
 void Parse::ParseAddress(ServerContext& server)
 {
-    try
+   if (server.address.port != -1)
+   {
+		Accept();
+		Skip(";");
+		return;
+	}
+	
+	try
     {
 		std::string token = Accept();
 		size_t colonPos = token.find(":");
@@ -275,9 +327,15 @@ void Parse::ParseAddress(ServerContext& server)
 
 void Parse::ParseClientMaxBodySize(ServerContext& server)
 {
-    try
+    if (server.clientMaxBodySize != -1)
+	{
+		Accept();
+		Skip(";");
+		return;
+	}
+	try
     {
-		int value = toInt(Accept());
+		ssize_t value = toInt(Accept());
 		if (value < 0)
 			throw std::runtime_error("negative value");
 
@@ -352,24 +410,14 @@ void Parse::ParseAutoindex(LocationContext& location)
 
 void Parse::ParseAlias(LocationContext& location)
 {
-	try
-    {
-		std::string token = Accept();
-		std::string path = fullPath(ROOT, token);
-
-		// Check if alias is accessible and is a directory
-		struct stat pathInfo;
-		if (stat(path.c_str(), &pathInfo) != 0 || !S_ISDIR(pathInfo.st_mode))
-			throw std::runtime_error("Parser: invalid alias " + token + "!");
-
-
-		location.alias = token; // path or alias?
+	std::string token = Accept();
+	if (!location.alias.empty())
+	{
 		Skip(";");
+		return;
 	}
-	catch (...)
-    {
-        /////
-    }
+	location.alias = token;
+
 }
 
 void Parse::ParseAllowedMethods(LocationContext& location)
@@ -410,7 +458,6 @@ void Parse::ParseRedirect(LocationContext& location)
 
 void Parse::addDefaultLocation(ServerContext& server)
 {
-	// Check if the default location already exist
 	for (std::vector<LocationContext>::iterator it = server.locations.begin(); it != server.locations.end(); it++)
 		if (it->uri == "/")
 			return;
@@ -436,12 +483,21 @@ void	Parse::ParseCgiPath(LocationContext& location)
 void Parse::ParseUploadPath(LocationContext &location)
 {
 	std::string path = Accept();
+	if (!location.uploadPath.empty())
+	{
+		Skip(";");
+		return;
+	}
+	std::string realroot = realpath(".", NULL) + std::string(ROOT);
+	if (path.substr(0, realroot.size()) == realroot)
+		location.uploadPath = path;
+	else
+		location.uploadPath = NONE ;
 
 	struct stat pathInfo;
 	if (stat(path.c_str(), &pathInfo) != 0 || !S_ISDIR(pathInfo.st_mode))
-		throw std::runtime_error("Parser: invalid upload path " + path + "!");
+		location.uploadPath = NONE ;
 
-	location.uploadPath = path;
 	Skip(";");
 }
 

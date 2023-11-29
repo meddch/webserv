@@ -5,8 +5,11 @@
 #include "../response/response.hpp"
 #include "MACS.hpp"
 
+
 class Client
 {
+	public :
+	std::string		_buffer;
 private :
 	int			_fd;
 	int			_id;

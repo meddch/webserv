@@ -206,6 +206,16 @@ void Client::handleRequestMethod(){
 			}
 		}
 	}
+	else if (r._headers["Method"] == GET)
+	{
+		// std::cout << "GET" << std::endl;
+	}
+	else if (r._headers["Method"] == DELETE)
+	{
+		
+	}
+	else
+		response.setStatusCode(501);
 }
 
 bool Client::isMethodAllowed()

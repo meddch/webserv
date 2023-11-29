@@ -6,7 +6,7 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 13:12:03 by azari             #+#    #+#             */
-/*   Updated: 2023/11/13 14:48:14 by azari            ###   ########.fr       */
+/*   Updated: 2023/11/29 12:29:04 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,19 +24,23 @@ class BoundRequest;
 class Request
 {
     private:
-        size_t _StatusCode;
-		bool   _bodyRead;
+        size_t	_StatusCode;
+		bool  	_bodyRead;
+		bool  	_hostExist;
+		bool  	_transferEncodingExist;
+		bool  	_chunked;
+		bool	_contentLengthExist;
 	protected :
-		std::string _requestMethod;
-        std::string _REQ;
-        size_t _lastHeaderPos;
-        size_t _parsePos;
-		ssize_t _contentLength;
+		std::string 	_requestMethod;
+        std::string 	_REQ;
+        size_t 			_lastHeaderPos;
+        size_t 			_parsePos;
+		ssize_t 		_contentLength;
     public:
-        std::vector<BoundRequest> _Boundaries;
+        std::vector<BoundRequest> 			_Boundaries;
         std::map <std::string, std::string> _headers;
-		std::map<std::string, std::string> _formdata;
-		std::string _body;
+		std::map<std::string, std::string> 	_formdata;
+		std::string 						_body;
         Request();
         ~Request();
         void parseRequest();
@@ -44,6 +48,9 @@ class Request
         void parseRequestBody();
 		void parseRequestHeaders();
 		void toString();
+		void markExistance(const std::string&);
+		void checkExistance(void);
+		std::string parseURI(std::string);
 		std::string getRequestMethod() const;
 		std::string getRequestString() const;
 		ssize_t getContentLength() const;

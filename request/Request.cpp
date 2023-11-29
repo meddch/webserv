@@ -6,7 +6,7 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 15:21:09 by azari             #+#    #+#             */
-/*   Updated: 2023/11/16 17:05:49 by azari            ###   ########.fr       */
+/*   Updated: 2023/11/29 12:35:35 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ Request::~Request(){
 	_headers.clear();
 }
 
-Request::Request():  _StatusCode(0), _bodyRead(false), _REQ(""), _lastHeaderPos(0) , _parsePos(0), _contentLength(-1){
+Request::Request():  _StatusCode(0), _bodyRead(false), _hostExist(false), _REQ(""), _lastHeaderPos(0) , _parsePos(0), _contentLength(-1){
 	_Boundaries.clear();
 }
 
@@ -26,26 +26,38 @@ BoundRequest::BoundRequest(std::string boundary, std::string _REQ):  _boundary(b
 	this->_REQ = _REQ;
 }
 
-void	Request::toString(){
-
-
-	std::cout << "\n\%\%\%\%\%\%\%\% Request \%\%\%\%\%\%\%\%\%%\n" << std::endl;
-	std::cout << _REQ << std::endl;
+std::string Request::parseURI(std::string uri){
+	
+	std::ostringstream decoded_uri;
+	
+	// checking valid characters
+	if (uri.find("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%") != std::string::npos)
+		throw std::runtime_error("400");
+	
+	// decoding URI
+	for (std::size_t i = 0; i < uri.length(); i++){
 		
-	puts("\n\%\%\%\%\%\%\%\% Headers \%\%\%\%\%\%\%\%\%%\n");
-    for(std::map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
-        std::cout << "[" << it->first << "]--[" << it->second << "]" << std::endl;
-
-	puts("\n\%\%\%\%\%\%\%\% Body \%\%\%\%\%\%\%\%\%%\n");
-	std::cout << "[" << _body << "]" << std::endl;
-
-	puts("\n\%\%\%\%\%\%\%\% Boundaries \%\%\%\%\%\%\%\%\%%\n");
-	for (std::vector<BoundRequest>::iterator it = _Boundaries.begin(); it != _Boundaries.end(); ++it){
-		for (std::map<std::string, std::string>::const_iterator it2 = it->_headers.begin(); it2 != it->_headers.end(); ++it2){
-			std::cout << "[" << it2->first << "]--[" << it2->second << "]" << std::endl;
-			std::cout << "[" << it->_body << "]\n\n\n" << std::endl;	
+		if (uri[i] == '%' && i + 2 < uri.length() && isxdigit(uri[i + 1]) && isxdigit(uri[i + 2])){
+			decoded_uri << static_cast<char>(std::strtol(uri.substr(i + 1, 2).c_str(), 0, 16));
+			i += 2;
 		}
+		else if (uri[i] == '+')
+			decoded_uri << ' ';
+		else
+			decoded_uri << uri[i];
 	}
+	
+	uri = decoded_uri.str();
+	if (uri.length() == 0 || uri[0] != '/' || uri.length() > 2048)
+		throw std::runtime_error("414");
+	// getting queries
+    if (uri.find("?") != std::string::npos){
+        std::string newURI = uri.substr(0, uri.find("?"));
+        _headers["Queries"] = uri.substr(uri.find("?") + 1, uri.npos);
+        uri = newURI;
+    }
+
+	return uri;
 }
 
 void Request::parseRequestLine(std::string requestLine){
@@ -55,26 +67,52 @@ void Request::parseRequestLine(std::string requestLine){
     int i;
     methods[0] = "GET";    
     methods[1] = "POST";    
-    methods[2] = "DELETE";    
+    methods[2] = "DELETE";
 
     line >> _headers["Method"] >> _headers["URI"] >> _headers["httpVersion"];
 	_requestMethod = _headers["Method"];
+
+	// check implemented methods
     for (i = 0; i < 3; i++)
         if (methods[i] == _headers["Method"])
             break;
-    (i >= 3) && (_StatusCode = 501); // 501: Method Not Implemented
-    if (_headers["URI"].find("?") != std::string::npos){
-        std::string newURI = _headers["URI"].substr(0, _headers["URI"].find("?"));
-        _headers["Queries"] = _headers["URI"].substr(_headers["URI"].find("?") + 1, _headers["URI"].npos);
-        _headers["URI"] = newURI;
-    }
+    if (i >= 3)
+		throw std::runtime_error("501");
+
+	// check http version
+	if (_headers["httpVersion"] != "HTTP/1.1")
+		throw std::runtime_error("505");
+
+	// check URI
+	_headers["URI"] = parseURI(_headers["URI"]);
+
 	_parsePos = _REQ.find("\r\n") + 2;
 	_lastHeaderPos = _REQ.find("\r\n\r\n");
 }
 
+
 std::string stringToLowercase(std::string str){
 	std::transform(str.begin(), str.end(), str.begin(), ::tolower);
 	return str;
+}
+
+void Request::markExistance(const std::string& headerKey){
+	
+	(headerKey == "content-length") && (_contentLengthExist = true);
+	(headerKey == "transfer-encoding") && (_transferEncodingExist = true);
+	(headerKey == "host") && (_hostExist = true);
+	if (_transferEncodingExist == true && _headers["transfer-encoding"].find("chunked") != std::string::npos)
+		_chunked = true;
+}
+
+void Request::checkExistance(void){
+	
+	if (_transferEncodingExist == false && _contentLengthExist == false && _requestMethod == "POST")
+		throw std::runtime_error("400");
+	if (_hostExist == false)
+		throw std::runtime_error("400");
+	if (_transferEncodingExist == true && _chunked == false)
+		throw std::runtime_error("501");
 }
 
 void	Request::parseRequestHeaders(){
@@ -87,7 +125,9 @@ void	Request::parseRequestHeaders(){
 		(headerKey == "content-length") && (_contentLength = std::stoi(headerValue));
 		this->_headers[stringToLowercase(headerKey)] = headerValue;
 	    _parsePos = _REQ.find("\r\n", _parsePos) + 2;
+		markExistance(headerKey);
 	}
+	checkExistance();
 }
 
 
@@ -179,6 +219,7 @@ void Request::setLastHeaderPos(size_t lastHeaderPos){
 }
 
 void Request::setStatusCode(size_t Code){
+	if (_StatusCode == 0)
 	_StatusCode = Code;
 }
 
@@ -203,4 +244,26 @@ Request& Request::operator=(const Request& request){
 	_headers = request._headers;
 	_body = request._body;
 	return *this;
+}
+
+void	Request::toString(){
+
+
+	std::cout << "\n\%\%\%\%\%\%\%\% Request \%\%\%\%\%\%\%\%\%%\n" << std::endl;
+	std::cout << _REQ << std::endl;
+		
+	puts("\n\%\%\%\%\%\%\%\% Headers \%\%\%\%\%\%\%\%\%%\n");
+    for(std::map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
+        std::cout << "[" << it->first << "]--[" << it->second << "]" << std::endl;
+
+	puts("\n\%\%\%\%\%\%\%\% Body \%\%\%\%\%\%\%\%\%%\n");
+	std::cout << "[" << _body << "]" << std::endl;
+
+	puts("\n\%\%\%\%\%\%\%\% Boundaries \%\%\%\%\%\%\%\%\%%\n");
+	for (std::vector<BoundRequest>::iterator it = _Boundaries.begin(); it != _Boundaries.end(); ++it){
+		for (std::map<std::string, std::string>::const_iterator it2 = it->_headers.begin(); it2 != it->_headers.end(); ++it2){
+			std::cout << "[" << it2->first << "]--[" << it2->second << "]" << std::endl;
+			std::cout << "[" << it->_body << "]\n\n\n" << std::endl;	
+		}
+	}
 }

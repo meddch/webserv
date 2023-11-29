@@ -18,8 +18,6 @@ in_addr_t   	toIPv4(std::string str);
 std::string 	toIPString(in_addr_t ip);
 bool			isAllDigit(std::string str);
 
-std::string		fullPath(std::string root, std::string path);
-std::string		getExtension(std::string path);
 Listen_Addr		getAddressFromFd(int fd);
 in_addr_t 		toIpNum(std::string str);
 

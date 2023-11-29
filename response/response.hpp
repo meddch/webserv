@@ -6,7 +6,7 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/09 15:01:48 by azari             #+#    #+#             */
-/*   Updated: 2023/11/17 15:27:51 by azari            ###   ########.fr       */
+/*   Updated: 2023/11/28 13:34:25 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,21 +24,31 @@ class Response
 		std::string _status;
 		std::string _body;
 		std::string _reasonPhrase;
-		std::string _contentLength;
 		bool		_KEEPALIVE;
+		bool		_isCGI;
+		bool		_isAutoIndex;
+		bool		_isDirectory;
+		bool		_isFile;
+		bool		_isMethodAllowed;
+		bool 		_isfileRead;
 		std::unordered_map<std::string, std::string> _headers;
 	public:
+		std::string _contentLength;
 
 		Response();
-		std::string _response;
-		std::string generateResponse(Request& request);
-		std::string getResponse() const;
-		std::string findMimeType(std::string extention);
-		std::string generateStatusPhrase(size_t status);
+		std::string 	response;
+		std::string 	filePath;
+		bool 			_headerSent;
+		int				fd;
+		std::string generateResponse(Request&);
+		std::string findMimeType(std::string);
+		std::string generateStatusPhrase(size_t);
 		std::string generateResponseDate();
-		bool handleResponseError(Request& request);
+		bool handleResponseError(Request&);
 		void initResponseHeaders();
 		bool isConnectionKeepAlive();
-		void setStatusCode(size_t statusCode);
+		void setStatusCode(size_t);
+		bool isfileRead();
 };
+
 

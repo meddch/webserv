@@ -29,7 +29,8 @@ typedef std::vector<std::string> stringVec;
 //Constants
 #define DEFAULT_PORT	80
 #define DEFAULT_INDEX	"index.html"
-#define ROOT			"Home"
+#define ROOT			"/Samples"
+#define NONE			"none"
 
 
 //Structs
@@ -114,7 +115,7 @@ class Parse
 		void ParseServer(void);
 		void ParseLocation(ServerContext& server);
 
-		void ParseRoot(ServerContext& server);
+		void ParseServerRoot(ServerContext& server);
 		void ParseServerName(ServerContext& server);
 		void ParseAddress(ServerContext& server);
 		void ParseClientMaxBodySize(ServerContext& server);
@@ -123,7 +124,7 @@ class Parse
 
 		
 		void ParseUri(LocationContext& location);
-		void ParseRoot(LocationContext& location);
+		void ParseLocationRoot(LocationContext& location);
 		void ParseAutoindex(LocationContext& location);
 		void ParseAlias(LocationContext& location);
 		void ParseAllowedMethods(LocationContext& location);

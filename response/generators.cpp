@@ -6,7 +6,7 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/13 15:01:25 by azari             #+#    #+#             */
-/*   Updated: 2023/11/13 15:07:55 by azari            ###   ########.fr       */
+/*   Updated: 2023/11/27 16:33:49 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -792,4 +792,15 @@ std::string Response::findMimeType(std::string extention)
 
 std::string Response::generateResponseDate(){
 	return "00:00:00";
+}
+
+
+void Response::setStatusCode(size_t code){
+
+	if (!_statusCode)
+		_statusCode = code;
+}
+
+bool Response::isfileRead(){
+	return _isfileRead;
 }

@@ -1,4 +1,4 @@
-#include "Utils.hpp"
+#include "utils.hpp"
 
 
 std::string toString(int value)
@@ -79,32 +79,6 @@ in_addr_t toIPv4(std::string str)
 }
 
 
-std::string fullPath(std::string root, std::string path)
-{
-
-	try
-    {
-		// Remove '/' from root and path
-		root = root.at(root.size() - 1) == '/' ? root.substr(0, root.size() - 1) : root;
-		path = path.at(0) == '/' ? path.substr(1) : path;
-	}
-	catch (...)
-    {
-		// Protect against if strings are empty or index out of bound
-		return "";
-	}
-	return root + "/" + path;
-}
-
-std::string getExtension(std::string path)
-{
-	size_t pos = path.find_last_of('.');
-
-	if (pos != std::string::npos && pos != 0)
-		return path.substr(pos);
-
-	return "";
-}
 
 Listen_Addr getAddressFromFd(int fd)
 {

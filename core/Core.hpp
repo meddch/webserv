@@ -1,13 +1,13 @@
 #pragma once
 
-#include "../parse/Utils.hpp"
+#include "../parse/utils.hpp"
 #include "Client.hpp"
 #include "Server.hpp"
 #include <poll.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "../request/Request.hpp"
-
+#include <fcntl.h>
 
 
 class Core
