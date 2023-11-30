@@ -52,7 +52,7 @@ public :
 	void 		handleRequestMethod(Request&);
 	bool 		isMethodAllowed();
 	void 		getLocations(Server&);
-	void 		handleGetRequest();
+	void 		handleGetRequest(Response&);
 	void 		handlePostRequest();
 	void 		handleDeleteRequest();
 

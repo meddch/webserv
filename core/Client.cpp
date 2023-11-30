@@ -183,23 +183,23 @@ void	Client::createUploadFile(std::string filename, std::string content)
 	// _errorCode = 201;
 }
 
-int Client::handleGetRequest(Response& response)
+void Client::handleGetRequest(Response& response)
 {
-
 	Request r = this->request;
 	std::string fullPath = server.getRoot() + request.getRequestURI();
 	std::cout << "path: " << fullPath << std::endl;
 
 	int resourceType = getResourceType(fullPath);
-	if (resourceType == ISFILE)
-			return CONTINUE; // is CGI ? mechane el CGI else get file
-
-	else if (resourceType == ISDIR){
-
+    if (resourceType == ISNOTEXIST)
+		throw std::runtime_error("404");
+	if (resourceType == ISFILE){
+		response.filePath = fullPath;
 	}
-	else
-		throw std::runtime_error("500");
+	else if (resourceType == ISDIR){
+		
+	}
 }
+
 
 void Client::handlePostRequest(){
 	
