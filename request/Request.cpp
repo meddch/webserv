@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
+/*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 15:21:09 by azari             #+#    #+#             */
-/*   Updated: 2023/11/30 10:12:21 by mechane          ###   ########.fr       */
+/*   Updated: 2023/11/30 12:51:24 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,14 +42,13 @@ std::string Request::parseURI(std::string uri){
 	
 	std::ostringstream decoded_uri;
 
-	// checking valid characters
 	if (hasInvalidCharacter(uri))
 		throw std::runtime_error("400");
-	
-	// decoding URI
-	for (std::size_t i = 0; i < uri.length(); i++){
+	for (std::size_t i = 0; i < uri.length(); i++)
+	{
 		
-		if (uri[i] == '%' && i + 2 < uri.length() && isxdigit(uri[i + 1]) && isxdigit(uri[i + 2])){
+		if (uri[i] == '%' && i + 2 < uri.length() && isxdigit(uri[i + 1]) && isxdigit(uri[i + 2]))
+		{
 			decoded_uri << static_cast<char>(std::strtol(uri.substr(i + 1, 2).c_str(), 0, 16));
 			i += 2;
 		}
@@ -63,7 +62,6 @@ std::string Request::parseURI(std::string uri){
 	uri = decoded_uri.str();
 	if (uri.length() == 0 || uri[0] != '/' || uri.length() > 2048)
 		throw std::runtime_error("414");
-	// getting queries
     if (uri.find("?") != std::string::npos){
         std::string newURI = uri.substr(0, uri.find("?"));
         _headers["Queries"] = uri.substr(uri.find("?") + 1, uri.npos);
@@ -85,20 +83,15 @@ void Request::parseRequestLine(std::string requestLine){
     line >> _headers["Method"] >> _headers["URI"] >> _headers["httpVersion"];
 	_requestMethod = _headers["Method"];
 
-	// check implemented methods
     for (i = 0; i < 3; i++)
         if (methods[i] == _headers["Method"])
             break;
     if (i >= 3)
 		throw std::runtime_error("501");
-
-	// check http version
 	if (_headers["httpVersion"] != "HTTP/1.1")
 		throw std::runtime_error("505");
 
-	// check URI
 	_headers["URI"] = parseURI(_headers["URI"]);
-
 	_parsePos = _REQ.find("\r\n") + 2;
 	_lastHeaderPos = _REQ.find("\r\n\r\n");
 }
@@ -192,6 +185,16 @@ void    Request::parseRequestBody()
 			_body += chunk_data;
 		}
 	}
+}
+
+void Request::isMethodAllowed(std::vector<std::string> methods){
+	
+	for (std::vector<std::string>::iterator it = methods.begin(); it != methods.end(); it++)
+	{
+		if (*it == _requestMethod)
+			return ;
+	}
+	throw std::runtime_error("405");
 }
 
 

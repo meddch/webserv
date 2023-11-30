@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
+/*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 13:12:03 by azari             #+#    #+#             */
-/*   Updated: 2023/11/29 17:07:35 by mechane          ###   ########.fr       */
+/*   Updated: 2023/11/30 12:49:14 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,7 @@ class Request
 		void setRequestString(std::string requestString);
 		void setContentLength(size_t contentLength);
 		void setLastHeaderPos(size_t lastHeaderPos);
+		void isMethodAllowed(std::vector<std::string>);
 		void setStatusCode(size_t Code);
 		bool getBodyRead() const;
 		void setBodyRead(bool bodyRead);
