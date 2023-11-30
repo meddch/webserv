@@ -37,4 +37,5 @@ public :
 	Listen_Addr 			getClientAddress(int );
 	void 					handlePl_Out(Client& );
 	Server&					getServer(Client);
+	void 					setPlfdEvents(int, short);
 };

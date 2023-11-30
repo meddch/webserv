@@ -4,6 +4,7 @@
 #include <iostream>
 #include <netinet/in.h>
 #include <sys/_types/_ssize_t.h>
+#include <sys/poll.h>
 
 bool Core::runing = true;
 
@@ -174,9 +175,9 @@ void Core::Add_Client(int listenFd)
 	Client client(clientFd, getClientAddress(clientFd), getServerAddress(listenFd));
 	_clients.insert(std::make_pair(clientFd, client));
 
-	pollfd pfd = make_PlFd(clientFd, POLLIN | POLLOUT);
+	pollfd pfd = make_PlFd(clientFd, POLLIN);
 	plfds.push_back(pfd);
-	std::cout << "Client " << client.getId() << " connected" << std::endl; 
+	
 }
 
 Listen_Addr Core::getServerAddress(int fd)
@@ -228,7 +229,6 @@ void Core::handlePl_IN(Client& client)
 		if (!client._requestParsed)
 		{
 			client.getREQ(Str);
-			std::cout << "Client " << client.getId() << " request: " << std::endl;
 			client.server = getServer(client);
 			client._config_location = client.server.getLocation(client.request.getRequestURI());
 		}
@@ -241,12 +241,13 @@ void Core::handlePl_IN(Client& client)
 			client.handleRequestMethod();
 			client.response.generateResponse(client.request);
 			client.setReady(true);
-			plfds[client.getFd()].events = POLLOUT;
+			setPlfdEvents(client.getFd(), POLLOUT);
 		}
 	}
 	catch (const std::exception& e)
 	{
 		std::cerr << e.what();
+		std::cerr << "Error: " << std::endl;
 	}
 }
 
@@ -269,8 +270,7 @@ void Core::handlePl_Out(Client& client)
 			client.set_Connect(false);
 			return;
 		}
-		client.set_Connect(false);
-		
+		setPlfdEvents(client.getFd(), POLLIN);
 		// ssize_t bytesSent = 0;
 		// if (client.response._headerSent == false)
 		// {
@@ -408,3 +408,15 @@ Server&	Core::getServer(Client client)
 }
 
 
+
+void Core::setPlfdEvents(int fd, short events)
+{
+	for (size_t i = 0; i < plfds.size(); i++)
+	{
+		if (plfds[i].fd == fd)
+		{
+			plfds[i].events = events;
+			return;
+		}
+	}
+}
