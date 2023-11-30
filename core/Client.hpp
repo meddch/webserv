@@ -52,5 +52,8 @@ public :
 	void 		handleRequestMethod();
 	bool 		isMethodAllowed();
 	void 		getLocations(Server&);
+	void 		handleGetRequest();
+	void 		handlePostRequest();
+	void 		handleDeleteRequest();
 
 };

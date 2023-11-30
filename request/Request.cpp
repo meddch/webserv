@@ -6,7 +6,7 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 15:21:09 by azari             #+#    #+#             */
-/*   Updated: 2023/11/30 12:51:24 by azari            ###   ########.fr       */
+/*   Updated: 2023/11/30 14:25:40 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,19 @@ Request::~Request(){
 	_headers.clear();
 }
 
-Request::Request():  _StatusCode(0), _bodyRead(false), _hostExist(false), _REQ(""), _lastHeaderPos(0) , _parsePos(0), _contentLength(-1){
+Request::Request():
+
+	_StatusCode(0),
+	_bodyRead(false),
+	_hostExist(false),
+	_transferEncodingExist(false),
+	_chunked(false),
+	_contentLengthExist(false),
+	_REQ(""),
+	_lastHeaderPos(0),
+	_parsePos(0),
+	_contentLength(-1)
+{
 	_Boundaries.clear();
 }
 
@@ -106,7 +118,7 @@ void Request::markExistance(const std::string& headerKey){
 	if (headerKey == "content-length" || headerKey == "Content-Length")
 		(_contentLengthExist = true);
 	if (headerKey == "transfer-encoding" || headerKey == "Transfer-Encoding")
-		(_transferEncodingExist = true);
+		_transferEncodingExist = true;
 	if (headerKey == "Host" || headerKey == "host")
 		_hostExist = true;
 	if (_transferEncodingExist == true && _headers["transfer-encoding"].find("chunked") != std::string::npos)
@@ -128,7 +140,6 @@ void Request::checkExistance(void){
 void	Request::parseRequestHeaders(){
 
 	std::string headerKey, headerValue;
-	std::cout << "REQ: " << _REQ << std::endl;
 	while (_parsePos < _lastHeaderPos){
 
 		headerKey =_REQ.substr(_parsePos,_REQ.find(":", _parsePos) - _parsePos);
