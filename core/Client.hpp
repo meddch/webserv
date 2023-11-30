@@ -49,7 +49,7 @@ public :
 	void		setServer(Server&);
 	void		matchLocation(std::vector<LocationContext>);
 	void		createUploadFile(std::string filename, std::string content);
-	void 		handleRequestMethod();
+	void 		handleRequestMethod(Request&);
 	bool 		isMethodAllowed();
 	void 		getLocations(Server&);
 	void 		handleGetRequest();

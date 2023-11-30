@@ -239,7 +239,7 @@ void Core::handlePl_IN(Client& client)
 		{
 			client.request.setRequestString(client._body);
 			client.request.parseRequestBody();
-			client.handleRequestMethod();
+			client.handleRequestMethod(client.response);
 			client.response.generateResponse(client.request);
 			client.setReady(true);
 			setPlfdEvents(client.getFd(), POLLOUT);

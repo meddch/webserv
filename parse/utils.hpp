@@ -8,6 +8,9 @@
 #include <fstream>
 #include <sstream>	
 #include <string>
+#define ISFILE 1
+#define ISDIR 2
+#define ISNOTEXIST 3
 
 
 #include "Parse.hpp"
@@ -20,4 +23,5 @@ bool			isAllDigit(std::string str);
 
 Listen_Addr		getAddressFromFd(int fd);
 in_addr_t 		toIpNum(std::string str);
+int 			getResourceType(std::string path);
 
