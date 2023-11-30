@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
+/*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 15:21:09 by azari             #+#    #+#             */
-/*   Updated: 2023/11/29 20:59:46 by azari            ###   ########.fr       */
+/*   Updated: 2023/11/30 10:12:21 by mechane          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,8 +43,8 @@ std::string Request::parseURI(std::string uri){
 	std::ostringstream decoded_uri;
 
 	// checking valid characters
-	// if (hasInvalidCharacter(uri))
-	// 	throw std::runtime_error("400");
+	if (hasInvalidCharacter(uri))
+		throw std::runtime_error("400");
 	
 	// decoding URI
 	for (std::size_t i = 0; i < uri.length(); i++){

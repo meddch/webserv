@@ -226,7 +226,8 @@ void Core::handlePl_IN(Client& client)
 		if (!client._requestParsed)
 		{
 			client.getREQ(Str);
-			client._location = getServer(client).getLocation(client.request.getRequestURI());
+			client.server = getServer(client);
+			client._config_location = client.server.getLocation(client.request.getRequestURI());
 		}
 		if (!client._requestIsReady)
 			client.getBody(Str);
@@ -240,7 +241,7 @@ void Core::handlePl_IN(Client& client)
 			plfds[client.getId() + _nbr_sockets - 1].events = POLLOUT;
 
 		}
-		// client.reset();
+		client.reset();
 	}
 	catch (const std::exception& e)
 	{
@@ -268,7 +269,7 @@ void Core::handlePl_Out(Client& client)
 			return;
 		}
 		close(client.getFd());
-
+		client.set_Connect(false);
 		
 		// ssize_t bytesSent = 0;
 		// if (client.response._headerSent == false)

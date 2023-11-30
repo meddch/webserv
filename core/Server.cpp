@@ -68,5 +68,3 @@ LocationContext &Server::getLocation(std::string uri)
 	return getLocation(uri);
 }
 
-
-

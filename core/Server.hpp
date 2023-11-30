@@ -5,9 +5,9 @@
 class Server
 {
 private:
-	ServerContext _config;
 	int 			_id;
 public:
+	ServerContext _config;
 	Server(const ServerContext config);
 	Server();
 

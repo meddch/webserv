@@ -226,34 +226,5 @@ bool Client::isMethodAllowed()
 	return true;
 }
 
-void Client::matchLocation(std::vector<LocationContext> locations)
-{
-	bool FULL_MATCH = false;
-	Request r = this->request;
 
-	std::string URI = r._headers["URI"];
-	for (std::vector<LocationContext>::iterator it = locations.begin(); it != locations.end(); ++it)
-	{
-		if (!it->uri.compare(URI)){
-				FULL_MATCH = true;
-				_location = *it;
-				break;
-		}
-	}
-	if (!FULL_MATCH)
-	{
-		for (std::vector<LocationContext>::iterator it = locations.begin(); it != locations.end(); ++it)
-		{
-			if (!it->uri.compare(URI.substr(URI.rfind("."), URI.length()))){
-				FULL_MATCH = true;
-				_location = *it;
-				break;
-			}
-		}
-		if (!FULL_MATCH){
-
-		}
-	}
-
-}
 
