@@ -75,9 +75,9 @@ bool Client::isReady() const
 }
 
 
-void Client::getREQ(std::string& buffer)
+void Client::getREQ(std::string buffer)
 {
-	_httpBuffer.append(buffer);
+	_httpBuffer = buffer;
 	if (_httpBuffer.find("\r\n\r\n") == std::string::npos)
 		return;
 
@@ -93,9 +93,6 @@ void Client::getREQ(std::string& buffer)
 		_requestIsReady = true;
 		return; // success exit
 	}
-
-	buffer = buffer.substr(buffer.find("\r\n\r\n") + 4);
-
 	// Check Content-Length and set expecting bytes
 	if (request.getContentLength() != -1)
 	{
@@ -111,14 +108,13 @@ void Client::getREQ(std::string& buffer)
 	}
 }
 
-void Client::getBody(std::string& buffer)
+void Client::getBody(std::string buffer)
 {
 	if (_bytesExpected > server.getMaxBodySize())
 		throw std::runtime_error("413");
 	
 	if (_recvChunk)
 	{
-		// Handle chunked encoding
 		_chunkedBuffer.append(buffer);
 		while (true)
 		{
@@ -141,8 +137,8 @@ void Client::getBody(std::string& buffer)
 				throw std::runtime_error("413");
 		}
 	}
-	else {
-		// Handle multipart/form-data
+	else 
+	{
 		_body.append(buffer);
 		_bytesRecved += buffer.length();
 		if (_bytesRecved >= _bytesExpected)

@@ -43,9 +43,9 @@ public :
 	bool		Timeout() const;
 	void		setReady(bool);
 	bool		isReady() const;
-	void 		getREQ(std::string&);
+	void 		getREQ(std::string);
 	void 		reset();
-	void 		getBody(std::string&);
+	void 		getBody(std::string);
 	void		setServer(Server&);
 	void		matchLocation(std::vector<LocationContext>);
 	void		createUploadFile(std::string filename, std::string content);

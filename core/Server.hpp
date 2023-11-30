@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../parse/utils.hpp"
+#include <string>
 
 class Server
 {
@@ -20,6 +21,6 @@ public:
 	std::string						getRoot() const;
 	int								getId() const;
 	LocationContext 				&getLocation(std::string);
-
+	// void							handlerequest(Request &request, Client &client);
 
 };

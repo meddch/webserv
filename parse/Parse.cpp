@@ -250,12 +250,7 @@ void Parse::ParseServerRoot(ServerContext& server)
 		Skip(";");
 		return;
 	}
-	std::string realroot = realpath(".", NULL) + std::string(ROOT);
-	if (path.substr(0, realroot.size()) == realroot)
-		server.root = path;
-	else
-		server.root = NONE ;
-
+	server.root = path;
 	Skip(";");
 }
 
@@ -267,11 +262,7 @@ void Parse::ParseLocationRoot(LocationContext& location)
 		Skip(";");
 		return;
 	}
-	std::string realroot = realpath(".", NULL) + std::string(ROOT);
-	if (path.substr(0, realroot.size()) == realroot)
-		location.root = path;
-	else
-		location.root = NONE ;
+	location.root = path;
 	Skip(";");
 }
 

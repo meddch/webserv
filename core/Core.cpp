@@ -1,5 +1,6 @@
 #include "Core.hpp"
 #include "Server.hpp"
+#include <cstdio>
 #include <iostream>
 #include <netinet/in.h>
 #include <sys/_types/_ssize_t.h>
@@ -127,8 +128,9 @@ void Core::ClearInvalidCnx(void)
 	for (it = _clients.begin(); it != _clients.end(); it++)
 	{
 		Client client = it->second;
-		if (!client.is_Connected() || client.Timeout())
+		if (!client.is_Connected())
 		{
+			std::cout << "Client " << client.getId() << " disconnected" << std::endl;
 			removeIterators.push_back(it);
 			Erase_PlFd(client.getFd());
 			close(client.getFd());
@@ -172,7 +174,7 @@ void Core::Add_Client(int listenFd)
 	Client client(clientFd, getClientAddress(clientFd), getServerAddress(listenFd));
 	_clients.insert(std::make_pair(clientFd, client));
 
-	pollfd pfd = make_PlFd(clientFd, POLLIN);
+	pollfd pfd = make_PlFd(clientFd, POLLIN | POLLOUT);
 	plfds.push_back(pfd);
 	std::cout << "Client " << client.getId() << " connected" << std::endl; 
 }
@@ -210,22 +212,23 @@ void Core::handlePl_IN(Client& client)
 {
 	ssize_t buffer_size = 4097;
 
-	char buffer[buffer_size];
-	ssize_t bytesRead = recv(client.getFd(), buffer, buffer_size - 1, 0);
-	if (bytesRead == -1)
-	{
-		std::cout << "Client " << client.getId() << " disconnected" << std::endl;
-		client.set_Connect(false);
-		return;
-	}
-	buffer[bytesRead] = '\0';
-
 	try {
+		char buffer[buffer_size];
+		ssize_t bytesRead = recv(client.getFd(), buffer, buffer_size - 1, 0);
+		if (bytesRead == -1 || bytesRead == 0)
+		{
+			std::cout << "Client " << client.getId() << " disconnected" << std::endl;
+			client.set_Connect(false);
+			return;
+		}
+		buffer[bytesRead] = '\0';
+		
 		//if connection true and timeout disconnect
 		std::string Str(buffer, bytesRead);
 		if (!client._requestParsed)
 		{
 			client.getREQ(Str);
+			std::cout << "Client " << client.getId() << " request: " << std::endl;
 			client.server = getServer(client);
 			client._config_location = client.server.getLocation(client.request.getRequestURI());
 		}
@@ -238,10 +241,8 @@ void Core::handlePl_IN(Client& client)
 			client.handleRequestMethod();
 			client.response.generateResponse(client.request);
 			client.setReady(true);
-			plfds[client.getId() + _nbr_sockets - 1].events = POLLOUT;
-
+			plfds[client.getFd()].events = POLLOUT;
 		}
-		client.reset();
 	}
 	catch (const std::exception& e)
 	{
@@ -268,7 +269,6 @@ void Core::handlePl_Out(Client& client)
 			client.set_Connect(false);
 			return;
 		}
-		close(client.getFd());
 		client.set_Connect(false);
 		
 		// ssize_t bytesSent = 0;

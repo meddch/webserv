@@ -6,7 +6,7 @@
 /*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/25 12:05:29 by azari             #+#    #+#             */
-/*   Updated: 2023/11/30 10:09:17 by mechane          ###   ########.fr       */
+/*   Updated: 2023/11/30 11:21:46 by mechane          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ Response::Response():
 void Response::initResponseHeaders(){
 
 	response ="HTTP/1.1" + _status + "\r\n";
-	_headers["Content-Type"] = findMimeType(filePath.substr(filePath.find_last_of(".")));
+	// _headers["Content-Type"] = findMimeType(filePath.substr(filePath.find_last_of(".")));
 	if (_contentLength.empty())
 		_headers["Content-Length"] = _contentLength;
 	_headers["Server"] = "Webserv/1.0.0 (mechane-azari)";
