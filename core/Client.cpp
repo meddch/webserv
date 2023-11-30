@@ -190,6 +190,7 @@ void Client::handleGetRequest()
 	std::string fullPath = server.getRoot() + request.getRequestURI();
 	std::cout << "path: " << fullPath << std::endl;
 
+
 	std::ifstream file(fullPath.c_str());
 	if (!file.is_open())
 	{
@@ -205,20 +206,23 @@ void Client::handleGetRequest()
 void Client::handlePostRequest(){
 	
 	Request r = this->request;
-	std::string path = request.getRequestURI();
-	if (path == "/")
-		path = "/index.html";
-	std::string fullPath = server.getRoot() + path;
-	std::ifstream file(fullPath.c_str());
-	if (!file.is_open())
+	if (r._headers["Method"] == POST)
 	{
-		std::cout << "Error opening file" << std::endl;
-		// _errorCode = 404;
-		return;
+		if (r._headers["content-type"].find("multipart/form-data") != std::string::npos)
+		{
+			for (std::vector<BoundRequest>::iterator it = r._Boundaries.begin(); it != r._Boundaries.end(); ++it)
+			{
+				if (it->_headers["content-disposition"].find("filename=") != std::string::npos)
+				{
+					std::string filename = "/tmp/" + it->_headers["content-disposition"].substr(it->_headers["content-disposition"].find("filename=") + 10, it->_headers["content-disposition"].rfind('\"', std::string::npos) - (it->_headers["content-disposition"].find("filename=") + 10));
+					std::string content = it->_body;
+					createUploadFile(filename, content);
+				}
+				else
+					createUploadFile("RandomFile", it->_body);
+			}
+		}
 	}
-	std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-	file.close();
-	// _errorCode = 200;
 }
 
 void Client::handleDeleteRequest(){
