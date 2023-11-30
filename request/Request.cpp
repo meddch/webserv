@@ -6,7 +6,7 @@
 /*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 15:21:09 by azari             #+#    #+#             */
-/*   Updated: 2023/11/30 10:12:21 by mechane          ###   ########.fr       */
+/*   Updated: 2023/11/30 18:52:44 by mechane          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,10 +16,21 @@ Request::~Request(){
 	_headers.clear();
 }
 
-Request::Request():  _StatusCode(0), _bodyRead(false), _hostExist(false), _REQ(""), _lastHeaderPos(0) , _parsePos(0), _contentLength(-1){
+Request::Request():
+
+	_StatusCode(0),
+	_bodyRead(false),
+	_hostExist(false),
+	_transferEncodingExist(false),
+	_chunked(false),
+	_contentLengthExist(false),
+	_REQ(""),
+	_lastHeaderPos(0),
+	_parsePos(0),
+	_contentLength(-1)
+{
 	_Boundaries.clear();
 }
-
 
 BoundRequest::BoundRequest(std::string boundary, std::string _REQ):  _boundary(boundary), _boundaryEndPos(0), _boundaryNumber(0){
 	_headers.clear();
@@ -289,3 +300,4 @@ void	Request::toString(){
 		}
 	}
 }
+

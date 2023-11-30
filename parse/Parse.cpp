@@ -10,7 +10,7 @@
 
 std::string ServerKeys[] = {"root", "server_name", "listen", "client_max_body_size", "error_page", "location", "upload"};
 
-std::string LocationKeys[] = {"autoindex", "alias", "allowed_methods", "index", "return", "root", "cgi_path", "upload_path"};
+std::string LocationKeys[] = {"autoindex", "alias", "allowed_methods", "index", "return", "root"};
 
 
 void  Parse::C_validServerKeys()
@@ -226,12 +226,8 @@ void Parse::ParseLocation(ServerContext& server)
 			ParseIndex(location);
 		else if (token == "return")
             ParseRedirect(location);
-		else if (token == "cgi_path")
-			ParseCgiPath(location);
 		else if (token == "root")
 			ParseLocationRoot(location);
-		else if (token == "upload_path")
-			ParseUploadPath(location);
 	}
 
 	if (location.allowedMethods.empty())
@@ -462,32 +458,6 @@ void Parse::addDefaultLocation(ServerContext& server)
 
 
 
-void	Parse::ParseCgiPath(LocationContext& location)
-{
-	std::string path = Accept();
-	location.cgiPath = path;
-	Skip(";");
-}
 
 
-void Parse::ParseUploadPath(LocationContext &location)
-{
-	std::string path = Accept();
-	if (!location.uploadPath.empty())
-	{
-		Skip(";");
-		return;
-	}
-	std::string realroot = realpath(".", NULL) + std::string(ROOT);
-	if (path.substr(0, realroot.size()) == realroot)
-		location.uploadPath = path;
-	else
-		location.uploadPath = NONE ;
-
-	struct stat pathInfo;
-	if (stat(path.c_str(), &pathInfo) != 0 || !S_ISDIR(pathInfo.st_mode))
-		location.uploadPath = NONE ;
-
-	Skip(";");
-}
 

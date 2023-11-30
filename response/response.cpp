@@ -6,7 +6,7 @@
 /*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/25 12:05:29 by azari             #+#    #+#             */
-/*   Updated: 2023/11/30 11:21:46 by mechane          ###   ########.fr       */
+/*   Updated: 2023/11/30 18:38:10 by mechane          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,11 +27,12 @@ Response::Response():
 void Response::initResponseHeaders(){
 
 	response ="HTTP/1.1" + _status + "\r\n";
-	// _headers["Content-Type"] = findMimeType(filePath.substr(filePath.find_last_of(".")));
-	if (_contentLength.empty())
-		_headers["Content-Length"] = _contentLength;
-	_headers["Server"] = "Webserv/1.0.0 (mechane-azari)";
-	_headers["Connection"] = isConnectionKeepAlive() ? "keep-alive" : "close"; 
+	_headers["Accept-Ranges"] = "bytes";
+	_headers["Content-Length"] = _contentLength;
+	_headers["Content-Type"] = "video/mp4";
+	// _headers["Server"] = "Webserv/1.0.0 (mechane-azari)";
+	// _headers["Connection"] = isConnectionKeepAlive() ? "keep-alive" : "close";
+	// _headers["Connection"] = "keep-alive";
 	for(std::unordered_map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
 		response.append(it->first + ": " + it->second + "\r\n");
 	response.append("\r\n");
@@ -64,25 +65,16 @@ bool Response::isConnectionKeepAlive(){
 
 std::string Response::generateResponse(Request& request){
 
-	if (_statusCode){
+	// if (_statusCode){
 	
-		handleResponseError(request);
-		return response;
-	}
+	// 	handleResponseError(request);
+	// 	return response;
+	// }
 	std::string uri = request._headers["URI"];
 	_statusCode = request.getStatusCode();
 	_status = generateStatusPhrase(_statusCode);
 
-	filePath = "/Users/azari/Desktop/webserv/samples/index.html";
-	if (uri == "/John_wick.mp4" && uri != "/favicon.ico")
-		filePath = "/Users/azari/goinfre/John_wick.mp4";
-	else if (uri != "/" && uri != "/favicon.ico")
-		filePath = "/Users/azari/Desktop/webserv/samples" + uri;
-	
 	initResponseHeaders();
-	
-	if (handleResponseError(request))
-		return response;
 
 	return response;
 }
@@ -109,3 +101,5 @@ std::string generate_auto_index(std::string path)
 	return auto_index;
 
 }
+
+

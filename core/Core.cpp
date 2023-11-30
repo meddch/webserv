@@ -1,10 +1,19 @@
 #include "Core.hpp"
 #include "Server.hpp"
+#include <cstddef>
 #include <cstdio>
 #include <iostream>
 #include <netinet/in.h>
+#include <sys/_types/_off_t.h>
 #include <sys/_types/_ssize_t.h>
+#include <sys/errno.h>
 #include <sys/poll.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/uio.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 bool Core::runing = true;
 
@@ -163,7 +172,7 @@ pollfd Core::make_PlFd(int fd, short events)
 	pfd.fd = fd;
 	pfd.events = events;
 	pfd.revents = 0;
-	fcntl(fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
+	// fcntl(fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
 	return pfd;
 }
 
@@ -223,9 +232,13 @@ void Core::handlePl_IN(Client& client)
 			return;
 		}
 		buffer[bytesRead] = '\0';
-		
 		//if connection true and timeout disconnect
 		std::string Str(buffer, bytesRead);
+		if (Str.find("GET /favicon.ico HTTP/1.1") != std::string::npos)
+			{
+				client.set_Connect(false);
+				return;
+			}
 		if (!client._requestParsed)
 		{
 			client.getREQ(Str);
@@ -239,7 +252,6 @@ void Core::handlePl_IN(Client& client)
 			client.request.setRequestString(client._body);
 			client.request.parseRequestBody();
 			client.handleRequestMethod();
-			client.response.generateResponse(client.request);
 			client.setReady(true);
 			setPlfdEvents(client.getFd(), POLLOUT);
 		}
@@ -253,93 +265,47 @@ void Core::handlePl_IN(Client& client)
 
 void Core::handlePl_Out(Client& client)
 {
-
-
-
 	if (!client.is_Connected())
 			return;
 	if (client.isReady())
 	{
 		
-		std::string Str = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 20\r\n\r\n<h1>Hello World<h1/>";
-		ssize_t bytesSent = 0;
 
-		bytesSent = send(client.getFd(), Str.c_str(), Str.length(), 0);
+		ssize_t bytesSent = 0;
+		std::string Str;
+		if (client.response._headerSent == false)
+		{
+			
+
+			client.response.generateResponse(client.request);
+			Str = client.response.response;
+			client.response._headerSent = true;
+			std::cout << "Str: " << Str << std::endl;
+			bytesSent = send(client.getFd(), Str.c_str(), Str.length(), 0);
+		}
+		else
+		{
+			if ((client.response.fd = open("/Users/mechane/Desktop/Webserv1.0/l.mp4", O_RDONLY)) == -1)
+				throw std::runtime_error("open() failed: " + std::string(strerror(errno)));
+			struct stat stat_buf;
+			fstat(client.response.fd, &stat_buf);
+			off_t size = stat_buf.st_size;
+			off_t offset = 0;
+			bytesSent = sendfile(client.response.fd, client.getFd(), offset, &size, NULL, 0);	
+			std::cout << "bytesSent: " << bytesSent << std::endl;
+		// 	// std::cout << "bytesRead: " << bytesRead << std::endl;
+		// 	// std::cout << "buffer: " << buffer << std::endl;	
+			client.set_Connect(false);
+		}
 		if (bytesSent == -1 || bytesSent == 0)
 		{
+			// setPlfdEvents(client.getFd(), POLLIN);
 			client.set_Connect(false);
-			return;
+			std::cout << "Client " << client.getId() << " disconnected" << std::endl;
+			client.setReady(false);
+			close(client.getFd());
+				return;
 		}
-		setPlfdEvents(client.getFd(), POLLIN);
-		// ssize_t bytesSent = 0;
-		// if (client.response._headerSent == false)
-		// {
-		// std::fstream file(client.response.filePath.c_str(), std::ios::binary);
-		// std::stringstream stream;
-    	// stream << file.rdbuf();
-    	// // Close the file
-    	// file.close();
-
-    	// // // Return the contents of the stringstream as a string
-    	// client._buffer = stream.str();
-		// 	std::string Str;
-		// 	puts("INIF");
-		// 	Str = client.response.response;
-		// 	client.response._headerSent = true;
-		// 	std::cout << Str << std::endl;
-		// 	bytesSent = send(client.getFd(), Str.c_str(), Str.length(), 0);
-		// }
-		// else
-		// {
-		// 	puts("INELSE");
-		// 	char buffer[4097];
-   		// 	ssize_t bytesRead = 1;
-    	// 	int fd = open(client.response.filePath.c_str(), O_RDONLY);
-		// 	std::cout << "file :" << client.response.filePath.c_str() << std::endl;
-    	// 	if (fd == -1)
-    	// 	   client.response.setStatusCode(404);
-    	// 	bytesRead = read(fd, buffer, 4096);
-		// 	std::cout << "bytesRead: " << bytesRead << std::endl;
-    	// 	buffer[bytesRead] = '\0';
-
-		// 	file.read(buffer, 4096);
-
-
-		// 	std::fstream file(client.response.filePath.c_str(), std::ios::binary);
-		// 	std::cout << "bytesRead: " << buffer << std::endl;
-		// 	std::stringstream stream;
-    	// 	stream << file.rdbuf();
-    	// 	// Close the file
-    	// 	file.close();
-
-    	// 	// Return the contents of the stringstream as a string
-    	// 	client._buffer = stream.str();
-		// 	std::string tmp = client._buffer.substr(0, 4096);
-		// 	client._buffer = client._buffer.substr(4096);
-		// 	// std::string Str;
-		// 	// std::stringstream ss;
-		// 	// ss << std::hex << bytesRead;
-		// 	// Str = ss.str() + "\r\n" + buffer + "\r\n";
-		// 	// bytesRead = bytesRead + 4 + ss.str().length();
-		// 	// if (bytesRead < 4096)
-		// 	// {
-		// 	// 	std::cout << "alo\n";
-		// 	// 	bytesRead = bytesRead + 4;
-		// 	// 	Str.append("0\r\n\r\n");
-		// 	// 	client.set_Connect(false);
-		// 	// 	puts("CLOSE");
-		// 	// }
-		// 	// // std::cout << Str.length() << std::endl;
-		// 	bytesSent = send(client.getFd(), tmp.c_str(), 4096, 0);
-		// 	// std::cout << "bytesSent: " << bytesSent << std::endl;
-		// if (bytesSent == -1 || bytesSent == 0)
-		// {
-		// 	client.set_Connect(false);
-		// 	std::cout << "Client " << client.getId() << " disconnected" << std::endl;
-		// 	client.setReady(false);
-		// 	close(client.getFd());
-		// 		return;
-		// }
 		// 	// std::cout << "[" << Str << "]" << std::endl;
 		// }
 		// puts("OUT");

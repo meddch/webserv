@@ -128,8 +128,6 @@ class Parse
 		void ParseAllowedMethods(LocationContext& location);
 		void ParseIndex(LocationContext& location);
 		void ParseRedirect(LocationContext& location);
-		void ParseCgiPath(LocationContext& location);
-		void ParseUploadPath(LocationContext& location);
 		
 		
 
