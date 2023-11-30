@@ -6,7 +6,7 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/25 12:05:29 by azari             #+#    #+#             */
-/*   Updated: 2023/11/17 16:56:38 by azari            ###   ########.fr       */
+/*   Updated: 2023/11/30 12:12:40 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,6 @@ bool Response::handleResponseError(Request& request){
 	if (_version.compare("HTTP/1.1"))
 		if (!_statusCode)
 			_statusCode = 505; // HTTP Version Not Supported
-	// _statusCode = 502;
 	_status = generateStatusPhrase(_statusCode);
 	if (_statusCode && _statusCode != 200){
 
