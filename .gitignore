@@ -3,4 +3,5 @@ a.out
 ./vscode
 Session/
 *.mp4
+.DS_Store
 

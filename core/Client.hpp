@@ -3,6 +3,7 @@
 #include "Server.hpp"
 #include "../request/Request.hpp"
 #include "../response/response.hpp"
+#include "../parse/utils.hpp"
 #include "MACS.hpp"
 
 
@@ -49,10 +50,11 @@ public :
 	void		setServer(Server&);
 	void		matchLocation(std::vector<LocationContext>);
 	void		createUploadFile(std::string filename, std::string content);
-	void 		handleRequestMethod(Request&);
+	void		generateResponse(Request& request, std::string path, int code);
+	void 		handleRequestMethod(void);
 	bool 		isMethodAllowed(void);
 	void 		getLocations(Server&);
-	void 		handleGetRequest(Response&);
+	void 		handleGetRequest(void);
 	void 		handlePostRequest(void);
 	void 		handleDeleteRequest(void);
 

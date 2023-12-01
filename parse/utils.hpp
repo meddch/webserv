@@ -11,6 +11,7 @@
 #define ISFILE 1
 #define ISDIR 2
 #define ISNOTEXIST 3
+#define EMPTY ""
 
 
 #include "Parse.hpp"

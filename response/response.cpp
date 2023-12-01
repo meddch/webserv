@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
+/*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/25 12:05:29 by azari             #+#    #+#             */
-/*   Updated: 2023/11/30 18:38:10 by mechane          ###   ########.fr       */
+/*   Updated: 2023/12/01 15:41:19 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,39 +21,45 @@ Response::Response():
 	_isfileRead(false),
 	response(""),
 	// _contentLength(""),
-	_headerSent(false)
+	_headerSent(false),
+	readyToSend(false)
 {}
 
-void Response::initResponseHeaders(){
+void Response::initResponseHeaders(Request& request){
 
-	response ="HTTP/1.1" + _status + "\r\n";
-	_headers["Accept-Ranges"] = "bytes";
+	_version = request._headers["httpVersion"];
+	if (_statusCode == 0)
+		_statusCode = request.getStatusCode();
+	_status = generateStatusPhrase(_statusCode);
+	response = _version + _status + "\r\n";
+	_headers["Server"] = "Webserv/1.0.0 (mechane-azari)";
 	_headers["Content-Length"] = _contentLength;
-	_headers["Content-Type"] = "video/mp4";
-	// _headers["Server"] = "Webserv/1.0.0 (mechane-azari)";
+	if (_headers.find("Content-Type") == _headers.end())
+		_headers["Content-Type"] = findMimeType(filePath.substr(filePath.find_last_of(".")));
+	_headers["Accept-Ranges"] = "bytes";
+	
 	// _headers["Connection"] = isConnectionKeepAlive() ? "keep-alive" : "close";
-	// _headers["Connection"] = "keep-alive";
 	for(std::unordered_map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
 		response.append(it->first + ": " + it->second + "\r\n");
 	response.append("\r\n");
 }
 
-bool Response::handleResponseError(Request& request){
+bool Response::handleResponseError(Request& request, std::string code){
 	
 	_version = request._headers["httpVersion"];
-	if (_version.compare("HTTP/1.1"))
-		setStatusCode(505); // HTTP Version Not Supported code :
+	_status = generateStatusPhrase(std::stoi(code));
+	response = _version + _status + "\r\n";
+	_headers["Server"] = "Webserv/1.0.0 (mechane-azari)";
+	std::string errorBody = "<html><head><title>" + _status + "</title></head><body><center><h1>" + _status + "</h1></center><hr><center>Webserv/1.0.0 (mechane-azari)</center></body></html>";
+	_contentLength = std::to_string(errorBody.length());
+	_headers["Content-Length"] = _contentLength;
+	for(std::unordered_map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
+		response.append(it->first + ": " + it->second + "\r\n");
+	response.append("\r\n");
+	response.append(errorBody);
+	readyToSend = true;
+	return true;
 
-	_status = generateStatusPhrase(_statusCode);
-	if (_statusCode && _statusCode != 200){
-
-		std::string errorBody = "<html><head><title>" + _status + "</title></head><body><center><h1>" + _status + "</h1></center><hr><center>Webserv/1.0.0 (mechane-azari)</center></body></html>";
-		_contentLength = std::to_string(errorBody.length());
-		initResponseHeaders();
-		response.append(errorBody);
-		return true;
-	}
-	return false;
 }
 
 bool Response::isConnectionKeepAlive(){
@@ -63,43 +69,33 @@ bool Response::isConnectionKeepAlive(){
 }
 
 
-std::string Response::generateResponse(Request& request){
 
-	// if (_statusCode){
-	
-	// 	handleResponseError(request);
-	// 	return response;
-	// }
-	std::string uri = request._headers["URI"];
-	_statusCode = request.getStatusCode();
-	_status = generateStatusPhrase(_statusCode);
 
-	initResponseHeaders();
-
-	return response;
-}
-
-std::string generate_auto_index(std::string path)
+void Response::generateAutoIndex(Request& request)
 {
-	std::string auto_index = "<html><head><title>Index of " + path + "</title></head><body><h1>Index of " + path + "</h1><hr><pre>";
-	DIR *dir;
-	struct dirent *ent;
-	if ((dir = opendir (path.c_str())) != NULL) 
-	{
-		while ((ent = readdir (dir)) != NULL)
-		{
-			auto_index += "<a href=\"" + path + "/" + ent->d_name + "\">" + ent->d_name + "</a><br>";
-		}
-		closedir (dir);
-	}
-	else 
-	{
-		perror ("");
-		return "";
-	}
-	auto_index += "</pre><hr><center>Webserv/1.0.0 (mechane-azari)</center></body></html>";
-	return auto_index;
-
+	std::string path = filePath;
+	std::cout << "PATH: " << path << std::endl;
+    std::string auto_index = "<html><head><title>Index of " + path + "</title></head><body><h1>Index of " + path + "</h1><hr><pre>";
+    DIR *dir;
+    struct dirent *ent;
+    struct stat path_stat;
+    if ((dir = opendir (path.c_str())) != NULL) 
+    {
+        while ((ent = readdir (dir)) != NULL)
+        {
+            std::string full_path = path + "/" + ent->d_name;
+            stat(full_path.c_str(), &path_stat);
+            auto_index += "<a href=\"" + ((std::string)ent->d_name) + (S_ISDIR(path_stat.st_mode) ? "/" : "") + "\">" + ent->d_name + "</a><br><br>";
+        }
+        closedir (dir);
+    }
+	std::cout << "AUTO INDEX: " << auto_index << std::endl;
+    auto_index += "</pre><hr><center>Webserv/1.0.0 (mechane-azari)</center></body></html>";
+    _contentLength = std::to_string(auto_index.length());
+    _headers["Content-Type"] = "text/html";
+    initResponseHeaders(request);
+    response += auto_index;
+    readyToSend = true;
 }
 
 

@@ -2,7 +2,7 @@ CC = c++
 RED = \033[0;31m
 GREEN = \033[0;32m
 BLUE = \033[0;34m
-NAME = ./microserv
+NAME = miniserv
 RM = rm -f
 CPPFLAGS = -Wall -Wextra -Werror -std=c++98  -fsanitize=address -g
 FILE =  main core/Client  core/Core     core/Server parse/Parse    parse/utils   request/Request response/response response/generators

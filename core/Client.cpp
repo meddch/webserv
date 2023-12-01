@@ -183,21 +183,58 @@ void	Client::createUploadFile(std::string filename, std::string content)
 	// _errorCode = 201;
 }
 
-void Client::handleGetRequest(Response& response)
+void Client::generateResponse(Request& request, std::string path, int code)
+{
+	if (path != EMPTY)
+	{
+		response.filePath = path;
+		response.setStatusCode(code);
+		return ;
+	}	
+	response.initResponseHeaders(request);
+	response.readyToSend = true;
+}
+
+void Client::handleGetRequest()
 {
 	Request r = this->request;
 	std::string fullPath = server.getRoot() + request.getRequestURI();
-	std::cout << "path: " << fullPath << std::endl;
 
-	int resourceType = getResourceType(fullPath);
+	int resourceType = getResourceType(fullPath);	
     if (resourceType == ISNOTEXIST)
 		throw std::runtime_error("404");
-	if (resourceType == ISFILE){
-		response.filePath = fullPath;
+	if (resourceType == ISFILE)
+	{
+		struct stat path_stat;
+   		stat(fullPath.c_str(), &path_stat);
+		response._contentLength = std::to_string(path_stat.st_size);
+		return generateResponse(request, fullPath, 200); // Give mechane to generateResponse
 	}
-	else if (resourceType == ISDIR){
+	else if (resourceType == ISDIR)
+	{
+		if (fullPath[fullPath.length() - 1] != '/')
+			fullPath += "/";
+		std::cout << _config_location.index.size() << std::endl;
+		for (std::vector<std::string>::iterator it = _config_location.index.begin(); it != _config_location.index.end(); ++it)
+		{
+			std::string index = fullPath + (std::string)*it;
+			std::ifstream file(index.c_str());
+			if (file.is_open()){
+			struct stat path_stat;
+			stat(index.c_str(), &path_stat);
+			response._contentLength = std::to_string(path_stat.st_size);
+				file.close();
+				return generateResponse(request, index, 200); // Give mechane to generateResponse
+			}
+		}
+		if (_config_location.autoindex){
 
-		
+			response.filePath = fullPath;
+			response.root = server.getRoot();
+			return response.generateAutoIndex(r); // Give mechane to generateResponse
+		}
+		else if (_config_location.autoindex == false)
+			throw std::runtime_error("403");
 	}
 }
 
@@ -257,19 +294,19 @@ void Client::handleDeleteRequest(){
 		}
 	}
 	else
-		// return a response of 404
+		throw std::runtime_error("404");
 
 }
 
-void Client::handleRequestMethod(Request& request){
+void Client::handleRequestMethod(){
 
 	Request r = this->request;
 	if (r._headers["Method"] == GET)
-		handleGetRequest();
+		return handleGetRequest();
 	else if (r._headers["Method"] == POST)
-		handlePostRequest();
+		return handlePostRequest();
 	else if (r._headers["Method"] == DELETE)
-		handleDeleteRequest();
+		return handleDeleteRequest();
 	else
 		throw std::runtime_error("501");
 }

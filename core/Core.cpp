@@ -183,7 +183,7 @@ void Core::Add_Client(int listenFd)
 		throw std::runtime_error("accept() failed: " + std::string(strerror(errno)));
 	Client client(clientFd, getClientAddress(clientFd), getServerAddress(listenFd));
 	_clients.insert(std::make_pair(clientFd, client));
-
+	std::cout << "Client " << client.getId() << " connected" << std::endl;
 	pollfd pfd = make_PlFd(clientFd, POLLIN);
 	plfds.push_back(pfd);
 	
@@ -234,11 +234,6 @@ void Core::handlePl_IN(Client& client)
 		buffer[bytesRead] = '\0';
 		//if connection true and timeout disconnect
 		std::string Str(buffer, bytesRead);
-		if (Str.find("GET /favicon.ico HTTP/1.1") != std::string::npos)
-			{
-				client.set_Connect(false);
-				return;
-			}
 		if (!client._requestParsed)
 		{
 			client.getREQ(Str);
@@ -259,26 +254,31 @@ void Core::handlePl_IN(Client& client)
 	}
 	catch (const std::exception& e)
 	{
-		std::cerr << e.what();
-		std::cerr << "Error: " << std::endl;
+		std::cerr << e.what() << std::endl;
+		client.response.handleResponseError(client.request, (std::string)e.what());
+		client.setReady(true);
+		setPlfdEvents(client.getFd(), POLLOUT);
 	}
 }
 
 void Core::handlePl_Out(Client& client)
 {
-	if (!client.is_Connected())
-			return;
 	if (client.isReady())
 	{
 		
 
 		ssize_t bytesSent = 0;
 		std::string Str;
-		if (client.response._headerSent == false)
+		if (client.response.readyToSend)
+		{
+			Str = client.response.response;
+			bytesSent = send(client.getFd(), Str.c_str(), Str.length(), 0);
+			client.set_Connect(false);
+		}
+		else if (client.response._headerSent == false)
 		{
 			
-
-			client.response.generateResponse(client.request);
+			client.response.initResponseHeaders(client.request);
 			Str = client.response.response;
 			client.response._headerSent = true;
 			std::cout << "Str: " << Str << std::endl;
@@ -286,13 +286,13 @@ void Core::handlePl_Out(Client& client)
 		}
 		else
 		{
-			if ((client.response.fd = open("/Users/mechane/Desktop/Webserv1.0/l.mp4", O_RDONLY)) == -1)
+			if ((client.response.fd = open(client.response.filePath.c_str(), O_RDONLY)) == -1)
 				throw std::runtime_error("open() failed: " + std::string(strerror(errno)));
 			struct stat stat_buf;
 			fstat(client.response.fd, &stat_buf);
 			off_t size = stat_buf.st_size;
 			off_t offset = 0;
-			bytesSent = sendfile(client.response.fd, client.getFd(), offset, &size, NULL, 0);	
+			bytesSent = sendfile(client.response.fd, client.getFd(), offset, &size, NULL, 0);
 			std::cout << "bytesSent: " << bytesSent << std::endl;
 		// 	// std::cout << "bytesRead: " << bytesRead << std::endl;
 		// 	// std::cout << "buffer: " << buffer << std::endl;	
