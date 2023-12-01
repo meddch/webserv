@@ -33,7 +33,7 @@ std::string Server::getErrorPage(int code) const
 	return it->second;
 }
 
-int Server::getMaxBodySize() const
+ssize_t Server::getMaxBodySize() const
 {
     return _config.clientMaxBodySize;
 }

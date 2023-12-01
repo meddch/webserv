@@ -110,7 +110,7 @@ void Client::getREQ(std::string buffer)
 
 void Client::getBody(std::string buffer)
 {
-	if (_bytesExpected > server.getMaxBodySize())
+	if (server.getMaxBodySize() != -1 && _bytesExpected > server.getMaxBodySize())
 		throw std::runtime_error("413");
 	
 	if (_recvChunk)
@@ -133,7 +133,7 @@ void Client::getBody(std::string buffer)
 			
 			_body.append(_chunkedBuffer.substr(pos + 2, size));
 			_chunkedBuffer.erase(0, pos + 2 + size + 2);
-			if (_body.size() >= (unsigned long)server.getMaxBodySize())
+			if (server.getMaxBodySize() != -1 && (ssize_t)_body.size() > server.getMaxBodySize())
 				throw std::runtime_error("413");
 		}
 	}
@@ -185,10 +185,10 @@ void	Client::createUploadFile(std::string filename, std::string content)
 
 void Client::generateResponse(Request& request, std::string path, int code)
 {
+	response.setStatusCode(code);
 	if (path != EMPTY)
 	{
 		response.filePath = path;
-		response.setStatusCode(code);
 		return ;
 	}	
 	response.initResponseHeaders(request);

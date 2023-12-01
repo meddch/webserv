@@ -6,7 +6,7 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/25 12:05:29 by azari             #+#    #+#             */
-/*   Updated: 2023/12/01 16:23:26 by azari            ###   ########.fr       */
+/*   Updated: 2023/12/01 18:38:44 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,13 +31,18 @@ void Response::initResponseHeaders(Request& request){
 	if (_statusCode == 0)
 		_statusCode = request.getStatusCode();
 	_status = generateStatusPhrase(_statusCode);
+	std::cout << "STATUS: " << _status << std::endl;
 	response = _version + _status + "\r\n";
 	_headers["Server"] = "Webserv/1.0.0 (mechane-azari)";
-	_headers["Content-Length"] = _contentLength;
-	if (_headers.find("Content-Type") == _headers.end())
+	if (request._headers["Method"] == "GET")
+		_headers["Content-Length"] = _contentLength;
+	if (_headers.find("Content-Type") == _headers.end() && _statusCode != 204 && _statusCode != 304 && request._headers["Method"] == "GET")
+	{
 		_headers["Content-Type"] = findMimeType(filePath.substr(filePath.find_last_of(".")));
-	_headers["Accept-Ranges"] = "bytes";
+		_headers["Accept-Ranges"] = "bytes";
+	}
 	
+	puts("initResponseHeaders");
 	// _headers["Connection"] = isConnectionKeepAlive() ? "keep-alive" : "close";
 	for(std::unordered_map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
 		response.append(it->first + ": " + it->second + "\r\n");
