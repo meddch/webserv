@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
+/*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/25 12:05:29 by azari             #+#    #+#             */
-/*   Updated: 2023/12/01 15:41:19 by azari            ###   ########.fr       */
+/*   Updated: 2023/12/01 18:21:16 by mechane          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "response.hpp"
+#include <sys/_types/_ssize_t.h>
 
 Response::Response():
 	_statusCode(0),
@@ -22,7 +23,11 @@ Response::Response():
 	response(""),
 	// _contentLength(""),
 	_headerSent(false),
-	readyToSend(false)
+	readyToSend(false),
+	fd(0),
+	root(""),
+	_fileSize(0),
+	_offset(0)
 {}
 
 void Response::initResponseHeaders(Request& request){
@@ -37,8 +42,8 @@ void Response::initResponseHeaders(Request& request){
 	if (_headers.find("Content-Type") == _headers.end())
 		_headers["Content-Type"] = findMimeType(filePath.substr(filePath.find_last_of(".")));
 	_headers["Accept-Ranges"] = "bytes";
-	
-	// _headers["Connection"] = isConnectionKeepAlive() ? "keep-alive" : "close";
+	_headers["Connection"] = "keep-alive" ;
+	_headers["cache-control"] = "max-age=3600 public";
 	for(std::unordered_map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
 		response.append(it->first + ": " + it->second + "\r\n");
 	response.append("\r\n");
@@ -61,6 +66,22 @@ bool Response::handleResponseError(Request& request, std::string code){
 	return true;
 
 }
+void Response::generateChunkedResponse(){
+	
+	response ="HTTP/1.1 206 Partial Content\r\n";
+	_headers["Content-Length"] = std::to_string(std::min((size_t)BYTES, size_t(_fileSize - _offset)));
+	_headers["Content-Range"] = "bytes " + std::to_string(_offset) + "-" + std::to_string(std::min((ssize_t)(_offset + BYTES), (ssize_t)(_fileSize))) + "/" + std::to_string(_fileSize);
+	_headers["Accept-Ranges"] = "bytes";
+	_headers["Content-Type"] = findMimeType(filePath.substr(filePath.find_last_of(".")));
+	_headers["Server"] = "Webserv/1.0.0 (mechane-azari)";
+	_headers["Connection"] =  "close";
+	for(std::unordered_map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
+		response.append(it->first + ": " + it->second + "\r\n");
+	response.append("\r\n");
+	
+	
+
+}
 
 bool Response::isConnectionKeepAlive(){
 	if (_KEEPALIVE)
@@ -74,7 +95,6 @@ bool Response::isConnectionKeepAlive(){
 void Response::generateAutoIndex(Request& request)
 {
 	std::string path = filePath;
-	std::cout << "PATH: " << path << std::endl;
     std::string auto_index = "<html><head><title>Index of " + path + "</title></head><body><h1>Index of " + path + "</h1><hr><pre>";
     DIR *dir;
     struct dirent *ent;
@@ -83,13 +103,14 @@ void Response::generateAutoIndex(Request& request)
     {
         while ((ent = readdir (dir)) != NULL)
         {
-            std::string full_path = path + "/" + ent->d_name;
+            if (ent->d_name[0] == '.')
+				continue;
+			std::string full_path = path + "/" + ent->d_name;
             stat(full_path.c_str(), &path_stat);
             auto_index += "<a href=\"" + ((std::string)ent->d_name) + (S_ISDIR(path_stat.st_mode) ? "/" : "") + "\">" + ent->d_name + "</a><br><br>";
         }
         closedir (dir);
     }
-	std::cout << "AUTO INDEX: " << auto_index << std::endl;
     auto_index += "</pre><hr><center>Webserv/1.0.0 (mechane-azari)</center></body></html>";
     _contentLength = std::to_string(auto_index.length());
     _headers["Content-Type"] = "text/html";

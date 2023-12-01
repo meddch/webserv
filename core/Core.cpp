@@ -2,8 +2,11 @@
 #include "Server.hpp"
 #include <cstddef>
 #include <cstdio>
+#include <fstream>
 #include <iostream>
 #include <netinet/in.h>
+#include <sstream>
+#include <string>
 #include <sys/_types/_off_t.h>
 #include <sys/_types/_ssize_t.h>
 #include <sys/errno.h>
@@ -140,7 +143,6 @@ void Core::ClearInvalidCnx(void)
 		Client client = it->second;
 		if (!client.is_Connected())
 		{
-			std::cout << "Client " << client.getId() << " disconnected" << std::endl;
 			removeIterators.push_back(it);
 			Erase_PlFd(client.getFd());
 			close(client.getFd());
@@ -183,7 +185,6 @@ void Core::Add_Client(int listenFd)
 		throw std::runtime_error("accept() failed: " + std::string(strerror(errno)));
 	Client client(clientFd, getClientAddress(clientFd), getServerAddress(listenFd));
 	_clients.insert(std::make_pair(clientFd, client));
-	std::cout << "Client " << client.getId() << " connected" << std::endl;
 	pollfd pfd = make_PlFd(clientFd, POLLIN);
 	plfds.push_back(pfd);
 	
@@ -227,7 +228,6 @@ void Core::handlePl_IN(Client& client)
 		ssize_t bytesRead = recv(client.getFd(), buffer, buffer_size - 1, 0);
 		if (bytesRead == -1 || bytesRead == 0)
 		{
-			std::cout << "Client " << client.getId() << " disconnected" << std::endl;
 			client.set_Connect(false);
 			return;
 		}
@@ -254,7 +254,6 @@ void Core::handlePl_IN(Client& client)
 	}
 	catch (const std::exception& e)
 	{
-		std::cerr << e.what() << std::endl;
 		client.response.handleResponseError(client.request, (std::string)e.what());
 		client.setReady(true);
 		setPlfdEvents(client.getFd(), POLLOUT);
@@ -263,6 +262,7 @@ void Core::handlePl_IN(Client& client)
 
 void Core::handlePl_Out(Client& client)
 {
+	signal(SIGPIPE, SIG_IGN);
 	if (client.isReady())
 	{
 		
@@ -275,52 +275,51 @@ void Core::handlePl_Out(Client& client)
 			bytesSent = send(client.getFd(), Str.c_str(), Str.length(), 0);
 			client.set_Connect(false);
 		}
-		else if (client.response._headerSent == false)
-		{
-			
-			client.response.initResponseHeaders(client.request);
+		else if (client.request._headers.find("range") != client.request._headers.end()){
+			struct stat filestat;
+			stat(client.response.filePath.c_str(), &filestat);
+			client.response._fileSize = filestat.st_size;
+			std::stringstream ss;
+			ss << client.request._headers["range"].substr(client.request._headers["range"].find("=") + 1);
+			ss >> client.response._offset;
+			client.response.generateChunkedResponse();
+			client.response.fd = open(client.response.filePath.c_str(), O_RDONLY);
 			Str = client.response.response;
-			client.response._headerSent = true;
-			std::cout << "Str: " << Str << std::endl;
 			bytesSent = send(client.getFd(), Str.c_str(), Str.length(), 0);
-		}
-		else
-		{
-			if ((client.response.fd = open(client.response.filePath.c_str(), O_RDONLY)) == -1)
-				throw std::runtime_error("open() failed: " + std::string(strerror(errno)));
-			struct stat stat_buf;
-			fstat(client.response.fd, &stat_buf);
-			off_t size = stat_buf.st_size;
-			off_t offset = 0;
-			bytesSent = sendfile(client.response.fd, client.getFd(), offset, &size, NULL, 0);
-			std::cout << "bytesSent: " << bytesSent << std::endl;
-		// 	// std::cout << "bytesRead: " << bytesRead << std::endl;
-		// 	// std::cout << "buffer: " << buffer << std::endl;	
+			off_t len = BYTES > client.response._fileSize - client.response._offset ? client.response._fileSize - client.response._offset : BYTES;
+			bytesSent = sendfile(client.response.fd,client.getFd(), client.response._offset, &len, NULL, 0);
 			client.set_Connect(false);
+	
 		}
-		if (bytesSent == -1 || bytesSent == 0)
+		else if (client.request._headers.find("range") == client.request._headers.end())
 		{
-			// setPlfdEvents(client.getFd(), POLLIN);
-			client.set_Connect(false);
-			std::cout << "Client " << client.getId() << " disconnected" << std::endl;
-			client.setReady(false);
-			close(client.getFd());
-				return;
+			if (!client.response._headerSent)
+			{
+				struct stat filestat;
+				stat(client.response.filePath.c_str(), &filestat);
+				client.response._contentLength = std::to_string(filestat.st_size);
+				client.response.fd = open(client.response.filePath.c_str(), O_RDONLY);
+				client.response.initResponseHeaders(client.request);
+				Str = client.response.response;
+				client.response._headerSent = true;
+				bytesSent = send(client.getFd(), Str.c_str(), Str.length(), 0);
+			}
+			else
+				{
+					char buffer[BYTES];
+					ssize_t bytesRead = read(client.response.fd, buffer, BYTES);
+					if (bytesRead == -1 || bytesRead == 0)
+					{
+						client.set_Connect(false);
+						return;
+					}
+					bytesSent = send(client.getFd(), buffer, bytesRead, 0);
+
+				}
+			}
 		}
-		// 	// std::cout << "[" << Str << "]" << std::endl;
-		// }
-		// puts("OUT");
-
-		// // Str is the response with just headers
-		// // get path from client.request.filePath and read file
-		// // read with a buffer of 4096 bytes
-		// // chunk each buffer and send it to client
-		// // before sending each chunk we must poll
-
-		// // client.setReady(false);
-	}
-
 }
+
 
 Server&	Core::getServer(Client client)
 {

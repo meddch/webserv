@@ -3,20 +3,24 @@
 /*                                                        :::      ::::::::   */
 /*   response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
+/*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/09 15:01:48 by azari             #+#    #+#             */
-/*   Updated: 2023/12/01 15:41:41 by azari            ###   ########.fr       */
+/*   Updated: 2023/12/01 18:11:11 by mechane          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 #include <iostream>
 #include <map>
+#include <sys/_types/_off_t.h>
+#include <sys/_types/_ssize_t.h>
 #include <unordered_map>
 #include "../request/Request.hpp"
 #include <dirent.h>
 #include <sys/stat.h>
+
+#define BYTES 100000
 
 class Response
 {
@@ -46,6 +50,8 @@ class Response
 		bool			readyToSend;
 		int				fd;
 		std::string		root;
+		ssize_t			_fileSize;
+		ssize_t			_offset;
 		std::string generateResponse(Request&);
 		std::string findMimeType(std::string);
 		std::string generateStatusPhrase(size_t);
@@ -57,6 +63,8 @@ class Response
 		bool isConnectionKeepAlive();
 		void setStatusCode(size_t);
 		bool isfileRead();
+		void generateChunkedResponse();
+
 };
 
 
