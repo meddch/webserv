@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   response.cpp                                       :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/10/25 12:05:29 by azari             #+#    #+#             */
-/*   Updated: 2023/12/01 18:21:16 by mechane          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "response.hpp"
 #include <sys/_types/_ssize_t.h>
 
@@ -36,14 +24,18 @@ void Response::initResponseHeaders(Request& request){
 	if (_statusCode == 0)
 		_statusCode = request.getStatusCode();
 	_status = generateStatusPhrase(_statusCode);
+	std::cout << "STATUS: " << _status << std::endl;
 	response = _version + _status + "\r\n";
 	_headers["Server"] = "Webserv/1.0.0 (mechane-azari)";
-	_headers["Content-Length"] = _contentLength;
-	if (_headers.find("Content-Type") == _headers.end())
+	if (request._headers["Method"] == "GET")
+		_headers["Content-Length"] = _contentLength;
+	if (_headers.find("Content-Type") == _headers.end() && _statusCode != 204 && _statusCode != 304 && request._headers["Method"] == "GET")
+	{
 		_headers["Content-Type"] = findMimeType(filePath.substr(filePath.find_last_of(".")));
-	_headers["Accept-Ranges"] = "bytes";
-	_headers["Connection"] = "keep-alive" ;
-	_headers["cache-control"] = "max-age=3600 public";
+		_headers["Accept-Ranges"] = "bytes";
+		_headers["Connection"] = "keep-alive" ;
+		_headers["cache-control"] = "max-age=3600 public";
+	}
 	for(std::unordered_map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
 		response.append(it->first + ": " + it->second + "\r\n");
 	response.append("\r\n");
@@ -89,13 +81,19 @@ bool Response::isConnectionKeepAlive(){
 	return false;
 }
 
-
-
-
 void Response::generateAutoIndex(Request& request)
 {
-	std::string path = filePath;
-    std::string auto_index = "<html><head><title>Index of " + path + "</title></head><body><h1>Index of " + path + "</h1><hr><pre>";
+    std::string path = filePath;
+    std::cout << "PATH: " << path << std::endl;
+    std::string auto_index = "<html><head><title>Index of " + path + "</title></head>";
+    auto_index += "<style>"
+                  "body {font-family: Arial, sans-serif; background-color: #f0f0f0; color: #333;}"
+                  "h1 {color: #005a9c;}"
+                  "a {color: #005a9c; text-decoration: none;}"
+                  "a:hover {text-decoration: underline;}"
+                  "a.file {background: url(file_icon.png) no-repeat left center; padding-left: 20px;}"
+                  "a.directory {background: url(directory_icon.png) no-repeat left center; padding-left: 20px;}"
+                  "</style></head><body><h1> 42-webserv</h1><hr><pre>";
     DIR *dir;
     struct dirent *ent;
     struct stat path_stat;
@@ -107,7 +105,7 @@ void Response::generateAutoIndex(Request& request)
 				continue;
 			std::string full_path = path + "/" + ent->d_name;
             stat(full_path.c_str(), &path_stat);
-            auto_index += "<a href=\"" + ((std::string)ent->d_name) + (S_ISDIR(path_stat.st_mode) ? "/" : "") + "\">" + ent->d_name + "</a><br><br>";
+            auto_index += "<a href=\"" + ((std::string)ent->d_name) + (S_ISDIR(path_stat.st_mode) ? "/" : "") + "\" class=\"" + (S_ISDIR(path_stat.st_mode) ? "directory" : "file") + "\">" + ent->d_name + "</a><br><br>";
         }
         closedir (dir);
     }
@@ -118,5 +116,3 @@ void Response::generateAutoIndex(Request& request)
     response += auto_index;
     readyToSend = true;
 }
-
-

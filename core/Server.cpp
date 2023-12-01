@@ -33,7 +33,7 @@ std::string Server::getErrorPage(int code) const
 	return it->second;
 }
 
-int Server::getMaxBodySize() const
+ssize_t Server::getMaxBodySize() const
 {
     return _config.clientMaxBodySize;
 }
@@ -44,7 +44,10 @@ bool Server::bodySizeAllowed(int bytes) const
 	return getMaxBodySize() == -1 || getMaxBodySize() >= bytes;
 }
 
-
+bool Server::uploadEnabled() const
+{
+	return _config.upload;
+}
 
 
 int Server::getId() const
