@@ -244,6 +244,7 @@ void Core::handlePl_IN(Client& client)
 			client.getREQ(Str);
 			client.server = getServer(client);
 			client._config_location = client.server.getLocation(client.request.getRequestURI());
+			client.request.isMethodAllowed(client._config_location.allowedMethods);
 		}
 		if (!client._requestIsReady)
 			client.getBody(Str);

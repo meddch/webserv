@@ -183,10 +183,27 @@ void	Client::createUploadFile(std::string filename, std::string content)
 	// _errorCode = 201;
 }
 
+void Client::handleGetRequest(Response& response)
+{
+	Request r = this->request;
+	std::string fullPath = server.getRoot() + request.getRequestURI();
+	std::cout << "path: " << fullPath << std::endl;
+
+	int resourceType = getResourceType(fullPath);
+    if (resourceType == ISNOTEXIST)
+		throw std::runtime_error("404");
+	if (resourceType == ISFILE){
+		response.filePath = fullPath;
+	}
+	else if (resourceType == ISDIR){
+
+		
+	}
+}
 
 
-void Client::handleRequestMethod(){
-
+void Client::handlePostRequest(){
+	
 	Request r = this->request;
 	if (r._headers["Method"] == POST)
 	{
@@ -205,16 +222,56 @@ void Client::handleRequestMethod(){
 			}
 		}
 	}
-	else if (r._headers["Method"] == GET)
-	{
-		// std::cout << "GET" << std::endl;
+}
+
+void Client::handleDeleteRequest(){
+	
+	Request r = this->request;
+	std::string path = server.getRoot() + request.getRequestURI();
+	int resourceType = getResourceType(path);
+
+
+	if (resourceType == ISFILE){
+		if (::remove(path.c_str()) == 0){}
+			// return a response of 204
+		else {}
+			// return a response of 500
 	}
-	else if (r._headers["Method"] == DELETE)
+	else if (resourceType == ISDIR)
 	{
-		
+		if (path[path.length() - 1] != '/')
+			throw std::runtime_error("409");
+		else
+		{
+			if (::rmdir(path.c_str()) == 0)
+			{
+				// return a response of 204
+			}
+			else
+			{
+				if(access(path.c_str(), W_OK) == 0)
+				 	throw std::runtime_error("500");
+				else
+					throw std::runtime_error("403");
+			}
+		}
 	}
 	else
-		response.setStatusCode(501);
+		// return a response of 404
+
+}
+
+void Client::handleRequestMethod(Request& request){
+
+	Request r = this->request;
+	if (r._headers["Method"] == GET)
+		handleGetRequest();
+	else if (r._headers["Method"] == POST)
+		handlePostRequest();
+	else if (r._headers["Method"] == DELETE)
+		handleDeleteRequest();
+	else
+		throw std::runtime_error("501");
 }
 
 bool Client::isMethodAllowed()

@@ -115,3 +115,17 @@ in_addr_t toIpNum(std::string str)
 
 	return htonl(result);
 }
+
+int getResourceType(std::string path)
+{
+	struct stat path_stat;
+    stat(path.c_str(), &path_stat);
+    bool isFile = S_ISREG(path_stat.st_mode);
+    bool isDir = S_ISDIR(path_stat.st_mode);
+
+	if (isFile)
+		return ISFILE;
+	if (isDir)
+		return ISDIR;
+	return ISNOTEXIST;
+}
