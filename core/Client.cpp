@@ -196,6 +196,7 @@ void Client::handleGetRequest(Response& response)
 		response.filePath = fullPath;
 	}
 	else if (resourceType == ISDIR){
+
 		
 	}
 }
@@ -226,23 +227,41 @@ void Client::handlePostRequest(){
 void Client::handleDeleteRequest(){
 	
 	Request r = this->request;
-	std::string path = request.getRequestURI();
-	if (path == "/")
-		path = "/index.html";
-	std::string fullPath = server.getRoot() + path;
-	std::ifstream file(fullPath.c_str());
-	if (!file.is_open())
-	{
-		std::cout << "Error opening file" << std::endl;
-		// _errorCode = 404;
-		return;
+	std::string path = server.getRoot() + request.getRequestURI();
+	int resourceType = getResourceType(path);
+
+
+	if (resourceType == ISFILE){
+		if (::remove(path.c_str()) == 0){}
+			// return a response of 204
+		else {}
+			// return a response of 500
 	}
-	std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-	file.close();
-	// _errorCode = 200;
+	else if (resourceType == ISDIR)
+	{
+		if (path[path.length() - 1] != '/')
+			throw std::runtime_error("409");
+		else
+		{
+			if (::rmdir(path.c_str()) == 0)
+			{
+				// return a response of 204
+			}
+			else
+			{
+				if(access(path.c_str(), W_OK) == 0)
+				 	throw std::runtime_error("500");
+				else
+					throw std::runtime_error("403");
+			}
+		}
+	}
+	else
+		// return a response of 404
+
 }
 
-void Client::handleRequestMethod(){
+void Client::handleRequestMethod(Request& request){
 
 	Request r = this->request;
 	if (r._headers["Method"] == GET)
