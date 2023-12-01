@@ -451,6 +451,8 @@ void Parse::addDefaultLocation(ServerContext& server)
 	location.uri = "/";
 	location.root = server.root;
 	location.allowedMethods.push_back("GET");
+	location.allowedMethods.push_back("POST");
+	location.allowedMethods.push_back("DELETE");
 	location.index.push_back("index.html");
 
 	server.locations.push_back(location);

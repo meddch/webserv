@@ -6,7 +6,7 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/25 12:05:29 by azari             #+#    #+#             */
-/*   Updated: 2023/12/01 15:41:19 by azari            ###   ########.fr       */
+/*   Updated: 2023/12/01 16:23:26 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,14 +68,19 @@ bool Response::isConnectionKeepAlive(){
 	return false;
 }
 
-
-
-
 void Response::generateAutoIndex(Request& request)
 {
-	std::string path = filePath;
-	std::cout << "PATH: " << path << std::endl;
-    std::string auto_index = "<html><head><title>Index of " + path + "</title></head><body><h1>Index of " + path + "</h1><hr><pre>";
+    std::string path = filePath;
+    std::cout << "PATH: " << path << std::endl;
+    std::string auto_index = "<html><head><title>Index of " + path + "</title></head>";
+    auto_index += "<style>"
+                  "body {font-family: Arial, sans-serif; background-color: #f0f0f0; color: #333;}"
+                  "h1 {color: #005a9c;}"
+                  "a {color: #005a9c; text-decoration: none;}"
+                  "a:hover {text-decoration: underline;}"
+                  "a.file {background: url(file_icon.png) no-repeat left center; padding-left: 20px;}"
+                  "a.directory {background: url(directory_icon.png) no-repeat left center; padding-left: 20px;}"
+                  "</style></head><body><h1> 42-webserv</h1><hr><pre>";
     DIR *dir;
     struct dirent *ent;
     struct stat path_stat;
@@ -85,11 +90,11 @@ void Response::generateAutoIndex(Request& request)
         {
             std::string full_path = path + "/" + ent->d_name;
             stat(full_path.c_str(), &path_stat);
-            auto_index += "<a href=\"" + ((std::string)ent->d_name) + (S_ISDIR(path_stat.st_mode) ? "/" : "") + "\">" + ent->d_name + "</a><br><br>";
+            auto_index += "<a href=\"" + ((std::string)ent->d_name) + (S_ISDIR(path_stat.st_mode) ? "/" : "") + "\" class=\"" + (S_ISDIR(path_stat.st_mode) ? "directory" : "file") + "\">" + ent->d_name + "</a><br><br>";
         }
         closedir (dir);
     }
-	std::cout << "AUTO INDEX: " << auto_index << std::endl;
+    std::cout << "AUTO INDEX: " << auto_index << std::endl;
     auto_index += "</pre><hr><center>Webserv/1.0.0 (mechane-azari)</center></body></html>";
     _contentLength = std::to_string(auto_index.length());
     _headers["Content-Type"] = "text/html";
@@ -97,5 +102,3 @@ void Response::generateAutoIndex(Request& request)
     response += auto_index;
     readyToSend = true;
 }
-
-

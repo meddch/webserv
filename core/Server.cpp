@@ -44,7 +44,10 @@ bool Server::bodySizeAllowed(int bytes) const
 	return getMaxBodySize() == -1 || getMaxBodySize() >= bytes;
 }
 
-
+bool Server::uploadEnabled() const
+{
+	return _config.upload;
+}
 
 
 int Server::getId() const

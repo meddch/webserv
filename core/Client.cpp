@@ -242,7 +242,7 @@ void Client::handleGetRequest()
 void Client::handlePostRequest(){
 	
 	Request r = this->request;
-	if (r._headers["Method"] == POST)
+	if (r._headers["Method"] == POST && server.uploadEnabled())
 	{
 		if (r._headers["content-type"].find("multipart/form-data") != std::string::npos)
 		{
@@ -254,11 +254,28 @@ void Client::handlePostRequest(){
 					std::string content = it->_body;
 					createUploadFile(filename, content);
 				}
-				else
-					createUploadFile("RandomFile", it->_body);
+				else createUploadFile("RandomFile", it->_body);
 			}
+			return generateResponse(r, EMPTY, 201);
 		}
 	}
+	else
+	{
+		std::string fullPath = server.getRoot() + request.getRequestURI();
+		int resourceType = getResourceType(fullPath);
+		if (resourceType == ISFILE)
+			throw std::runtime_error("403"); // check if CGI after
+		else if (resourceType == ISDIR)
+		{
+			if (fullPath[fullPath.length() - 1] != '/')
+				return generateResponse(r, fullPath, 301);
+			if (_config_location.index.size() <= 0)
+				throw std::runtime_error("403");
+			throw std::runtime_error("403"); // check if CGI after
+		}
+			throw std::runtime_error("404");
+	}
+	throw std::runtime_error("403");
 }
 
 void Client::handleDeleteRequest(){
@@ -269,9 +286,9 @@ void Client::handleDeleteRequest(){
 
 
 	if (resourceType == ISFILE){
-		if (::remove(path.c_str()) == 0){}
-			// return a response of 204
-		else {}
+		if (::remove(path.c_str()) == 0)
+			return generateResponse(r, EMPTY, 204);
+		throw std::runtime_error("500");
 			// return a response of 500
 	}
 	else if (resourceType == ISDIR)
@@ -281,20 +298,16 @@ void Client::handleDeleteRequest(){
 		else
 		{
 			if (::rmdir(path.c_str()) == 0)
-			{
-				// return a response of 204
-			}
+				return generateResponse(r, EMPTY, 204);
 			else
 			{
 				if(access(path.c_str(), W_OK) == 0)
 				 	throw std::runtime_error("500");
-				else
-					throw std::runtime_error("403");
+				throw std::runtime_error("403");
 			}
 		}
 	}
-	else
-		throw std::runtime_error("404");
+	else throw std::runtime_error("404");
 
 }
 

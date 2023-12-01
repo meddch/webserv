@@ -21,6 +21,7 @@ public:
 	std::string						getRoot() const;
 	int								getId() const;
 	LocationContext 				&getLocation(std::string);
+	bool 							uploadEnabled() const;
 	// void							handlerequest(Request &request, Client &client);
 
 };
