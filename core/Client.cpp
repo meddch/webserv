@@ -124,7 +124,7 @@ void Client::getBody(std::string buffer)
 				break;
 
 			std::string sizeStr = _chunkedBuffer.substr(0, pos);
-			int size = strtol(sizeStr.c_str(), NULL, 16);
+			int size = std::strtol(sizeStr.c_str(), NULL, 16);
 			if (size == 0)
 			{
 				_requestIsReady = true;
@@ -225,8 +225,8 @@ void Client::handleGetRequest()
 			struct stat path_stat;
 			stat(index.c_str(), &path_stat);
 			response._contentLength = std::to_string(path_stat.st_size);
-				file.close();
-				return generateResponse(request, index, 200); // Give mechane to generateResponse
+			file.close();
+			return generateResponse(request, index, 200); // Give mechane to generateResponse
 			}
 		}
 		if (_config_location.autoindex){
@@ -332,3 +332,27 @@ bool Client::isMethodAllowed()
 
 
 
+//  stringMap Client::fetchCGIEnv()
+// {
+// 	stringMap env;
+
+// 	env["CONTENT_TYPE"] = request._headers["Content-Type"];
+// 	if (request._headers["Method"] == "POST")
+// 		env["CONTENT_LENGTH"] = request._body.size();
+// 	else
+// 		env["QUERY_STRING"] = request._headers["Query-String"];
+// 	env["HTTP_COOKIE"] = request._headers["Cookie"];
+// 	env["GATEWAY_INTERFACE"] = "CGI/1.1";
+// 	env["PATH_INFO"] = 
+// 	env["PATH_TRANSLATED"] = 
+// 	env["QUERY_STRING"] = 
+// 	env["REMOTE_ADDR"] = 
+// 	env["REQUEST_METHOD"] = 
+// 	env["SCRIPT_NAME"] = 
+// 	env["SERVER_NAME"] = 
+// 	env["SERVER_PORT"] = 
+// 	env["SERVER_PROTOCOL"] = 
+// 	env["SERVER_SOFTWARE"] = 
+
+// 	return env;
+// }

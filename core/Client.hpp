@@ -57,5 +57,7 @@ public :
 	void 		handleGetRequest(void);
 	void 		handlePostRequest(void);
 	void 		handleDeleteRequest(void);
+	stringMap 	fetchCGIEnv();
+
 
 };

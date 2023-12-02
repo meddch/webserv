@@ -51,7 +51,7 @@ int	Core::CreateTcpIpListeners(Listen_Addr addr)
 		throw std::runtime_error("Error: Bind failed: " + std::string(strerror(errno)));
 	}
 
-	if (listen(fd, 100))
+	if (listen(fd, 50))
 		throw std::runtime_error("Error: Listen failed: " + std::string(strerror(errno)));
 	
 	return fd;
@@ -290,6 +290,7 @@ void Core::handlePl_Out(Client& client)
 			bytesSent = send(client.getFd(), Str.c_str(), Str.length(), 0);
 			off_t len = BYTES > client.response._fileSize - client.response._offset ? client.response._fileSize - client.response._offset : BYTES;
 			bytesSent = sendfile(client.response.fd,client.getFd(), client.response._offset, &len, NULL, 0);
+			close(client.response.fd);
 			client.set_Connect(false);
 	
 		}
@@ -312,6 +313,7 @@ void Core::handlePl_Out(Client& client)
 					ssize_t bytesRead = read(client.response.fd, buffer, BYTES);
 					if (bytesRead == -1 || bytesRead == 0)
 					{
+						close(client.response.fd);
 						client.set_Connect(false);
 						return;
 					}
