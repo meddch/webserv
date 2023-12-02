@@ -6,7 +6,7 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 13:12:03 by azari             #+#    #+#             */
-/*   Updated: 2023/11/30 12:49:14 by azari            ###   ########.fr       */
+/*   Updated: 2023/12/02 11:53:48 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,8 @@ class Request
 		bool  	_transferEncodingExist;
 		bool  	_chunked;
 		bool	_contentLengthExist;
+	public:
+		bool 	_reqParsed;
 	protected :
 		std::string 	_requestMethod;
         std::string 	_REQ;

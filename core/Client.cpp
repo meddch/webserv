@@ -176,11 +176,7 @@ void	Client::createUploadFile(std::string filename, std::string content)
 {
 	std::ofstream file(filename.c_str());
 	if (!file.is_open())
-	{
-		std::cout << "Error opening file" << std::endl;
-		// _errorCode = 500;
-		return;
-	}
+		throw std::runtime_error("500");
 	file << content;
 	file.close();
 	// _errorCode = 201;
@@ -245,7 +241,7 @@ void Client::handleGetRequest()
 void Client::handlePostRequest(){
 	
 	Request r = this->request;
-	if (r._headers["Method"] == POST && server.uploadEnabled())
+	if (server.uploadEnabled())
 	{
 		if (r._headers["content-type"].find("multipart/form-data") != std::string::npos)
 		{
@@ -253,7 +249,8 @@ void Client::handlePostRequest(){
 			{
 				if (it->_headers["content-disposition"].find("filename=") != std::string::npos)
 				{
-					std::string filename = "/tmp/" + it->_headers["content-disposition"].substr(it->_headers["content-disposition"].find("filename=") + 10, it->_headers["content-disposition"].rfind('\"', std::string::npos) - (it->_headers["content-disposition"].find("filename=") + 10));
+					std::string root = _config_location.uploadPath.empty() ? server.getRoot() : _config_location.uploadPath;
+					std::string filename = root + "/" + it->_headers["content-disposition"].substr(it->_headers["content-disposition"].find("filename=") + 10, it->_headers["content-disposition"].rfind('\"', std::string::npos) - (it->_headers["content-disposition"].find("filename=") + 10));
 					std::string content = it->_body;
 					createUploadFile(filename, content);
 				}

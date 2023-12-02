@@ -6,7 +6,7 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 15:21:09 by azari             #+#    #+#             */
-/*   Updated: 2023/12/01 10:28:16 by azari            ###   ########.fr       */
+/*   Updated: 2023/12/02 12:06:58 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ Request::Request():
 	_transferEncodingExist(false),
 	_chunked(false),
 	_contentLengthExist(false),
+	_reqParsed(false),
 	_REQ(""),
 	_lastHeaderPos(0),
 	_parsePos(0),
@@ -35,6 +36,7 @@ Request::Request():
 BoundRequest::BoundRequest(std::string boundary, std::string _REQ):  _boundary(boundary), _boundaryEndPos(0), _boundaryNumber(0){
 	_headers.clear();
 	this->_REQ = _REQ;
+	this->_reqParsed = true;
 }
 
 bool hasInvalidCharacter(const std::string& str)
@@ -107,15 +109,16 @@ void Request::parseRequestLine(std::string requestLine){
 	_lastHeaderPos = _REQ.find("\r\n\r\n");
 }
 
-std::string stringToLowercase(std::string str){
+std::string stringToLowercase(std::string str)
+{
 	std::transform(str.begin(), str.end(), str.begin(), ::tolower);
 	return str;
 }
 
 void Request::markExistance(const std::string& headerKey){
-	
+
 	if (headerKey == "content-length" || headerKey == "Content-Length")
-		(_contentLengthExist = true);
+		_contentLengthExist = true;
 	if (headerKey == "transfer-encoding" || headerKey == "Transfer-Encoding")
 		_transferEncodingExist = true;
 	if (headerKey == "Host" || headerKey == "host")
@@ -131,7 +134,10 @@ void Request::checkExistance(void){
 	if (_transferEncodingExist == false && _contentLengthExist == false && _requestMethod == "POST")
 		throw std::runtime_error("400");
 	if (_hostExist == false)
+	{
 		throw std::runtime_error("400");
+	}
+
 	if (_transferEncodingExist == true && _chunked == false)
 		throw std::runtime_error("501");
 }
@@ -148,7 +154,8 @@ void	Request::parseRequestHeaders(){
 	    _parsePos = _REQ.find("\r\n", _parsePos) + 2;
 		markExistance(headerKey);
 	}
-	checkExistance();
+	if (_reqParsed == false)
+		checkExistance();
 }
 
 
