@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
+/*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/09 15:01:48 by azari             #+#    #+#             */
-/*   Updated: 2023/12/02 09:42:26 by mechane          ###   ########.fr       */
+/*   Updated: 2023/12/02 15:17:53 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,7 @@ class Response
 		std::string 	response;
 		std::string 	filebody;
 		std::string 	filePath;
+		std::string 	uploadFilePath;
 		std::string		root;
 		bool 			_headerSent;
 		bool			readyToSend;

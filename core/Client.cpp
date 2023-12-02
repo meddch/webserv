@@ -174,9 +174,13 @@ void Client::setServer(Server& server)
 
 void	Client::createUploadFile(std::string filename, std::string content)
 {
+	int resourceType = getResourceType(filename);
+	if (resourceType == ISFILE)
+		throw std::runtime_error("409");
 	std::ofstream file(filename.c_str());
 	if (!file.is_open())
 		throw std::runtime_error("500");
+	response.uploadFilePath = filename;
 	file << content;
 	file.close();
 	// _errorCode = 201;
@@ -242,18 +246,19 @@ void Client::handlePostRequest(){
 	Request r = this->request;
 	if (server.uploadEnabled() && r._headers["content-type"].find("multipart/form-data") != std::string::npos)
 	{
+			std::string root;
 			for (std::vector<BoundRequest>::iterator it = r._Boundaries.begin(); it != r._Boundaries.end(); ++it)
 			{
 				if (it->_headers["content-disposition"].find("filename=") != std::string::npos)
 				{
-					std::string root = _config_location.uploadPath.empty() ? server.getRoot() : _config_location.uploadPath;
+					root = _config_location.uploadPath.empty() ? server.getRoot() : _config_location.uploadPath;
 					std::string filename = root + "/" + it->_headers["content-disposition"].substr(it->_headers["content-disposition"].find("filename=") + 10, it->_headers["content-disposition"].rfind('\"', std::string::npos) - (it->_headers["content-disposition"].find("filename=") + 10));
 					std::string content = it->_body;
 					createUploadFile(filename, content);
 				}
 				else createUploadFile("RandomFile", it->_body);
 			}
-			return generateResponse(r, EMPTY, 201);
+			return generateResponse(r, EMPTY, 204);
 	}
 	else
 	{

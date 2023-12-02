@@ -26,8 +26,9 @@ void Response::initResponseHeaders(Request& request){
 	_status = generateStatusPhrase(_statusCode);
 	response = _version + _status + "\r\n";
 	_headers["Server"] = "Webserv/1.0.0 (mechane-azari)";
-	if (request._headers["Method"] == "GET")
-		_headers["Content-Length"] = _contentLength;
+	if (request._headers["Method"] == "POST")
+		_headers["Location"] = uploadFilePath;
+	_headers["Content-Length"] = _contentLength;
 	if (_headers.find("Content-Type") == _headers.end() && _statusCode != 204 && _statusCode != 304 && request._headers["Method"] == "GET")
 	{
 		_headers["Content-Type"] = findMimeType(filePath.substr(filePath.find_last_of(".")));
