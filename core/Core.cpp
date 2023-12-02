@@ -357,7 +357,7 @@ Server&	Core::getServer(Client client)
 	
 		size_t colonPos = Host.find(':');
 		in_addr_t ip = colonPos != std::string::npos ? toIpNum(Host.substr(0, colonPos)): toIpNum(Host);
-		int port = colonPos != std::string::npos ? toInt(Host.substr(colonPos + 1)): 80;
+		int port = colonPos != std::string::npos ? toIpNum(Host.substr(colonPos + 1)): 80;
 		if (port <= 0 || port > 65535)
 			throw std::runtime_error("port out of range");
 		for (size_t i = 0; i < _servers.size(); i++)
