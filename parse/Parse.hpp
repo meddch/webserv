@@ -129,10 +129,10 @@ class Parse
 		void ParseIndex(LocationContext& location);
 		void ParseRedirect(LocationContext& location);
 		
-		
-
 		void addDefaultLocation(ServerContext& server);
 
+		void ParseCgiPath(LocationContext& location);
+		void ParseUploadPath(LocationContext& location);
 
 
 };

@@ -10,7 +10,7 @@
 
 std::string ServerKeys[] = {"root", "server_name", "listen", "client_max_body_size", "error_page", "location", "upload"};
 
-std::string LocationKeys[] = {"autoindex", "alias", "allowed_methods", "index", "return", "root"};
+std::string LocationKeys[] = {"autoindex", "alias", "allowed_methods", "index", "return", "root", "cgi-path", "upload-path"};
 
 
 void  Parse::C_validServerKeys()
@@ -157,7 +157,6 @@ void	Parse::ParseServer()
 			ParseLocation(server);
 		else if (token == "upload")
 			ParseUpload(server);
-
 	}
 
 	if (server.serverName.empty())
@@ -228,6 +227,10 @@ void Parse::ParseLocation(ServerContext& server)
             ParseRedirect(location);
 		else if (token == "root")
 			ParseLocationRoot(location);
+		else if (token == "cgi-path")
+			ParseCgiPath(location);
+		else if (token == "upload-path")
+			ParseUploadPath(location);
 	}
 
 	if (location.allowedMethods.empty())
@@ -376,7 +379,7 @@ void Parse::ParseUri(LocationContext& location)
 {
 	
     location.uri = Accept();
-	if (location.uri.empty() || location.uri[0] != '/')
+	if (location.uri.empty() || (location.uri[0] != '/'  && location.uri[0] != '.'))
 		throw std::runtime_error("Parser: invalid uri!");
 	else if (location.uri.size() > 1 && location.uri[0] == '/' && location.uri[1] == '/')
 		throw std::runtime_error("Parser: invalid uri!");
@@ -457,7 +460,29 @@ void Parse::addDefaultLocation(ServerContext& server)
 }
 
 
+void Parse::ParseCgiPath(LocationContext& location)
+{
+	std::string token = Accept();
+	if (!location.cgiPath.empty())
+	{
+		Skip(";");
+		return;
+	}
+	location.cgiPath = token;
+	Skip(";");
+}
 
+void Parse::ParseUploadPath(LocationContext& location)
+{
+	std::string token = Accept();
+	if (!location.uploadPath.empty())
+	{
+		Skip(";");
+		return;
+	}
+	location.uploadPath = token;
+	Skip(";");
+}
 
 
 
