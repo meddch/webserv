@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
+/*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/09 15:01:48 by azari             #+#    #+#             */
-/*   Updated: 2023/12/01 18:45:17 by azari            ###   ########.fr       */
+/*   Updated: 2023/12/02 09:42:26 by mechane          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,6 @@ class Response
 		bool 			_headerSent;
 		bool			readyToSend;
 		int				fd;
-		std::string		root;
 		ssize_t			_fileSize;
 		ssize_t			_offset;
 		std::string generateResponse(Request&);

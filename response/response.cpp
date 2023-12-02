@@ -10,10 +10,10 @@ Response::Response():
 	_isfileRead(false),
 	response(""),
 	// _contentLength(""),
+	root(""),
 	_headerSent(false),
 	readyToSend(false),
 	fd(0),
-	root(""),
 	_fileSize(0),
 	_offset(0)
 {}
@@ -24,7 +24,6 @@ void Response::initResponseHeaders(Request& request){
 	if (_statusCode == 0)
 		_statusCode = request.getStatusCode();
 	_status = generateStatusPhrase(_statusCode);
-	std::cout << "STATUS: " << _status << std::endl;
 	response = _version + _status + "\r\n";
 	_headers["Server"] = "Webserv/1.0.0 (mechane-azari)";
 	if (request._headers["Method"] == "GET")
