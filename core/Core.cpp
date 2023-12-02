@@ -246,6 +246,7 @@ void Core::handlePl_IN(Client& client)
 			client.getBody(Str);
 		if (client._requestIsReady)
 		{
+			// std::cout << "Request: " << std::endl << Str << std::endl;
 			client.request.setRequestString(client._body);
 			client.request.parseRequestBody();
 			client.handleRequestMethod();

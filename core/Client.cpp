@@ -213,7 +213,6 @@ void Client::handleGetRequest()
 	{
 		if (fullPath[fullPath.length() - 1] != '/')
 			fullPath += "/";
-		std::cout << _config_location.index.size() << std::endl;
 		for (std::vector<std::string>::iterator it = _config_location.index.begin(); it != _config_location.index.end(); ++it)
 		{
 			std::string index = fullPath + (std::string)*it;
@@ -241,10 +240,8 @@ void Client::handleGetRequest()
 void Client::handlePostRequest(){
 	
 	Request r = this->request;
-	if (server.uploadEnabled())
+	if (server.uploadEnabled() && r._headers["content-type"].find("multipart/form-data") != std::string::npos)
 	{
-		if (r._headers["content-type"].find("multipart/form-data") != std::string::npos)
-		{
 			for (std::vector<BoundRequest>::iterator it = r._Boundaries.begin(); it != r._Boundaries.end(); ++it)
 			{
 				if (it->_headers["content-disposition"].find("filename=") != std::string::npos)
@@ -257,7 +254,6 @@ void Client::handlePostRequest(){
 				else createUploadFile("RandomFile", it->_body);
 			}
 			return generateResponse(r, EMPTY, 201);
-		}
 	}
 	else
 	{

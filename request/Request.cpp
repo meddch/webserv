@@ -6,7 +6,7 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 15:21:09 by azari             #+#    #+#             */
-/*   Updated: 2023/12/02 12:06:58 by azari            ###   ########.fr       */
+/*   Updated: 2023/12/02 12:54:49 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -149,7 +149,8 @@ void	Request::parseRequestHeaders(){
 
 		headerKey =_REQ.substr(_parsePos,_REQ.find(":", _parsePos) - _parsePos);
 		headerValue =_REQ.substr(_REQ.find(":", _parsePos) + 2,_REQ.find("\r\n", _parsePos) -_REQ.find(":", _parsePos) - 2);
-		(headerKey == "content-length") && (_contentLength = std::stoi(headerValue));
+		if (headerKey == "content-length" || headerKey == "Content-Length")
+			_contentLength = std::stoi(headerValue);
 		this->_headers[stringToLowercase(headerKey)] = headerValue;
 	    _parsePos = _REQ.find("\r\n", _parsePos) + 2;
 		markExistance(headerKey);
