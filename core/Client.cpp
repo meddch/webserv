@@ -1,4 +1,5 @@
 #include "Client.hpp"
+#include <cstdio>
 #include <sys/_types/_ssize_t.h>
 
 Client::Client(int fd, Listen_Addr Client, Listen_Addr Server) 
@@ -110,7 +111,7 @@ void Client::getREQ(std::string buffer)
 
 void Client::getBody(std::string buffer)
 {
-	if (server.getMaxBodySize() != -1 && _bytesExpected > server.getMaxBodySize())
+	if (_bytesExpected > server.getMaxBodySize())
 		throw std::runtime_error("413");
 	
 	if (_recvChunk)
@@ -133,7 +134,7 @@ void Client::getBody(std::string buffer)
 			
 			_body.append(_chunkedBuffer.substr(pos + 2, size));
 			_chunkedBuffer.erase(0, pos + 2 + size + 2);
-			if (server.getMaxBodySize() != -1 && (ssize_t)_body.size() > server.getMaxBodySize())
+			if ((ssize_t)_body.size() > server.getMaxBodySize())
 				throw std::runtime_error("413");
 		}
 	}
@@ -141,6 +142,8 @@ void Client::getBody(std::string buffer)
 	{
 		_body.append(buffer);
 		_bytesRecved += buffer.length();
+		if ((ssize_t)_body.size() > server.getMaxBodySize())
+			throw std::runtime_error("413");
 		if (_bytesRecved >= _bytesExpected)
 			_requestIsReady = true;
 	}

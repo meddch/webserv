@@ -1,5 +1,6 @@
 #pragma once
 
+#include <sys/_types/_size_t.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <cstring>
@@ -16,7 +17,7 @@
 
 #include "Parse.hpp"
 
-int    			toInt(std::string str);
+int    			toNum(std::string str);
 std::string     toString(int value);
 in_addr_t   	toIPv4(std::string str);
 std::string 	toIPString(in_addr_t ip);

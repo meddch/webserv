@@ -1,4 +1,5 @@
 #include "utils.hpp"
+#include <sys/_types/_ssize_t.h>
 
 
 std::string toString(int value)
@@ -11,7 +12,7 @@ std::string toString(int value)
 	return ss.str();
 }
 
-int toInt(std::string str)
+int toNum(std::string str)
 {
 	std::istringstream iss(str);
 	int result;
@@ -65,7 +66,7 @@ in_addr_t toIPv4(std::string str)
 			throw std::runtime_error("failed to convert " + str);
 
 		std::string token = i < 3 ? str.substr(0, str.find('.')) : str;
-		int value = toInt(token);
+		int value = toNum(token);
 		if (!isAllDigit(token) || value < 0 || value > 255)
 			throw std::runtime_error("failed to convert " + str);
 
@@ -104,7 +105,7 @@ in_addr_t toIpNum(std::string str)
 			throw std::runtime_error("failed to convert " + str);
 
 		std::string token = i < 3 ? str.substr(0, str.find('.')) : str;
-		int value = toInt(token);
+		int value = toNum(token);
 		if (!isAllDigit(token) || value < 0 || value > 255)
 			throw std::runtime_error("failed to convert " + str);
 

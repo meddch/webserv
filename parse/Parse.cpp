@@ -1,6 +1,7 @@
 #include "Parse.hpp"
 #include "utils.hpp"
 #include <cstddef>
+#include <cstdio>
 #include <cstdlib>
 #include <sys/_types/_ssize_t.h>
 #include <sys/stat.h>
@@ -10,25 +11,26 @@
 
 std::string ServerKeys[] = {"root", "server_name", "listen", "client_max_body_size", "error_page", "location", "upload"};
 
-std::string LocationKeys[] = {"autoindex", "alias", "allowed_methods", "index", "return", "root", "cgi-path", "upload-path"};
+std::string LocationKeys[] = {"autoindex", "alias", "allowed_methods", "index", "return", "root", "upload_path"};
 
 
 void  Parse::C_validServerKeys()
 {
-  for (size_t i = 0; i < sizeof(ServerKeys) / sizeof(ServerKeys[0]); i++)
+  for (size_t i = 0; i < 7; i++)
     validServerKeys.push_back(ServerKeys[i]);
 }
 
 void Parse::C_validLocationKeys()
 {
-  for (size_t i = 0; i < sizeof(LocationKeys) / sizeof(LocationKeys[0]); i++)
+  for (size_t i = 0; i < 7; i++)
     validLocationKeys.push_back(LocationKeys[i]);
 }
 
 
 bool Parse::isValidServerKey(std::string key)
 {
-	return std::find(validServerKeys.begin(), validServerKeys.end(), key) == validServerKeys.end();
+	bool state = std::find(validServerKeys.begin(), validServerKeys.end(), key) == validServerKeys.end();
+	return state;
 }
 
 bool Parse::isValidLocationKey(std::string key)
@@ -45,7 +47,8 @@ Parse::Parse(std::string const &filename)
 {
 	_config.clear();
     _tokens.clear();
-
+	C_validServerKeys();
+	C_validLocationKeys();
 
     std::ifstream file(filename.c_str());
 	if (file.fail())
@@ -127,7 +130,7 @@ ServerContext Parse::Server(void)
 	config.root.clear();
 	config.serverName.clear();
 	config.errorPages.clear();
-	config.clientMaxBodySize = -1;
+	config.clientMaxBodySize = MAX_BODY_SIZE;
 	config.upload = false;
 
 	return config;
@@ -141,7 +144,7 @@ void	Parse::ParseServer()
 	std::string token;
 	while ((token = Accept()) != "}")
 	{
-		if (!isValidServerKey(token))
+		if (isValidServerKey(token))
 			throw std::runtime_error("Error : Parser::unknown  key " + token + "!");
 		else if (token == "root")
 			ParseServerRoot(server);
@@ -213,7 +216,7 @@ void Parse::ParseLocation(ServerContext& server)
 	std::string token;
 	while ((token = Accept()) != "}")
     {
-		if (!isValidLocationKey(token))
+		if (isValidLocationKey(token))
 			throw std::runtime_error("Error : Parser::Unknown key " + token + "!");
 		else if (token == "autoindex")
 			ParseAutoindex(location);
@@ -229,7 +232,7 @@ void Parse::ParseLocation(ServerContext& server)
 			ParseLocationRoot(location);
 		else if (token == "cgi-path")
 			ParseCgiPath(location);
-		else if (token == "upload-path")
+		else if (token == "upload_path")
 			ParseUploadPath(location);
 	}
 
@@ -300,7 +303,7 @@ void Parse::ParseAddress(ServerContext& server)
 		else 
 			server.address.ip = 0;
 
-		int port = toInt(token);
+		int port = toNum(token);
 		if (port <= 0 || port > 65535)
 			throw std::runtime_error("Parser : Invalid Port!");
 		server.address.port = port;
@@ -315,7 +318,7 @@ void Parse::ParseAddress(ServerContext& server)
 
 void Parse::ParseClientMaxBodySize(ServerContext& server)
 {
-    if (server.clientMaxBodySize != -1)
+    if (server.clientMaxBodySize != 100000000)
 	{
 		Accept();
 		Skip(";");
@@ -323,11 +326,13 @@ void Parse::ParseClientMaxBodySize(ServerContext& server)
 	}
 	try
     {
-		ssize_t value = toInt(Accept());
+		ssize_t value = toNum(Accept());
 		if (value < 0)
 			throw std::runtime_error("negative value");
 
-		server.clientMaxBodySize = value;
+		
+		if (value < 100000000)
+			server.clientMaxBodySize = value;
 		Skip(";");
 	}
 	catch (std::exception& e)
@@ -361,7 +366,7 @@ void Parse::ParseErrorPage(ServerContext& server)
 	try {
 		for (size_t i = 0; i < tokens.size() - 1; i++)
         {
-			int code = toInt(tokens[i]);
+			int code = toNum(tokens[i]);
 			std::map<int, std::string>::iterator it;
 			if (server.errorPages.find(code) != server.errorPages.end())
 				continue ;
@@ -431,13 +436,14 @@ void Parse::ParseRedirect(LocationContext& location)
 {
 	try 
     {
-		location.redirect.first = toInt(Accept());
+		location.redirect.first = toNum(Accept());
 		location.redirect.second = Accept(); 
 	}
 	catch (std::exception& e) 
     {
 		throw std::runtime_error("Parser: " + std::string(e.what()) + "!");
 	}
+	Skip(";");
 }
 
 
