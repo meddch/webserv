@@ -22,10 +22,10 @@ private :
 	std::string	_httpBuffer;
 	std::string	_chunkedBuffer;
 	bool		_recvChunk;
-	int 		_bytesRecved;
 	int 		_bytesExpected;
 	Server		_server;
 public :
+	int 		_bytesRecved;
 	Request		request;
 	Server 		server;
 	Response	response;

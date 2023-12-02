@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
+/*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 15:21:09 by azari             #+#    #+#             */
-/*   Updated: 2023/12/02 12:54:49 by azari            ###   ########.fr       */
+/*   Updated: 2023/12/02 19:28:46 by mechane          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,7 +150,7 @@ void	Request::parseRequestHeaders(){
 		headerKey =_REQ.substr(_parsePos,_REQ.find(":", _parsePos) - _parsePos);
 		headerValue =_REQ.substr(_REQ.find(":", _parsePos) + 2,_REQ.find("\r\n", _parsePos) -_REQ.find(":", _parsePos) - 2);
 		if (headerKey == "content-length" || headerKey == "Content-Length")
-			_contentLength = std::stoi(headerValue);
+			_contentLength = std::atoi(headerValue.c_str());
 		this->_headers[stringToLowercase(headerKey)] = headerValue;
 	    _parsePos = _REQ.find("\r\n", _parsePos) + 2;
 		markExistance(headerKey);
@@ -164,8 +164,8 @@ void    Request::parseRequestBody()
 {
     std::string key, value;
 	if (_headers.find("content-length") != _headers.end() && _headers.find("transfer-encoding") == _headers.end() && _headers["content-type"].find("multipart/form-data") == std::string::npos)
-    	_body =_REQ.substr(_parsePos, std::stoi(_headers["content-length"]));
-    else if (_headers["content-type"].find("multipart/form-data") != std::string::npos){
+    	_body =_REQ.substr(_parsePos, std::atoi((_headers["content-length"]).c_str()));
+	else if (_headers["content-type"].find("multipart/form-data") != std::string::npos){
         
         BoundRequest obj("--" + _headers["content-type"].substr(_headers["content-type"].find("boundary=") + 9, _headers["content-type"].npos), _REQ);
 		obj._boundaryEndPos = _REQ.find(obj._boundary + "--");

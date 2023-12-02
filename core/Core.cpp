@@ -8,6 +8,7 @@
 #include <sstream>
 #include <string>
 #include <sys/_types/_off_t.h>
+#include <sys/_types/_size_t.h>
 #include <sys/_types/_ssize_t.h>
 #include <sys/errno.h>
 #include <sys/poll.h>
@@ -51,7 +52,7 @@ int	Core::CreateTcpIpListeners(Listen_Addr addr)
 		throw std::runtime_error("Error: Bind failed: " + std::string(strerror(errno)));
 	}
 
-	if (listen(fd, 50))
+	if (listen(fd, 255))
 		throw std::runtime_error("Error: Listen failed: " + std::string(strerror(errno)));
 	
 	return fd;
@@ -174,7 +175,7 @@ pollfd Core::make_PlFd(int fd, short events)
 	pfd.fd = fd;
 	pfd.events = events;
 	pfd.revents = 0;
-	// fcntl(fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
+	fcntl(fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
 	return pfd;
 }
 
@@ -246,7 +247,6 @@ void Core::handlePl_IN(Client& client)
 			client.getBody(Str);
 		if (client._requestIsReady)
 		{
-			// std::cout << "Request: " << std::endl << Str << std::endl;
 			client.request.setRequestString(client._body);
 			client.request.parseRequestBody();
 			client.handleRequestMethod();
@@ -258,7 +258,7 @@ void Core::handlePl_IN(Client& client)
 	{
 		client.response.handleResponseError(client.request, (std::string)e.what());
 		client.setReady(true);
-		setPlfdEvents(client.getFd(), POLLOUT);
+		setPlfdEvents(client.getFd(), POLLOUT | POLLIN);
 	}
 }
 
@@ -267,15 +267,15 @@ void Core::handlePl_Out(Client& client)
 	signal(SIGPIPE, SIG_IGN);
 	if (client.isReady())
 	{
-		
-
 		ssize_t bytesSent = 0;
 		std::string Str;
 		if (client.response.readyToSend)
 		{
 			Str = client.response.response;
 			bytesSent = send(client.getFd(), Str.c_str(), Str.length(), 0);
+			std::cout << Str << std::endl;
 			client.set_Connect(false);
+
 		}
 		else if (client.request._headers.find("range") != client.request._headers.end()){
 			struct stat filestat;
@@ -285,13 +285,24 @@ void Core::handlePl_Out(Client& client)
 			ss << client.request._headers["range"].substr(client.request._headers["range"].find("=") + 1);
 			ss >> client.response._offset;
 			client.response.generateChunkedResponse();
-			client.response.fd = open(client.response.filePath.c_str(), O_RDONLY);
+			std::fstream file;
+			file.open(client.response.filePath.c_str());
+			file.seekg(client.response._offset, std::ios::beg);
 			Str = client.response.response;
-			bytesSent = send(client.getFd(), Str.c_str(), Str.length(), 0);
-			off_t len = BYTES > client.response._fileSize - client.response._offset ? client.response._fileSize - client.response._offset : BYTES;
-			bytesSent = sendfile(client.response.fd,client.getFd(), client.response._offset, &len, NULL, 0);
-			close(client.response.fd);
-			client.set_Connect(false);
+			size_t len = Str.length();
+			char Buffer[BYTES];
+			file.read(Buffer, BYTES);
+			ssize_t bytesRead = file.gcount();
+			if (bytesRead == -1 || bytesRead == 0)
+			{
+				file.close();
+				client.set_Connect(false);
+				return;
+			}
+			Str += std::string(Buffer, bytesRead);
+			len += bytesRead;
+			bytesSent = send(client.getFd(), Str.c_str(), len, 0);
+			file.close();
 	
 		}
 		else if (client.request._headers.find("range") == client.request._headers.end())
@@ -318,7 +329,6 @@ void Core::handlePl_Out(Client& client)
 						return;
 					}
 					bytesSent = send(client.getFd(), buffer, bytesRead, 0);
-
 				}
 			}
 		}

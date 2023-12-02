@@ -111,9 +111,8 @@ void Client::getREQ(std::string buffer)
 
 void Client::getBody(std::string buffer)
 {
-	if (_bytesExpected > server.getMaxBodySize())
+	if (request.getContentLength() >  server.getMaxBodySize())
 		throw std::runtime_error("413");
-	
 	if (_recvChunk)
 	{
 		_chunkedBuffer.append(buffer);
@@ -134,6 +133,7 @@ void Client::getBody(std::string buffer)
 			
 			_body.append(_chunkedBuffer.substr(pos + 2, size));
 			_chunkedBuffer.erase(0, pos + 2 + size + 2);
+			_bytesRecved += size;
 			if ((ssize_t)_body.size() > server.getMaxBodySize())
 				throw std::runtime_error("413");
 		}
@@ -201,7 +201,12 @@ void Client::generateResponse(Request& request, std::string path, int code)
 void Client::handleGetRequest()
 {
 	Request r = this->request;
-	std::string fullPath = server.getRoot() + request.getRequestURI();
+	if (_config_location.root.empty())
+		_config_location.root = server.getRoot();
+	std::string fullPath = _config_location.root + request.getRequestURI();
+
+	if (fullPath.find(server.getRoot()) == std::string::npos)
+		throw std::runtime_error("403");
 
 	int resourceType = getResourceType(fullPath);	
     if (resourceType == ISNOTEXIST)
