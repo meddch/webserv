@@ -259,15 +259,11 @@ void Core::handlePl_IN(Client& client)
 		std::string code = e.what();
 		if (client._config_location.redirect.first == std::atoi(code.c_str()))
 		{
-			puts("JMA3");
 			client.response.initResponseHeaders(client.request);
 			client.setReady(true);
 		}
-		else{
-
-			std::cout << client.server.getErrorPage(std::atoi(code.c_str())) << std::endl;
+		else
 			client.response.handleResponseError(client.request, client.server.getErrorPage(std::atoi(code.c_str())) ,code);
-		}
 		client.setReady(true);
 		setPlfdEvents(client.getFd(), POLLOUT | POLLIN);
 	}
@@ -284,8 +280,6 @@ void Core::handlePl_Out(Client& client)
 		{
 			Str = client.response.response;
 			bytesSent = send(client.getFd(), Str.c_str(), Str.length(), 0);
-			std::cout << Str << std::endl;
-			client.set_Connect(false);
 
 		}
 		else if (client.request._headers.find("range") != client.request._headers.end()){
