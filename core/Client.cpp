@@ -336,25 +336,23 @@ bool Client::isMethodAllowed()
 }
 
 
-//  stringMap Client::fetchCGIEnv()
-// {
-// 	stringMap env;
+ stringMap Client::fetchCGIEnv()
+{
+	stringMap env;
 
-// 	env["CONTENT_TYPE"] = request._headers["Content-Type"];
-// 	if (request._headers["Method"] == "POST")
-// 		env["CONTENT_LENGTH"] = request._body.size();
-// 	else
-// 		env["QUERY_STRING"] = request._headers["Query-String"];
-// 	env["HTTP_COOKIE"] = request._headers["Cookie"];
-// 	env["GATEWAY_INTERFACE"] = "CGI/1.1";
-// 	env["PATH_INFO"] = 
-// 	env["QUERY_STRING"] = 
-// 	env["REMOTE_ADDR"] = 
-// 	env["REQUEST_METHOD"] = 
-// 	env["SCRIPT_FILENAME"] = 
-// 	env["SERVER_NAME"] = 
-// 	env["SERVER_PORT"] = 
-// 	env["SERVER_SOFTWARE"] = 
-
-// 	return env;
-// }
+	env["CONTENT_TYPE"] = request._headers["Content-Type"];
+	if (request._headers["Method"] == "POST")
+		env["CONTENT_LENGTH"] = request._body.size();
+	else
+		env["QUERY_STRING"] = request._headers["Queries"];
+	env["HTTP_COOKIE"] = request._headers["Cookies"];
+	env["GATEWAY_INTERFACE"] = "CGI/1.1";
+	env["PATH_INFO"] = request.getRequestURI();
+	env["REMOTE_ADDR"] = std::to_string(_clientAddr.ip);
+	env["REQUEST_METHOD"] = request._headers["Method"];
+	env["SCRIPT_FILENAME"] = _config_location.cgiPath;
+	env["SERVER_NAME"] = server.getName();
+	env["SERVER_PORT"] = std::to_string(server._config.address.port);
+	env["SERVER_SOFTWARE"] = "Webserv/1.0.0 (mechane-azari)";
+	return env;
+}
