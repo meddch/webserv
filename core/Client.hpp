@@ -32,6 +32,7 @@ public :
 	std::string	_body;
 	bool 		_requestIsReady;
 	bool 		_requestParsed;
+	bool 		_isCGI;
 	LocationContext	_config_location;
 	Client(int fd, Listen_Addr Client, Listen_Addr Server);
 	in_addr_t 	getServerIp(void) const;
@@ -58,6 +59,8 @@ public :
 	void 		handlePostRequest(void);
 	void 		handleDeleteRequest(void);
 	stringMap 	fetchCGIEnv();
+	void 		handleCGI();
+
 
 
 };

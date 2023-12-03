@@ -1,6 +1,8 @@
 #include "Client.hpp"
 #include <cstdio>
 #include <sys/_types/_ssize_t.h>
+#include <sys/fcntl.h>
+#include <unistd.h>
 
 Client::Client(int fd, Listen_Addr Client, Listen_Addr Server) 
 {
@@ -21,6 +23,7 @@ Client::Client(int fd, Listen_Addr Client, Listen_Addr Server)
 	_body.clear();
 	_bytesRecved = 0;
 	_bytesExpected = 0;
+	_isCGI = false;
 	_lastTime = std::time(NULL);
 }
 
@@ -56,7 +59,9 @@ bool Client::is_Connected() const
 
 bool Client::Timeout() const 
 {
-	return (std::time(NULL) - _lastTime) > TIMEOUT_T; 
+	if((std::time(NULL) - _lastTime) > TIMEOUT_T)
+		throw std::runtime_error("408");
+	return false; 
 }
 
 
@@ -320,6 +325,11 @@ void Client::handleDeleteRequest(){
 void Client::handleRequestMethod(){
 
 	Request r = this->request;
+	if (_config_location.uri.find(".py") != std::string::npos || _config_location.uri.find(".php") != std::string::npos)
+	{
+		handleCGI();
+		return ;
+	}
 	if (r._headers["Method"] == GET)
 		return handleGetRequest();
 	else if (r._headers["Method"] == POST)
@@ -340,6 +350,7 @@ bool Client::isMethodAllowed()
 {
 	stringMap env;
 
+	_body = _body.substr(_body.find("\r\n\r\n") + 4);
 	env["CONTENT_TYPE"] = request._headers["Content-Type"];
 	if (request._headers["Method"] == "POST")
 		env["CONTENT_LENGTH"] = request._body.size();
@@ -348,11 +359,90 @@ bool Client::isMethodAllowed()
 	env["HTTP_COOKIE"] = request._headers["Cookies"];
 	env["GATEWAY_INTERFACE"] = "CGI/1.1";
 	env["PATH_INFO"] = request.getRequestURI();
-	env["REMOTE_ADDR"] = std::to_string(_clientAddr.ip);
+	env["PATH_TRANSLATED"] =  server.getRoot() + request.getRequestURI();
+	env["REMOTE_ADDR"] = toIPString(server._config.address.ip);
 	env["REQUEST_METHOD"] = request._headers["Method"];
 	env["SCRIPT_FILENAME"] = _config_location.cgiPath;
 	env["SERVER_NAME"] = server.getName();
 	env["SERVER_PORT"] = std::to_string(server._config.address.port);
 	env["SERVER_SOFTWARE"] = "Webserv/1.0.0 (mechane-azari)";
+	env["REDIRECT_STATUS"] = "200";
 	return env;
+}
+
+void Client::handleCGI()
+{
+	Request r = this->request;
+	std::string path = server.getRoot() + request.getRequestURI();
+	
+	int pipeIn[2];
+	int pipeOut[2];
+	pid_t pid;
+
+	if (pipe(pipeIn) == -1 || pipe(pipeOut) == -1)
+		throw std::runtime_error("500");
+
+	if ((pid = fork()) == -1)
+		throw std::runtime_error("500");
+
+	std::string result= "";
+	if (pid == 0) {
+		try {
+				stringMap env = fetchCGIEnv();
+				char **envp = new char*[env.size() + 1];
+				int i = 0;
+				for (stringMap::iterator it = env.begin(); it != env.end(); ++it)
+				{
+					std::string tmp = it->first + "=" + it->second;
+					envp[i] = new char[tmp.size() + 1];
+					std::strcpy(envp[i], tmp.c_str());
+					i++;
+				}
+				envp[i] = NULL;
+				char **argv = new char*[3];
+				argv[0] = new char[_config_location.cgiPath.size() + 1];
+				std::strcpy(argv[0], _config_location.cgiPath.c_str());
+				argv[1] = new char[path.size() + 1];
+				std::strcpy(argv[1], path.c_str());
+				argv[2] = NULL;
+	
+
+			chdir(std::string(argv[1]).substr(0, std::string(argv[1]).find_last_of('/')).c_str());
+			dup2(pipeIn[0], 0), dup2(pipeOut[1], 1);
+			close(pipeIn[1]), close(pipeOut[0]);
+	
+			if (execve(argv[0], argv, envp) == -1)
+				throw std::runtime_error("500");
+		}
+		catch (const std::exception& e)
+		{
+			std::exit(1);
+		}
+	}
+	else {
+		int status;
+
+		// Pipe stdin
+		_body = _body.substr(_body.find("\r\n\r\n") + 4);
+		// _body = _body.substr(0, _body.find_first_of("="));
+		close(pipeOut[1]), close(pipeIn[0]);
+		write(pipeIn[1], _body.c_str(), request._body.size());
+		close(pipeIn[1]);
+
+		// Pipe stdout
+		char buffer[1024];
+		ssize_t bytesRead;
+		while((bytesRead = read(pipeOut[0], buffer,1024)) > 0) 
+			result += std::string(buffer, bytesRead);
+		close(pipeOut[0]);
+
+		waitpid(pid, &status, 0);
+		if (!(WIFEXITED(status) && WEXITSTATUS(status) == 0)) 
+			throw std::runtime_error("500");
+
+	}
+	response.response =  "HTTP/1.1 200 script output follows\r\n Server: Webserv/1.0.0 (mechane-azari)\r\n Content-Type: text/html\r\n\r\n" + result;
+	response.readyToSend = true;
+	_isCGI = true;
+	
 }

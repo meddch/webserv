@@ -1,23 +1,7 @@
 #include "Core.hpp"
 #include "Server.hpp"
-#include <cstddef>
-#include <cstdio>
-#include <fstream>
-#include <iostream>
-#include <netinet/in.h>
-#include <sstream>
 #include <string>
-#include <sys/_types/_off_t.h>
-#include <sys/_types/_size_t.h>
-#include <sys/_types/_ssize_t.h>
-#include <sys/errno.h>
-#include <sys/poll.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <sys/uio.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
+
 
 bool Core::runing = true;
 
@@ -280,7 +264,13 @@ void Core::handlePl_Out(Client& client)
 		{
 			Str = client.response.response;
 			bytesSent = send(client.getFd(), Str.c_str(), Str.length(), 0);
-
+			if (bytesSent == -1 || bytesSent == 0)
+			{
+				client.set_Connect(false);
+				return;
+			}
+			if (client._isCGI)
+				client.set_Connect(false);
 		}
 		else if (client.request._headers.find("range") != client.request._headers.end()){
 			struct stat filestat;
