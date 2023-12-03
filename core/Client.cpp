@@ -201,13 +201,10 @@ void Client::generateResponse(Request& request, std::string path, int code)
 void Client::handleGetRequest()
 {
 	Request r = this->request;
-	if (_config_location.root.empty())
-		_config_location.root = server.getRoot();
-	std::string fullPath = _config_location.root + request.getRequestURI();
+	std::string fullPath = getPath();
 
 	if (fullPath.find(server.getRoot()) == std::string::npos)
 		throw std::runtime_error("403");
-
 	int resourceType = getResourceType(fullPath);	
     if (resourceType == ISNOTEXIST)
 		throw std::runtime_error("404");
@@ -256,8 +253,9 @@ void Client::handlePostRequest(){
 			{
 				if (it->_headers["content-disposition"].find("filename=") != std::string::npos)
 				{
-					root = _config_location.uploadPath.empty() ? server.getRoot() : _config_location.uploadPath;
-					std::string filename = root + "/" + it->_headers["content-disposition"].substr(it->_headers["content-disposition"].find("filename=") + 10, it->_headers["content-disposition"].rfind('\"', std::string::npos) - (it->_headers["content-disposition"].find("filename=") + 10));
+					if (_config_location.uploadPath.empty())
+						throw std::runtime_error("500");
+					std::string filename = _config_location.uploadPath + "/" + it->_headers["content-disposition"].substr(it->_headers["content-disposition"].find("filename=") + 10, it->_headers["content-disposition"].rfind('\"', std::string::npos) - (it->_headers["content-disposition"].find("filename=") + 10));
 					std::string content = it->_body;
 					createUploadFile(filename, content);
 				}
@@ -335,6 +333,26 @@ bool Client::isMethodAllowed()
 	return true;
 }
 
+std::string Client::getPath()
+{
+	std::string root = server.getRoot();
+
+	if (_config_location.alias.empty() == false)
+	{
+		std::cout << "request.getRequestURI(): " << request.getRequestURI() << std::endl;
+		std::string matched_location = server.getLocation(request.getRequestURI()).uri;
+		root = _config_location.alias;
+		request._headers["URI"].erase(0, matched_location.length());
+		std::cout << "new Path: "<< root + request.getRequestURI() << std::endl;
+		std::cout << _config_location.alias << std::endl;
+		std::cout << "matched_location: " << matched_location << std::endl;
+		return root + request.getRequestURI();
+	}
+	else if (_config_location.root.empty() == false)
+		root = _config_location.root;
+
+	return root + request.getRequestURI();
+}
 
  stringMap Client::fetchCGIEnv()
 {

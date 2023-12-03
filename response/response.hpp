@@ -6,7 +6,7 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/09 15:01:48 by azari             #+#    #+#             */
-/*   Updated: 2023/12/03 11:34:58 by azari            ###   ########.fr       */
+/*   Updated: 2023/12/03 14:53:57 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,4 +66,12 @@ class Response
 		bool isfileRead();
 		void generateChunkedResponse();
 
+};
+
+struct t_path
+{
+	std::string serverRoot;
+	std::string routedPath;
+	std::string alias;
+	std::string uri;
 };

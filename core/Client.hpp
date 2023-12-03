@@ -58,6 +58,7 @@ public :
 	void 		handlePostRequest(void);
 	void 		handleDeleteRequest(void);
 	stringMap 	fetchCGIEnv();
+	std::string getPath();
 
 
 };

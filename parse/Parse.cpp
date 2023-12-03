@@ -412,6 +412,7 @@ void Parse::ParseAlias(LocationContext& location)
 		return;
 	}
 	location.alias = token;
+	Skip(";");
 
 }
 
