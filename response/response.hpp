@@ -6,7 +6,7 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/09 15:01:48 by azari             #+#    #+#             */
-/*   Updated: 2023/12/03 14:53:57 by azari            ###   ########.fr       */
+/*   Updated: 2023/12/03 16:51:19 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,7 @@ class Response
 		bool handleResponseError(Request&);
 		void initResponseHeaders(Request&);
 		bool handleResponseError(Request& request, std::string errorPage, std::string code);
+		void initRedirectHeaders(Request& request, std::string location);
 		void generateAutoIndex(Request&);
 		bool isConnectionKeepAlive();
 		void setStatusCode(size_t);

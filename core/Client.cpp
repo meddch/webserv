@@ -198,6 +198,13 @@ void Client::generateResponse(Request& request, std::string path, int code)
 	response.readyToSend = true;
 }
 
+void Client::generateRedirectionResponse(Request& request, std::string path, int code)
+{
+	response.setStatusCode(code);
+	response.initRedirectHeaders(request, path);
+	response.readyToSend = true;
+}
+
 void Client::handleGetRequest()
 {
 	Request r = this->request;
@@ -217,8 +224,9 @@ void Client::handleGetRequest()
 	}
 	else if (resourceType == ISDIR)
 	{
+		std::cout << "fullPath: " << fullPath << std::endl;
 		if (fullPath[fullPath.length() - 1] != '/')
-			fullPath += "/";
+			return generateRedirectionResponse(r, HTTP + request._headers["host"] + request.uri + "/", 301);
 		for (std::vector<std::string>::iterator it = _config_location.index.begin(); it != _config_location.index.end(); ++it)
 		{
 			std::string index = fullPath + (std::string)*it;
@@ -265,14 +273,14 @@ void Client::handlePostRequest(){
 	}
 	else
 	{
-		std::string fullPath = server.getRoot() + request.getRequestURI();
+		std::string fullPath = getPath();
 		int resourceType = getResourceType(fullPath);
 		if (resourceType == ISFILE)
 			throw std::runtime_error("403"); // check if CGI after
 		else if (resourceType == ISDIR)
 		{
 			if (fullPath[fullPath.length() - 1] != '/')
-				return generateResponse(r, fullPath, 301);
+				return generateRedirectionResponse(r, HTTP + request._headers["host"] + request.uri + "/", 301);
 			if (_config_location.index.size() <= 0)
 				throw std::runtime_error("403");
 			throw std::runtime_error("403"); // check if CGI after
@@ -339,18 +347,13 @@ std::string Client::getPath()
 
 	if (_config_location.alias.empty() == false)
 	{
-		std::cout << "request.getRequestURI(): " << request.getRequestURI() << std::endl;
 		std::string matched_location = server.getLocation(request.getRequestURI()).uri;
 		root = _config_location.alias;
 		request._headers["URI"].erase(0, matched_location.length());
-		std::cout << "new Path: "<< root + request.getRequestURI() << std::endl;
-		std::cout << _config_location.alias << std::endl;
-		std::cout << "matched_location: " << matched_location << std::endl;
 		return root + request.getRequestURI();
 	}
 	else if (_config_location.root.empty() == false)
 		root = _config_location.root;
-
 	return root + request.getRequestURI();
 }
 

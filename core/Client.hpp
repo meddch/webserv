@@ -51,6 +51,7 @@ public :
 	void		matchLocation(std::vector<LocationContext>);
 	void		createUploadFile(std::string filename, std::string content);
 	void		generateResponse(Request& request, std::string path, int code);
+	void		generateRedirectionResponse(Request& request, std::string path, int code);
 	void 		handleRequestMethod(void);
 	bool 		isMethodAllowed(void);
 	void 		getLocations(Server&);

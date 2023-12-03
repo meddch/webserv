@@ -13,6 +13,8 @@
 #define ISDIR 2
 #define ISNOTEXIST 3
 #define EMPTY ""
+#define REDIRECT "301"
+#define HTTP "http://"
 
 
 #include "Parse.hpp"

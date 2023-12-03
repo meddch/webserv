@@ -242,6 +242,8 @@ void Core::handlePl_IN(Client& client)
 			client.server = getServer(client);
 			client._config_location = client.server.getLocation(client.request.getRequestURI());
 			client.request.isMethodAllowed(client._config_location.allowedMethods);
+			if (client._config_location.redirect.first)
+				throw std::runtime_error("301");
 		}
 		if (!client._requestIsReady)
 			client.getBody(Str);
@@ -257,10 +259,9 @@ void Core::handlePl_IN(Client& client)
 	catch (const std::exception& e)
 	{
 		std::string code = e.what();
-		if (client._config_location.redirect.first == std::atoi(code.c_str()))
-		{
-			client.response.initResponseHeaders(client.request);
-			client.setReady(true);
+		if (code == REDIRECT){
+			client.generateRedirectionResponse(client.request, client._config_location.redirect.second, client._config_location.redirect.first);
+			std::cout << client.response.response << std::endl;
 		}
 		else
 			client.response.handleResponseError(client.request, client.server.getErrorPage(std::atoi(code.c_str())) ,code);

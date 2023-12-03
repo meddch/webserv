@@ -41,6 +41,21 @@ void Response::initResponseHeaders(Request& request){
 	response.append("\r\n");
 }
 
+void Response::initRedirectHeaders(Request& request, std::string location)
+{
+	_version = request._headers["httpVersion"];
+	if (_statusCode == 0)
+		_statusCode = request.getStatusCode();
+	_status = generateStatusPhrase(_statusCode);
+	response = _version + _status + "\r\n";
+	_headers["Server"] = "Webserv/1.0.0 (mechane-azari)";
+	_headers["Location"] = location;
+	for(std::unordered_map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
+		response.append(it->first + ": " + it->second + "\r\n");
+	response.append("\r\n");
+	
+}
+
 bool Response::handleResponseError(Request& request, std::string errorPage, std::string code)
 {
 	(void)errorPage;
