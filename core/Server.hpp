@@ -14,7 +14,7 @@ public:
 
 	Listen_Addr						getAddress() const;
 	std::string            			getName() const;
-	std::string             		getErrorPage(int code) const;
+	std::string             		getErrorPage(int code) const;  
 	ssize_t                			getMaxBodySize() const;
 	bool               				bodySizeAllowed(int bytes) const;
 	std::vector<std::string>		getMethods() const;
@@ -22,6 +22,7 @@ public:
 	int								getId() const;
 	LocationContext 				&getLocation(std::string);
 	bool 							uploadEnabled() const;
+	LocationContext					&findLocation(std::string uri);
 	// void							handlerequest(Request &request, Client &client);
 
 };

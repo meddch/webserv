@@ -8,8 +8,8 @@ Response::Response():
 	_body(""),
 	_KEEPALIVE(false),
 	_isfileRead(false),
-	_contentLength("0"),
 	response(""),
+	// _contentLength(""),
 	root(""),
 	_headerSent(false),
 	readyToSend(false),
@@ -41,24 +41,30 @@ void Response::initResponseHeaders(Request& request){
 	response.append("\r\n");
 }
 
-bool Response::handleResponseError(Request& request, std::string code){
-	
+bool Response::handleResponseError(Request& request, std::string errorPage, std::string code)
+{
+	(void)errorPage;
 	_version = request._headers["httpVersion"];
-	_status = generateStatusPhrase(std::atoi(code.c_str()));
+	_status = generateStatusPhrase(std::stoi(code));
 	response = _version + _status + "\r\n";
 	_headers["Server"] = "Webserv/1.0.0 (mechane-azari)";
 	std::string errorBody = "<html><head><title>" + _status + "</title></head><body><center><h1>" + _status + "</h1></center><hr><center>Webserv/1.0.0 (mechane-azari)</center></body></html>";
+	if (errorPage != EMPTY)
+	{
+		std::ifstream ifs(errorPage.c_str());
+		if (ifs.is_open()){
+			std::string s_errorBody((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+			errorBody = s_errorBody;
+		}
+	}
 	_contentLength = std::to_string(errorBody.length());
 	_headers["Content-Length"] = _contentLength;
-	_headers["Content-Type"] = "text/html";
-	_headers["Connection"] = "close";
 	for(std::unordered_map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
 		response.append(it->first + ": " + it->second + "\r\n");
 	response.append("\r\n");
 	response.append(errorBody);
 	readyToSend = true;
 	return true;
-
 }
 void Response::generateChunkedResponse(){
 	
@@ -72,9 +78,6 @@ void Response::generateChunkedResponse(){
 	for(std::unordered_map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
 		response.append(it->first + ": " + it->second + "\r\n");
 	response.append("\r\n");
-	
-	
-
 }
 
 bool Response::isConnectionKeepAlive(){

@@ -256,7 +256,18 @@ void Core::handlePl_IN(Client& client)
 	}
 	catch (const std::exception& e)
 	{
-		client.response.handleResponseError(client.request, (std::string)e.what());
+		std::string code = e.what();
+		if (client._config_location.redirect.first == std::atoi(code.c_str()))
+		{
+			puts("JMA3");
+			client.response.initResponseHeaders(client.request);
+			client.setReady(true);
+		}
+		else{
+
+			std::cout << client.server.getErrorPage(std::atoi(code.c_str())) << std::endl;
+			client.response.handleResponseError(client.request, client.server.getErrorPage(std::atoi(code.c_str())) ,code);
+		}
 		client.setReady(true);
 		setPlfdEvents(client.getFd(), POLLOUT | POLLIN);
 	}

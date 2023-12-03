@@ -6,7 +6,7 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/09 15:01:48 by azari             #+#    #+#             */
-/*   Updated: 2023/12/02 15:17:53 by azari            ###   ########.fr       */
+/*   Updated: 2023/12/03 11:34:58 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include <sys/_types/_ssize_t.h>
 #include <unordered_map>
 #include "../request/Request.hpp"
+#include "../parse/utils.hpp"
 #include <dirent.h>
 #include <sys/stat.h>
 
@@ -58,7 +59,7 @@ class Response
 		std::string generateResponseDate();
 		bool handleResponseError(Request&);
 		void initResponseHeaders(Request&);
-		bool handleResponseError(Request& request, std::string code);
+		bool handleResponseError(Request& request, std::string errorPage, std::string code);
 		void generateAutoIndex(Request&);
 		bool isConnectionKeepAlive();
 		void setStatusCode(size_t);
