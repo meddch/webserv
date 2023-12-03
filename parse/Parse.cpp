@@ -11,7 +11,7 @@
 
 std::string ServerKeys[] = {"root", "server_name", "listen", "client_max_body_size", "error_page", "location", "upload"};
 
-std::string LocationKeys[] = {"autoindex", "alias", "allowed_methods", "index", "return", "root", "upload_path"};
+std::string LocationKeys[] = {"autoindex", "alias", "allowed_methods", "index", "return", "root", "upload_path", "cgi_path"};
 
 
 void  Parse::C_validServerKeys()
@@ -22,7 +22,7 @@ void  Parse::C_validServerKeys()
 
 void Parse::C_validLocationKeys()
 {
-  for (size_t i = 0; i < 7; i++)
+  for (size_t i = 0; i < 8; i++)
     validLocationKeys.push_back(LocationKeys[i]);
 }
 
@@ -230,7 +230,7 @@ void Parse::ParseLocation(ServerContext& server)
             ParseRedirect(location);
 		else if (token == "root")
 			ParseLocationRoot(location);
-		else if (token == "cgi-path")
+		else if (token == "cgi_path")
 			ParseCgiPath(location);
 		else if (token == "upload_path")
 			ParseUploadPath(location);
@@ -391,6 +391,8 @@ void Parse::ParseUri(LocationContext& location)
 	
 }
 
+
+
 void Parse::ParseAutoindex(LocationContext& location)
 {
 	std::string token = Accept();
@@ -489,6 +491,4 @@ void Parse::ParseUploadPath(LocationContext& location)
 	location.uploadPath = token;
 	Skip(";");
 }
-
-
 
