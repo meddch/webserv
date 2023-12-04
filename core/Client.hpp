@@ -5,6 +5,8 @@
 #include "../response/response.hpp"
 #include "../parse/utils.hpp"
 #include "MACS.hpp"
+#include <ctime>
+#include <sys/_types/_size_t.h>
 
 
 class Client
@@ -17,7 +19,7 @@ private :
 	bool		_Connected;
 	Listen_Addr	_serverAddr;
 	Listen_Addr	_clientAddr;
-	time_t		_lastTime;
+	std::clock_t		_lastTime;
 	bool		_ready;
 	std::string	_httpBuffer;
 	std::string	_chunkedBuffer;
@@ -32,6 +34,7 @@ public :
 	std::string	_body;
 	bool 		_requestIsReady;
 	bool 		_requestParsed;
+	bool 		_isCGI;
 	LocationContext	_config_location;
 	Client(int fd, Listen_Addr Client, Listen_Addr Server);
 	in_addr_t 	getServerIp(void) const;
@@ -59,6 +62,8 @@ public :
 	void 		handleDeleteRequest(void);
 	stringMap 	fetchCGIEnv();
 	std::string getPath();
+	void 		handleCGI();
+
 
 
 };
