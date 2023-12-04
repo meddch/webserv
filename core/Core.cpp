@@ -243,10 +243,8 @@ void Core::handlePl_IN(Client& client)
 	catch (const std::exception& e)
 	{
 		std::string code = e.what();
-		if (code == REDIRECT){
+		if (code == REDIRECT)
 			client.generateRedirectionResponse(client.request, client._config_location.redirect.second, client._config_location.redirect.first);
-			std::cout << client.response.response << std::endl;
-		}
 		else
 			client.response.handleResponseError(client.request, client.server.getErrorPage(std::atoi(code.c_str())) ,code);
 		client.setReady(true);
@@ -341,7 +339,6 @@ Server&	Core::getServer(Client client)
 		Host = client.request._headers["host"];
 	else
 		std::runtime_error("Error: No Host found");
-
 	try {
 		if (Host.find(":") != std::string::npos)
 			Host = Host.substr(0, Host.find(":"));
@@ -350,12 +347,16 @@ Server&	Core::getServer(Client client)
 			if (_servers[i].getAddress().port == client.getServerPort())
 				servers.push_back(_servers[i]);
 		}
-		if (servers.size() == 0)
+		if (_servers.size() == 0)
 			throw std::runtime_error("Error: No server found");
 		id = -1;
+		if (_servers.size() == 1)
+			return _servers[0];
 		for (size_t i = 0; i < servers.size(); i++)
 		{
-			if (servers[i].getName() == Host)
+			if (servers.size() == 1)
+				 id = servers[i].getId();
+			else if (servers[i].getName() == Host)
 				id = servers[i].getId();
 		}
 		for (size_t i = 0; i < _servers.size(); i++)

@@ -6,7 +6,7 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 15:21:09 by azari             #+#    #+#             */
-/*   Updated: 2023/12/04 10:57:25 by azari            ###   ########.fr       */
+/*   Updated: 2023/12/04 15:40:43 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -288,25 +288,4 @@ Request& Request::operator=(const Request& request){
 	return *this;
 }
 
-void	Request::toString(){
-
-
-	std::cout << "\n\%\%\%\%\%\%\%\% Request \%\%\%\%\%\%\%\%\%%\n" << std::endl;
-	std::cout << _REQ << std::endl;
-		
-	puts("\n\%\%\%\%\%\%\%\% Headers \%\%\%\%\%\%\%\%\%%\n");
-    for(std::map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
-        std::cout << "[" << it->first << "]--[" << it->second << "]" << std::endl;
-
-	puts("\n\%\%\%\%\%\%\%\% Body \%\%\%\%\%\%\%\%\%%\n");
-	std::cout << "[" << _body << "]" << std::endl;
-
-	puts("\n\%\%\%\%\%\%\%\% Boundaries \%\%\%\%\%\%\%\%\%%\n");
-	for (std::vector<BoundRequest>::iterator it = _Boundaries.begin(); it != _Boundaries.end(); ++it){
-		for (std::map<std::string, std::string>::const_iterator it2 = it->_headers.begin(); it2 != it->_headers.end(); ++it2){
-			std::cout << "[" << it2->first << "]--[" << it2->second << "]" << std::endl;
-			std::cout << "[" << it->_body << "]\n\n\n" << std::endl;	
-		}
-	}
-}
 

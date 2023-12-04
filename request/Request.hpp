@@ -6,7 +6,7 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 13:12:03 by azari             #+#    #+#             */
-/*   Updated: 2023/12/03 17:43:47 by azari            ###   ########.fr       */
+/*   Updated: 2023/12/04 15:40:56 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,6 @@ class Request
         void parseRequestLine(std::string requestLine);
         void parseRequestBody();
 		void parseRequestHeaders();
-		void toString();
 		void markExistance(const std::string&);
 		void checkExistance(void);
 		std::string parseURI(std::string);

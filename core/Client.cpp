@@ -186,10 +186,8 @@ void	Client::createUploadFile(std::string filename, std::string content)
 	if (resourceType == ISFILE)
 		throw std::runtime_error("409");
 	std::ofstream file(filename.c_str());
-	if (!file.is_open()){
-		puts("Error opening file");
+	if (!file.is_open())
 		throw std::runtime_error("500");
-	}
 	response.uploadFilePath = filename;
 	file << content;
 	file.close();
