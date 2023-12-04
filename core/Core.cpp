@@ -1,9 +1,8 @@
 #include "Core.hpp"
 #include "Server.hpp"
 #include <string>
+#include "../Webserv.hpp"
 
-
-bool Core::runing = true;
 
 Core::Core(std::vector<ServerContext> configs)
 {
@@ -71,7 +70,7 @@ void	Core::run()
 	try 
 	{
 		init();
-		while (runing)
+		while (_running)
 		{
 			int pollReady = poll(plfds.data(), plfds.size(), 1000);
 			if (pollReady == -1)
@@ -104,8 +103,7 @@ void	Core::run()
 
 	catch(std::exception &e)
 	{
-		puts("Error:");
-		std::cerr << e.what();
+		clear_All();
 	}
 }
 
@@ -217,7 +215,7 @@ void Core::handlePl_IN(Client& client)
 			return;
 		}
 		buffer[bytesRead] = '\0';
-		//if connection true and timeout disconnect
+		
 		std::string Str(buffer, bytesRead);
 		if (!client._requestParsed)
 		{
@@ -397,3 +395,12 @@ void Core::setPlfdEvents(int fd, short events)
 	}
 }
 
+
+void Core::clear_All(void)
+{
+	for (size_t i = 0; i < plfds.size(); i++)
+		close(plfds[i].fd);
+	_clients.clear();
+	plfds.clear();
+	_servers.clear();
+}

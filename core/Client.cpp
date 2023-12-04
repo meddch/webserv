@@ -384,7 +384,7 @@ std::string Client::getPath()
 	}
 	else
 		env["QUERY_STRING"] = request._headers["Queries"];
-	env["HTTP_COOKIE"] = request._headers["Cookie"];
+	env["HTTP_COOKIE"] = request._headers["cookie"];
 	env["GATEWAY_INTERFACE"] = "CGI/1.1";
 	env["PATH_INFO"] = request.getRequestURI();
 	env["PATH_TRANSLATED"] =  server.getRoot() + request.getRequestURI();
@@ -483,8 +483,10 @@ void Client::handleCGI()
 			throw std::runtime_error("500");
 
 	}
+
 	response.response =  "HTTP/1.1 200 script output follows\r\n Server: Webserv/1.0.0 (mechane-azari)\r\n"  + result;
 	response.readyToSend = true;
 	_isCGI = true;
 	
 }
+

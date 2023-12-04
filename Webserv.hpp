@@ -7,3 +7,5 @@
 #include "core/Core.hpp"
 
 #include <fstream>
+
+extern bool _running;

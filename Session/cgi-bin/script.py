@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
+import cgi
+import http.cookies
 import os
 import sys
 import urllib.parse
-import cgi
-import http.cookies
 
 # Check if the request method is set, otherwise default to 'CLI'
 method = os.environ.get('REQUEST_METHOD', 'CLI')
@@ -15,14 +15,19 @@ data = sys.stdin.read()
 # Parse the data
 output = urllib.parse.parse_qs(data)
 
-# Get the name, or default to 'Guest'
+# Get the HTTP_COOKIE environment variable
+cookie_string = os.environ.get('HTTP_COOKIE', '')
 
-name = output.get('name', 'Guest')
+# Parse the cookies
+cookie = http.cookies.SimpleCookie()
+cookie.load(cookie_string)
+
+# Get the 'name' value from the parsed data or the cookie
+name = output.get('name', [cookie['name'].value if 'name' in cookie else 'Guest'])[0]
 
 # Create a new cookie
 cookie = http.cookies.SimpleCookie()
 cookie["name"] = name
-cookie["name"]["path"] = "/" 
 
 # Print the headers
 print('Content-Type: text/html; charset=utf-8')

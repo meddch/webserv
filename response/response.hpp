@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
+/*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/09 15:01:48 by azari             #+#    #+#             */
-/*   Updated: 2023/12/03 16:51:19 by azari            ###   ########.fr       */
+/*   Updated: 2023/12/04 18:51:32 by mechane          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 
-#define BYTES 100000
+#define BYTES 100240
 
 class Response
 {

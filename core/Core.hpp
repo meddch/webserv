@@ -53,4 +53,5 @@ public :
 	void 					handlePl_Out(Client& );
 	Server&					getServer(Client);
 	void 					setPlfdEvents(int, short);
+	void 					clear_All(void);
 };
