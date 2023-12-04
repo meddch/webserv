@@ -1,6 +1,9 @@
 #include "Client.hpp"
 #include <cstdio>
+#include <ctime>
+#include <sys/_types/_size_t.h>
 #include <sys/_types/_ssize_t.h>
+#include <sys/errno.h>
 #include <sys/fcntl.h>
 #include <unistd.h>
 
@@ -24,7 +27,7 @@ Client::Client(int fd, Listen_Addr Client, Listen_Addr Server)
 	_bytesRecved = 0;
 	_bytesExpected = 0;
 	_isCGI = false;
-	_lastTime = std::time(NULL);
+	_lastTime = std::clock();
 }
 
 int Client::getId() const
@@ -59,7 +62,7 @@ bool Client::is_Connected() const
 
 bool Client::Timeout() const 
 {
-	if((std::time(NULL) - _lastTime) > TIMEOUT_T)
+	if((size_t)(std::clock() - _lastTime) > TIMEOUT_T)
 		throw std::runtime_error("408");
 	return false; 
 }
@@ -325,12 +328,10 @@ void Client::handleDeleteRequest(){
 void Client::handleRequestMethod(){
 
 	Request r = this->request;
-	if (_config_location.uri.find(".py") != std::string::npos || _config_location.uri.find(".php") != std::string::npos)
-	{
+	std::string path = server.getRoot() + request.getRequestURI();
+	if (_config_location.uri[0] == '.' && getResourceType(path) == ISFILE)
 		handleCGI();
-		return ;
-	}
-	if (r._headers["Method"] == GET)
+	else if (r._headers["Method"] == GET)
 		return handleGetRequest();
 	else if (r._headers["Method"] == POST)
 		return handlePostRequest();
@@ -350,13 +351,16 @@ bool Client::isMethodAllowed()
 {
 	stringMap env;
 
-	_body = _body.substr(_body.find("\r\n\r\n") + 4);
 	env["CONTENT_TYPE"] = request._headers["Content-Type"];
+	
 	if (request._headers["Method"] == "POST")
+	{
+		_body = _body.substr(_body.find("\r\n\r\n") + 4);
 		env["CONTENT_LENGTH"] = request._body.size();
+	}
 	else
 		env["QUERY_STRING"] = request._headers["Queries"];
-	env["HTTP_COOKIE"] = request._headers["Cookies"];
+	env["HTTP_COOKIE"] = request._headers["Cookie"];
 	env["GATEWAY_INTERFACE"] = "CGI/1.1";
 	env["PATH_INFO"] = request.getRequestURI();
 	env["PATH_TRANSLATED"] =  server.getRoot() + request.getRequestURI();
@@ -384,7 +388,8 @@ void Client::handleCGI()
 
 	if ((pid = fork()) == -1)
 		throw std::runtime_error("500");
-
+	
+	fcntl(pipeOut[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
 	std::string result= "";
 	if (pid == 0) {
 		try {
@@ -422,26 +427,39 @@ void Client::handleCGI()
 	else {
 		int status;
 
-		// Pipe stdin
-		_body = _body.substr(_body.find("\r\n\r\n") + 4);
-		// _body = _body.substr(0, _body.find_first_of("="));
+		_lastTime = std::clock();
+		if (request._headers["Method"] == "POST")
+		{
+			_body = _body.substr(_body.find("\r\n\r\n") + 4);
+			write(pipeIn[1], _body.c_str(), request._body.size());
+		}
 		close(pipeOut[1]), close(pipeIn[0]);
-		write(pipeIn[1], _body.c_str(), request._body.size());
 		close(pipeIn[1]);
 
 		// Pipe stdout
 		char buffer[1024];
-		ssize_t bytesRead;
-		while((bytesRead = read(pipeOut[0], buffer,1024)) > 0) 
-			result += std::string(buffer, bytesRead);
+		FILE* file = fdopen(pipeOut[0], "r");
+		if (!file)
+			throw std::runtime_error("500");
+		while (!Timeout())
+		{
+   	 		if (!std::fgets(buffer, sizeof(buffer), file))
+			{
+				if (feof(file))
+        			break;
+				else
+					continue;
+			}
+			result += buffer;
+		}
+		
 		close(pipeOut[0]);
-
 		waitpid(pid, &status, 0);
 		if (!(WIFEXITED(status) && WEXITSTATUS(status) == 0)) 
 			throw std::runtime_error("500");
 
 	}
-	response.response =  "HTTP/1.1 200 script output follows\r\n Server: Webserv/1.0.0 (mechane-azari)\r\n Content-Type: text/html\r\n\r\n" + result;
+	response.response =  "HTTP/1.1 200 script output follows\r\n Server: Webserv/1.0.0 (mechane-azari)\r\n"  + result;
 	response.readyToSend = true;
 	_isCGI = true;
 	
