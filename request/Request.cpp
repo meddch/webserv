@@ -6,7 +6,7 @@
 /*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 15:21:09 by azari             #+#    #+#             */
-/*   Updated: 2023/12/03 18:02:09 by azari            ###   ########.fr       */
+/*   Updated: 2023/12/04 10:57:25 by azari            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,8 +72,6 @@ std::string Request::parseURI(std::string uri){
 			decoded_uri << uri[i];
 		
 	}
-	std::cout << "decoded_uri: " << decoded_uri.str() << std::endl;
-	std::cout << "uri: " << uri << std::endl;
 	uri = decoded_uri.str();
 	if (uri.length() == 0 || uri.length() > 2048)
 		throw std::runtime_error("414");
@@ -98,7 +96,6 @@ void Request::parseRequestLine(std::string requestLine){
     line >> _headers["Method"] >> _headers["URI"] >> _headers["httpVersion"];
 	_requestMethod = _headers["Method"];
 
-	std::cout << requestLine << std::endl;
     for (i = 0; i < 3; i++)
         if (methods[i] == _headers["Method"])
             break;
@@ -109,8 +106,7 @@ void Request::parseRequestLine(std::string requestLine){
 
 	_headers["URI"] = parseURI(_headers["URI"]);
 	uri = _headers["URI"];
-	std::cout << "URI: " << uri << std::endl;
-
+	
 	_parsePos = _REQ.find("\r\n") + 2;
 	_lastHeaderPos = _REQ.find("\r\n\r\n");
 }
@@ -140,10 +136,7 @@ void Request::checkExistance(void){
 	if (_transferEncodingExist == false && _contentLengthExist == false && _requestMethod == "POST")
 		throw std::runtime_error("400");
 	if (_hostExist == false)
-	{
 		throw std::runtime_error("400");
-	}
-
 	if (_transferEncodingExist == true && _chunked == false)
 		throw std::runtime_error("501");
 }

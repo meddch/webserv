@@ -178,8 +178,10 @@ void	Client::createUploadFile(std::string filename, std::string content)
 	if (resourceType == ISFILE)
 		throw std::runtime_error("409");
 	std::ofstream file(filename.c_str());
-	if (!file.is_open())
+	if (!file.is_open()){
+		puts("Error opening file");
 		throw std::runtime_error("500");
+	}
 	response.uploadFilePath = filename;
 	file << content;
 	file.close();
@@ -224,7 +226,6 @@ void Client::handleGetRequest()
 	}
 	else if (resourceType == ISDIR)
 	{
-		std::cout << "fullPath: " << fullPath << std::endl;
 		if (fullPath[fullPath.length() - 1] != '/')
 			return generateRedirectionResponse(r, HTTP + request._headers["host"] + request.uri + "/", 301);
 		for (std::vector<std::string>::iterator it = _config_location.index.begin(); it != _config_location.index.end(); ++it)
@@ -261,8 +262,10 @@ void Client::handlePostRequest(){
 			{
 				if (it->_headers["content-disposition"].find("filename=") != std::string::npos)
 				{
-					if (_config_location.uploadPath.empty())
+					if (_config_location.uploadPath.empty()){
+						puts("Error: upload path not set");
 						throw std::runtime_error("500");
+					}
 					std::string filename = _config_location.uploadPath + "/" + it->_headers["content-disposition"].substr(it->_headers["content-disposition"].find("filename=") + 10, it->_headers["content-disposition"].rfind('\"', std::string::npos) - (it->_headers["content-disposition"].find("filename=") + 10));
 					std::string content = it->_body;
 					createUploadFile(filename, content);
