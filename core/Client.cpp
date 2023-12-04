@@ -336,18 +336,18 @@ void Client::handleDeleteRequest(){
 
 void Client::handleRequestMethod(){
 
-	Request r = this->request;
-	std::string path = server.getRoot() + request.getRequestURI();
-	if (_config_location.uri[0] == '.' && getResourceType(path) == ISFILE)
-		handleCGI();
-	else if (r._headers["Method"] == GET)
-		return handleGetRequest();
-	else if (r._headers["Method"] == POST)
-		return handlePostRequest();
-	else if (r._headers["Method"] == DELETE)
-		return handleDeleteRequest();
-	else
-		throw std::runtime_error("501");
+    Request r = this->request;
+    std::string path = server.getRoot() + request.getRequestURI();
+    if (_config_location.uri[0] == '.' && getResourceType(path) == ISFILE)
+        handleCGI();
+    else if (r._headers["Method"] == GET)
+        return handleGetRequest();
+    else if (r._headers["Method"] == POST)
+        return handlePostRequest();
+    else if (r._headers["Method"] == DELETE)
+        return handleDeleteRequest();
+    else
+        throw std::runtime_error("501");
 }
 
 bool Client::isMethodAllowed()
