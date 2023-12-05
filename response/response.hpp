@@ -6,7 +6,7 @@
 /*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/09 15:01:48 by azari             #+#    #+#             */
-/*   Updated: 2023/12/05 19:48:42 by mechane          ###   ########.fr       */
+/*   Updated: 2023/12/05 21:58:18 by mechane          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 #include <sys/_types/_ssize_t.h>
 #include <unordered_map>
 #include "../request/Request.hpp"
-#include "../parse/utils.hpp"
+#include "../parse/Utils.hpp"
 #include <dirent.h>
 #include <sys/stat.h>
 
@@ -62,7 +62,6 @@ class Response
 		bool handleResponseError(Request& request, std::string errorPage, std::string code);
 		void initRedirectHeaders(Request& request, std::string location);
 		void generateAutoIndex(Request&);
-		bool isConnectionKeepAlive();
 		void setStatusCode(size_t);
 		bool isfileRead();
 		void generateChunkedResponse();

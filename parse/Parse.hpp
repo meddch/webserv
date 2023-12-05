@@ -57,7 +57,7 @@ struct LocationContext
 	std::string					alias;
 	std::string					uploadPath;
 	stringVec					allowedMethods;
-	stringVec					index;
+	std::string					index;
 	std::string					root;
 	std::string					cgiPath;
     std::pair<int, std::string> redirect;

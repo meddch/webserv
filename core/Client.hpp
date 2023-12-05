@@ -2,8 +2,8 @@
 #include "../parse/Parse.hpp"
 #include "Server.hpp"
 #include "../request/Request.hpp"
-#include "../response/response.hpp"
-#include "../parse/utils.hpp"
+#include "../response/Response.hpp"
+#include "../parse/Utils.hpp"
 #include "MACS.hpp"
 #include <ctime>
 #include <fstream>
@@ -57,7 +57,6 @@ public :
 	void		generateResponse(Request& request, std::string path, int code);
 	void		generateRedirectionResponse(Request& request, std::string path, int code);
 	void 		handleRequestMethod(void);
-	bool 		isMethodAllowed(void);
 	void 		getLocations(Server&);
 	void 		handleGetRequest(void);
 	void 		handlePostRequest(void);

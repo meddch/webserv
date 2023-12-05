@@ -1,4 +1,4 @@
-#include "response.hpp"
+#include "Response.hpp"
 #include <string>
 #include <sys/_types/_ssize_t.h>
 
@@ -101,11 +101,6 @@ void Response::generateChunkedResponse(){
 
 }
 
-bool Response::isConnectionKeepAlive(){
-	if (_KEEPALIVE)
-		return true;
-	return false;
-}
 
 void Response::generateAutoIndex(Request& request)
 {

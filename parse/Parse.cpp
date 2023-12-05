@@ -1,5 +1,5 @@
 #include "Parse.hpp"
-#include "utils.hpp"
+#include "Utils.hpp"
 #include <cstddef>
 #include <cstdio>
 #include <cstdlib>
@@ -433,9 +433,15 @@ void Parse::ParseAllowedMethods(LocationContext& location)
 
 void Parse::ParseIndex(LocationContext& location)
 {
-	std::string token;
-	while ((token = Accept()) != ";") 
-		location.index.push_back(token);
+	std::string token = Accept();
+	if (!location.index.empty())
+	{
+		Skip(";");
+		return;
+	}
+	location.index = token;
+	Skip(";");
+
 }
 
 void Parse::ParseRedirect(LocationContext& location)
@@ -466,7 +472,6 @@ void Parse::addDefaultLocation(ServerContext& server)
 	location.uri = "/";
 	location.root = server.root;
 	location.allowedMethods.push_back("GET");
-	location.index.push_back("index.html");
 
 	server.locations.push_back(location);
 }

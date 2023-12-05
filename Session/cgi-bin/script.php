@@ -12,7 +12,6 @@ $name = $output['name'] ?? 'Guest';
 
 
 header('Content-Type: text/html; charset=utf-8');
-echo "Set-Cookie: name=$name; expires=Fri, 31-Dec-2021 23:59:59 GMT; path=/\n";
 echo "\n";
 echo "<html><head><style>";
 echo "body { background-color: #f0f0f0; font-family: Arial, sans-serif; }";

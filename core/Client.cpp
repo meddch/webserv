@@ -215,10 +215,25 @@ void Client::generateRedirectionResponse(Request& request, std::string path, int
 	response.readyToSend = true;
 }
 
+std::string normalizePath(const std::string& path) {
+    std::string result;
+    char lastChar = '\0';
+
+    for (std::string::const_iterator it = path.begin(); it != path.end(); ++it) {
+        if (*it == '/' && lastChar == '/') {
+            continue;
+        }
+        result += *it;
+        lastChar = *it;
+    }
+
+    return result;
+}
+
 void Client::handleGetRequest()
 {
 	Request r = this->request;
-	std::string fullPath = getPath();
+	std::string fullPath = normalizePath(getPath());
 
 	if (fullPath.find(server.getRoot()) == std::string::npos)
 		throw std::runtime_error("403");
@@ -230,32 +245,33 @@ void Client::handleGetRequest()
 		struct stat path_stat;
    		stat(fullPath.c_str(), &path_stat);
 		response._contentLength = std::to_string(path_stat.st_size);
-		return generateResponse(request, fullPath, 200); // Give mechane to generateResponse
+		return generateResponse(request, fullPath, 200);
 	}
 	else if (resourceType == ISDIR)
 	{
 		if (fullPath[fullPath.length() - 1] != '/')
 			return generateRedirectionResponse(r, HTTP + request._headers["host"] + request.uri + "/", 301);
-		for (std::vector<std::string>::iterator it = _config_location.index.begin(); it != _config_location.index.end(); ++it)
+		std::string index = normalizePath(fullPath + "/" + _config_location.index);
+		struct stat path_stat;
+   		stat(index.c_str(), &path_stat);
+		if (S_ISREG(path_stat.st_mode))
 		{
-			std::string index = fullPath + (std::string)*it;
 			std::ifstream file(index.c_str());
-			if (file.is_open()){
-			struct stat path_stat;
-			stat(index.c_str(), &path_stat);
+			if (!file.is_open())
+				throw std::runtime_error("500");
 			response._contentLength = std::to_string(path_stat.st_size);
-			file.close();
-			return generateResponse(request, index, 200); // Give mechane to generateResponse
-			}
+			file.close();		
+			return generateResponse(request, index, 200);
 		}
-		if (_config_location.autoindex){
-
+		if (_config_location.autoindex)
+		{
 			response.filePath = fullPath;
 			response.root = server.getRoot();
-			return response.generateAutoIndex(r); // Give mechane to generateResponse
+			return response.generateAutoIndex(r);
 		}
 		else if (_config_location.autoindex == false)
 			throw std::runtime_error("403");
+		throw std::runtime_error("404");
 	}
 }
 
@@ -337,6 +353,8 @@ void Client::handleDeleteRequest(){
 void Client::handleRequestMethod(){
 
     Request r = this->request;
+	if (_config_location.root.empty() == false && _config_location.root.substr(0, server.getRoot().length()) != server.getRoot())
+		throw std::runtime_error("403");
     std::string path = server.getRoot() + request.getRequestURI();
     if (_config_location.uri[0] == '.' && getResourceType(path) == ISFILE)
         handleCGI();
@@ -350,25 +368,18 @@ void Client::handleRequestMethod(){
         throw std::runtime_error("501");
 }
 
-bool Client::isMethodAllowed()
-{
-	return true;
-}
+
 
 std::string Client::getPath()
 {
 	std::string root = server.getRoot();
+	request._headers["URI"].erase(0,_config_location.uri.length());
 
 	if (_config_location.alias.empty() == false)
-	{
-		std::string matched_location = server.getLocation(request.getRequestURI()).uri;
-		root = _config_location.alias;
-		request._headers["URI"].erase(0, matched_location.length());
-		return root + request.getRequestURI();
-	}
+		return normalizePath(root + _config_location.alias + request.getRequestURI());
 	else if (_config_location.root.empty() == false)
 		root = _config_location.root;
-	return root + request.getRequestURI();
+	return normalizePath(root + request.getRequestURI());
 }
 
  stringMap Client::fetchCGIEnv()

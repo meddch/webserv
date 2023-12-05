@@ -12,17 +12,12 @@ void sig_handler(int signum)
    	_running = false;
 }
 
-void ft_leaks(void)
-{
-	system("leaks Webserv");
-}
+
 
 int main(int ac ,char **av)
 {
-	// atexit(ft_leaks);
 	if (ac > 2)
 		return 1;
-	signal(SIGINT, sig_handler);
 
 	const std::string filename((ac == 2) ? av[1] : "conf.config");
 

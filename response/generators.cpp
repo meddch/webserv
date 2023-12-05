@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   generators.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: azari <azari@student.42.fr>                +#+  +:+       +#+        */
+/*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/13 15:01:25 by azari             #+#    #+#             */
-/*   Updated: 2023/11/27 16:33:49 by azari            ###   ########.fr       */
+/*   Updated: 2023/12/05 21:57:57 by mechane          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "response.hpp"
+#include "Response.hpp"
 
 std::string Response::generateStatusPhrase(size_t status){
 	
@@ -788,10 +788,6 @@ std::string Response::findMimeType(std::string extention)
     mime_types[".zip"] = "application/x-zip-compressed";
 
     return mime_types[extention];
-}
-
-std::string Response::generateResponseDate(){
-	return "00:00:00";
 }
 
 
