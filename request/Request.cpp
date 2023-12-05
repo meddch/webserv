@@ -6,7 +6,7 @@
 /*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 15:21:09 by azari             #+#    #+#             */
-/*   Updated: 2023/12/05 21:49:32 by mechane          ###   ########.fr       */
+/*   Updated: 2023/12/05 22:15:29 by mechane          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -185,21 +185,6 @@ void    Request::parseRequestBody()
 			obj._body = _REQ.substr(obj._parsePos, obj._BoundaryNext - obj._parsePos - 2);
 			_Boundaries.push_back(obj);
 			_parsePos = obj._BoundaryNext;
-		}
-	}
-    else if (_headers.find("transfer-encoding") != _headers.end() && _headers["transfer-encoding"].find("chunked") != std::string::npos){
-
-		std::string chunk_size;
-		std::string chunk_data;
-		size_t pos = 0;
-		size_t pos_end =_REQ.find("0\r\n\r\n");
-
-		while (pos < pos_end){
-
-			chunk_size =_REQ.substr(pos,_REQ.find("\r\n", pos) - pos);
-			chunk_data =_REQ.substr(_REQ.find("\r\n", pos) + 2, std::stoi(chunk_size, 0, 16));
-			pos =_REQ.find("\r\n", pos) + 2 + std::stoi(chunk_size, 0, 16);
-			_body += chunk_data;
 		}
 	}
 }

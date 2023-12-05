@@ -172,13 +172,6 @@ void Client::reset()
 
 }
 
-void Client::setServer(Server& server)
-{
-	_server = server;
-	std::cout << "Client " << _id << " connected to server " << _server.getName() << std::endl;
-	std::cout << "Client " << _id << " bound to " << toIPString(_clientAddr.ip) << ":" << _clientAddr.port << std::endl;
-	std::cout << "Client " << _id << " connected to " << toIPString(_serverAddr.ip) << ":" << _serverAddr.port << std::endl;
-}
 
 void	Client::createUploadFile(std::string filename, std::string content)
 {
@@ -186,10 +179,8 @@ void	Client::createUploadFile(std::string filename, std::string content)
 	if (resourceType == ISFILE)
 		throw std::runtime_error("409");
 	std::ofstream file(filename.c_str());
-	if (!file.is_open()){
-		puts("Error opening file");
+	if (!file.is_open())
 		throw std::runtime_error("500");
-	}
 	response.uploadFilePath = filename;
 	file << content;
 	file.close();
@@ -286,10 +277,8 @@ void Client::handlePostRequest(){
 			{
 				if (it->_headers["content-disposition"].find("filename=") != std::string::npos)
 				{
-					if (_config_location.uploadPath.empty()){
-						puts("Error: upload path not set");
+					if (_config_location.uploadPath.empty())
 						throw std::runtime_error("500");
-					}
 					std::string filename = _config_location.uploadPath + "/" + it->_headers["content-disposition"].substr(it->_headers["content-disposition"].find("filename=") + 10, it->_headers["content-disposition"].rfind('\"', std::string::npos) - (it->_headers["content-disposition"].find("filename=") + 10));
 					std::string content = it->_body;
 					createUploadFile(filename, content);

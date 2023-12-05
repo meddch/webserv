@@ -179,8 +179,6 @@ void	Parse::ParseServer()
 			throw std::runtime_error("Parser: duplice port " + it->serverName + "!");
 	}
 
-
-	
 	addDefaultLocation(server);
 	_config.push_back(server);
 }

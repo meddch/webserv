@@ -51,7 +51,6 @@ public :
 	void 		getREQ(std::string);
 	void 		reset(void);
 	void 		getBody(std::string);
-	void		setServer(Server&);
 	void		matchLocation(std::vector<LocationContext>);
 	void		createUploadFile(std::string filename, std::string content);
 	void		generateResponse(Request& request, std::string path, int code);

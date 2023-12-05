@@ -243,10 +243,8 @@ void Core::handlePl_IN(Client& client)
 	catch (const std::exception& e)
 	{
 		std::string code = e.what();
-		if (code == REDIRECT){
+		if (code == REDIRECT)
 			client.generateRedirectionResponse(client.request, client._config_location.redirect.second, client._config_location.redirect.first);
-			std::cout << client.response.response << std::endl;
-		}
 		else
 			client.response.handleResponseError(client.request, client.server.getErrorPage(std::atoi(code.c_str())) ,code);
 		client.setReady(true);
