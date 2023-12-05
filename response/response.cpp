@@ -31,7 +31,7 @@ void Response::initResponseHeaders(Request& request){
 	_headers["Content-Length"] = _contentLength;
 	if (_headers.find("Content-Type") == _headers.end() && _statusCode != 204 && _statusCode != 304 && request._headers["Method"] == "GET")
 	{
-		_headers["Content-Type"] = findMimeType(filePath.substr(filePath.find_last_of(".")));
+		_headers["Content-Type"] =   filePath.find(".") != std::string::npos ? findMimeType(filePath.substr(filePath.find_last_of("."))) : "text/plain";
 		_headers["Accept-Ranges"] = "bytes";
 		_headers["Connection"] = "keep-alive" ;
 		_headers["cache-control"] = "max-age=3600 public";

@@ -1,120 +1,13 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Upload</title>
-    <style>
-        body {
-            background-color: #2c3e50;
-            color: #ecf0f1;
-            font-family: "Courier New", Courier, monospace;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-
-        header {
-            font-size: 56px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            margin-top: 5%;
-        }
-
-        #file-upload {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        #file-upload input[type="file"] {
-            display: none;
-        }
-
-        #file-upload label {
-            display: inline-block;
-            padding: 15px 30px;
-            margin: 10px;
-            text-align: center;
-            text-decoration: none;
-            color: #ecf0f1;
-            background-color: #34495e;
-            border: 2px solid #2c3e50;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        #file-upload label:hover {
-            background-color: #2c3e50;
-        }
-
-        #file-upload input[type="submit"] {
-            display: inline-block;
-            padding: 15px 30px;
-            margin: 10px;
-            text-align: center;
-            text-decoration: none;
-            color: #ecf0f1;
-            background-color: #34495e;
-            border: 2px solid #2c3e50;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        #file-upload input[type="submit"]:hover {
-            background-color: #2c3e50;
-        }
-
-        #developer-info {
-            font-size: 14px;
-            margin-top: 20%;
-            text-align: center;
-        }
-
-		.pos {
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			transform: translate(-50%, -50%);
-		}
-    </style>
-</head>
-<body>
-<div class="pos">
-
-	<header>Upload</header>
-	
-    <form id="file-upload" action="/upload" method="post" enctype="multipart/form-data">
-		<label for="file">Choose a file</label>
-        <input type="file" id="file" name="file">
-        <br>
-        <input type="submit" value="Upload">
-    </form>
-</div>
-	
-    <div id="developer-info">
-		Webserv/1.0<br>
-        by: mechane-azari
-    </div>
-</body>
-</html> -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Upload</title>
+    <title>Upload</title>
     <style>
         body {
-            background-color: #2c3e50;
-            color: #ecf0f1;
+    		background-color: #1a1a1a; 
+    		color: #ffd700; 
             font-family: "Courier New", Courier, monospace;
             margin: 0;
             display: flex;
@@ -125,10 +18,10 @@
         }
 
         header {
-            font-size: 56px;
+            font-size: 77px;
             font-weight: bold;
             margin-bottom: 20px;
-            margin-top: 5%;
+            margin-top: 10%;
         }
 
         #file-upload {
@@ -143,47 +36,56 @@
         }
 
         #file-upload label {
+			font-family: "Courier New", Courier, monospace;
             display: inline-block;
             padding: 15px 30px;
             margin: 10px;
             text-align: center;
             text-decoration: none;
-            color: #ecf0f1;
-            background-color: #34495e;
-            border: 2px solid #2c3e50;
+            color: #ffd700;
+            background-color: #1a1a1a;
+            border: 1px solid #ffd700;
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
 
         #file-upload label:hover {
-            background-color: #2c3e50;
+			font-family: "Courier New", Courier, monospace;
+			background-color: #1a1a1a;
+			border: 2px solid #1a1a1a;
+			color: #ffd700;
         }
 
         #file-upload input[type="submit"] {
+			font-family: "Courier New", Courier, monospace;
             display: inline-block;
             padding: 15px 30px;
             margin: 10px;
             text-align: center;
             text-decoration: none;
-            color: #ecf0f1;
-            background-color: #34495e;
-            border: 2px solid #2c3e50;
+			color: #1a1a1a; 
+			background-color: #ffd700; 
+			border: 2px solid #ffd700; 
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
 
         #file-upload input[type="submit"]:hover {
-            background-color: #2c3e50;
-        }
-
-        /* #developer-info {
-            font-size: 14px;
-            margin-top: 20%;
+			font-family: "Courier New", Courier, monospace;
+			font-weight: bold;
+			display: inline-block;
+            padding: 15px 30px;
+            margin: 10px;
             text-align: center;
-			position: absolute;
-        } */
+            text-decoration: none;
+			color: #ffd700; 
+			background-color: #1a1a1a; 
+			border: 2px solid #1a1a1a; 
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
 
         .pos {
             position: absolute;
@@ -202,7 +104,7 @@
 
         <form id="file-upload" action="/upload" method="post" enctype="multipart/form-data">
             <label for="file" id="file-label">Choose a file</label>
-            <input type="file" id="file" name="file" onchange="updateLabel()">
+            <input type="file" id="file" name="file" required onchange="updateLabel()">
             <br>
             <input type="submit" value="Upload">
         </form>
