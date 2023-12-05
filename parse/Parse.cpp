@@ -175,8 +175,8 @@ void	Parse::ParseServer()
 	std::vector<ServerContext>::iterator it;
 	for (it = _config.begin(); it != _config.end(); it++)
 	{
-		if (it->serverName == server.serverName && it->address.port == server.address.port)
-			throw std::runtime_error("Parser: duplication server name " + it->serverName + "!");
+		if (it->address.port == server.address.port)
+			throw std::runtime_error("Parser: duplice port " + it->serverName + "!");
 	}
 
 
@@ -247,6 +247,9 @@ void Parse::ParseServerRoot(ServerContext& server)
 {
     
 	std::string path = Accept();
+	std::string realPath = realpath(".", NULL) + std::string(ROOT);
+	if (path.empty() || path.substr(0, realPath.size()) != realPath)
+		throw std::runtime_error("Parser: invalid root path!");
 	if (!server.root.empty())
 	{
 		Skip(";");

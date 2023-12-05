@@ -6,6 +6,7 @@
 #include "../parse/utils.hpp"
 #include "MACS.hpp"
 #include <ctime>
+#include <fstream>
 #include <sys/_types/_size_t.h>
 
 

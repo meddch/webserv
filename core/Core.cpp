@@ -1,6 +1,8 @@
 #include "Core.hpp"
 #include "Server.hpp"
 #include <string>
+#include <sys/_types/_size_t.h>
+#include <sys/_types/_ssize_t.h>
 #include "../Webserv.hpp"
 
 
@@ -271,35 +273,7 @@ void Core::handlePl_Out(Client& client)
 			if (client._isCGI)
 				client.set_Connect(false);
 		}
-		else if (client.request._headers.find("range") != client.request._headers.end()){
-			struct stat filestat;
-			stat(client.response.filePath.c_str(), &filestat);
-			client.response._fileSize = filestat.st_size;
-			std::stringstream ss;
-			ss << client.request._headers["range"].substr(client.request._headers["range"].find("=") + 1);
-			ss >> client.response._offset;
-			client.response.generateChunkedResponse();
-			std::fstream file;
-			file.open(client.response.filePath.c_str());
-			file.seekg(client.response._offset, std::ios::beg);
-			Str = client.response.response;
-			size_t len = Str.length();
-			char Buffer[BYTES];
-			file.read(Buffer, BYTES);
-			ssize_t bytesRead = file.gcount();
-			if (bytesRead == -1 || bytesRead == 0)
-			{
-				file.close();
-				client.set_Connect(false);
-				return;
-			}
-			Str += std::string(Buffer, bytesRead);
-			len += bytesRead;
-			bytesSent = send(client.getFd(), Str.c_str(), len, 0);
-			file.close();
-	
-		}
-		else if (client.request._headers.find("range") == client.request._headers.end())
+		else
 		{
 			if (!client.response._headerSent)
 			{
@@ -314,15 +288,21 @@ void Core::handlePl_Out(Client& client)
 			}
 			else
 				{
-					char buffer[BYTES];
-					ssize_t bytesRead = read(client.response.fd, buffer, BYTES);
-					if (bytesRead == -1 || bytesRead == 0)
+					char buffer[10240];
+					ssize_t bytesRead = read(client.response.fd, buffer, 10240);
+					if (bytesRead == -1 || bytesRead == 0 )
 					{
 						close(client.response.fd);
 						client.set_Connect(false);
 						return;
 					}
 					bytesSent = send(client.getFd(), buffer, bytesRead, 0);
+					if (bytesSent == -1 || bytesSent == 0 || bytesSent < 10240)
+					{
+						close(client.response.fd);
+						client.set_Connect(false);
+						return;
+					}
 				}
 			}
 		}
@@ -331,50 +311,14 @@ void Core::handlePl_Out(Client& client)
 
 Server&	Core::getServer(Client client)
 {
-	std::string Host;
-	std::vector<Server> servers;
-	int		id;
 	
-	if (client.request._headers.find("host") != client.request._headers.end())
-		Host = client.request._headers["host"];
-	else
-		std::runtime_error("Error: No Host found");
-
-	try {
-		if (Host.find(":") != std::string::npos)
-			Host = Host.substr(0, Host.find(":"));
+try {
 		for (size_t i = 0; i < _servers.size(); i++)
 		{
 			if (_servers[i].getAddress().port == client.getServerPort())
-				servers.push_back(_servers[i]);
-		}
-		if (servers.size() == 0)
-			throw std::runtime_error("Error: No server found");
-		id = -1;
-		for (size_t i = 0; i < servers.size(); i++)
-		{
-			if (servers[i].getName() == Host)
-				id = servers[i].getId();
-		}
-		for (size_t i = 0; i < _servers.size(); i++)
-		{
-			if (_servers[i].getId() == id)
 				return _servers[i];
+		
 		}
-		Host = client.request._headers["host"];
-	
-		size_t colonPos = Host.find(':');
-		in_addr_t ip = colonPos != std::string::npos ? toIpNum(Host.substr(0, colonPos)): toIpNum(Host);
-		int port = colonPos != std::string::npos ? toIpNum(Host.substr(colonPos + 1)): 80;
-		if (port <= 0 || port > 65535)
-			throw std::runtime_error("port out of range");
-		for (size_t i = 0; i < _servers.size(); i++)
-		{
-			Listen_Addr addr = _servers[i].getAddress();
-			if (addr.ip == ip && addr.port == port)
-				return _servers[i];
-		}
-
 	}
 	catch (...) {
 	}

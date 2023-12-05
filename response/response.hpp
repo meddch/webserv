@@ -6,7 +6,7 @@
 /*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/09 15:01:48 by azari             #+#    #+#             */
-/*   Updated: 2023/12/04 18:51:32 by mechane          ###   ########.fr       */
+/*   Updated: 2023/12/05 19:48:42 by mechane          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 
-#define BYTES 100240
-
+#define BYTES 1000
 class Response
 {
 	private:
@@ -53,6 +52,7 @@ class Response
 		int				fd;
 		ssize_t			_fileSize;
 		ssize_t			_offset;
+		ssize_t			_contentLengthInt;
 		std::string generateResponse(Request&);
 		std::string findMimeType(std::string);
 		std::string generateStatusPhrase(size_t);

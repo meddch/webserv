@@ -1,4 +1,5 @@
 #include "response.hpp"
+#include <string>
 #include <sys/_types/_ssize_t.h>
 
 Response::Response():
@@ -15,7 +16,8 @@ Response::Response():
 	readyToSend(false),
 	fd(0),
 	_fileSize(0),
-	_offset(0)
+	_offset(0),
+	_contentLengthInt(0)
 {}
 
 void Response::initResponseHeaders(Request& request){
@@ -60,7 +62,7 @@ bool Response::handleResponseError(Request& request, std::string errorPage, std:
 {
 	(void)errorPage;
 	_version = request._headers["httpVersion"];
-	_status = generateStatusPhrase(std::stoi(code));
+	_status = generateStatusPhrase(std::atoi(code.c_str()));
 	response = _version + _status + "\r\n";
 	_headers["Server"] = "Webserv/1.0.0 (mechane-azari)";
 	std::string errorBody = "<html><head><title>" + _status + "</title></head><body><center><h1>" + _status + "</h1></center><hr><center>Webserv/1.0.0 (mechane-azari)</center></body></html>";
@@ -83,16 +85,20 @@ bool Response::handleResponseError(Request& request, std::string errorPage, std:
 }
 void Response::generateChunkedResponse(){
 	
-	response ="HTTP/1.1 206 Partial Content\r\n";
-	_headers["Content-Length"] = std::to_string(std::min((size_t)BYTES, size_t(_fileSize - _offset)));
-	_headers["Content-Range"] = "bytes " + std::to_string(_offset) + "-" + std::to_string(std::min((ssize_t)(_offset + BYTES), (ssize_t)(_fileSize))) + "/" + std::to_string(_fileSize);
+	response.clear();
+	response = "HTTP/1.1 206 Partial Content\r\n";
+	_headers["Content-Length"] = std::to_string(_fileSize - _offset);
+	_headers["Content-Range"] = "bytes " + std::to_string(_offset) + "-" + std::to_string(_fileSize) + "/" + std::to_string(_fileSize);
 	_headers["Accept-Ranges"] = "bytes";
 	_headers["Content-Type"] = findMimeType(filePath.substr(filePath.find_last_of(".")));
 	_headers["Server"] = "Webserv/1.0.0 (mechane-azari)";
-	_headers["Connection"] =  "close";
+	_headers["Connection"] =  "keep-alive";
 	for(std::unordered_map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
 		response.append(it->first + ": " + it->second + "\r\n");
 	response.append("\r\n");
+	
+	
+
 }
 
 bool Response::isConnectionKeepAlive(){
