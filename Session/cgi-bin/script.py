@@ -29,7 +29,7 @@ name = output.get('name', [cookie['name'].value if 'name' in cookie else 'Guest'
 if name != "Guest":
 	cookie = http.cookies.SimpleCookie()
 	cookie["name"] = name
-
+	cookie["name"]["path"] = "/cgi-bin/script.py" 
 # Print the headers
 print('Content-Type: text/html; charset=utf-8')
 print(cookie.output())
@@ -115,10 +115,10 @@ print(f"""
 
 	 <p>Hi "{name}" welcome to our Webserv !</p> 
 	<div class="button-container">
-		<a href="/index.html" class="button">Home</a>
 		<a href="/upload.html" class="button">Upload</a>
-		<a href="/cinema.html" class="button">Cinema</a>
-		<a href="/CGI.html" class="button">CGI</a>
+		<a href="/media.html" class="button">Media</a>
+		<a href="/team.html" class="button">Team</a>
+		<a href="/welcome.html" class="button">Go Back</a>
 	</div>
 
 	<div id="developer-info">

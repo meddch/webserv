@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multiple File Upload Form</title>
+</head>
+<body>
+
+<h2>Multiple File Upload Form</h2>
+
+<form action="/cgi-bin/upload.php" method="POST" enctype="multipart/form-data">
+    <label for="files">Select Files:</label>
+    <input type="file" name="files[]" id="files" multiple>
+    <input type="submit" name="submit" value="Upload">
+</form>
+
+</body>
+</html>

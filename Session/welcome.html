@@ -90,6 +90,7 @@
         #cgi-form input[type="submit"] {
 			font-family: "Courier New", Courier, monospace;
             display: inline-block;
+			font-weight: bold;
             padding: 15px 30px;
             margin: 10px;
             text-align: center;
@@ -117,6 +118,18 @@
             transition: background-color 0.3s ease;
         }
 
+		.bt {
+			font-family: "Courier New", Courier, monospace;
+			font-size: 13px;
+			padding: 15px 30px;
+			margin: 10px;
+			text-align: center;
+			text-decoration: none;
+			color: white ;
+			border-radius: 5px;
+			transition: background-color 0.3s ease;
+		}
+
         .pos {
             position: absolute;
             top: 50%;
@@ -133,8 +146,9 @@
         <header>Welcome !</header>
 		<form id="cgi-form" action="/cgi-bin/script.py" method="POST">
 			<p>welcome to our <bold>webserv<bold> . please provide your username to continue</p>
-			<input type="text" id="name" name="name" placeholder="Enter Your Name"><br>
+			<input type="text" id="name" name="name" placeholder="Enter Your Name" required><br>
 			<input type="submit" value="Submit">
+			<a class="bt" href="/cgi-bin/script.py" >Skip</a>
 		</form>
 		<br><br><br><br>
 		<br><br><br><br>

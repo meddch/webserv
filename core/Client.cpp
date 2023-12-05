@@ -1,6 +1,7 @@
 #include "Client.hpp"
 #include <cstdio>
 #include <ctime>
+#include <iostream>
 #include <sys/_types/_size_t.h>
 #include <sys/_types/_ssize_t.h>
 #include <sys/errno.h>
@@ -375,12 +376,11 @@ std::string Client::getPath()
 {
 	stringMap env;
 
-	env["CONTENT_TYPE"] = request._headers["Content-Type"];
-	
+	env["CONTENT_TYPE"] = request._headers["content-type"];
 	if (request._headers["Method"] == "POST")
 	{
 		_body = _body.substr(_body.find("\r\n\r\n") + 4);
-		env["CONTENT_LENGTH"] = request._body.size();
+		env["CONTENT_LENGTH"] = request._headers["content-length"];
 	}
 	else
 		env["QUERY_STRING"] = request._headers["Queries"];
@@ -389,7 +389,7 @@ std::string Client::getPath()
 	env["PATH_INFO"] = request.getRequestURI();
 	env["PATH_TRANSLATED"] =  server.getRoot() + request.getRequestURI();
 	env["REMOTE_ADDR"] = toIPString(server._config.address.ip);
-	env["REQUEST_METHOD"] = request._headers["Method"];
+	env["REQUEST_METHOD"] = request._headers["method"];
 	env["SCRIPT_FILENAME"] = _config_location.cgiPath;
 	env["SERVER_NAME"] = server.getName();
 	env["SERVER_PORT"] = std::to_string(server._config.address.port);
@@ -439,7 +439,7 @@ void Client::handleCGI()
 			chdir(std::string(argv[1]).substr(0, std::string(argv[1]).find_last_of('/')).c_str());
 			dup2(pipeIn[0], 0), dup2(pipeOut[1], 1);
 			close(pipeIn[1]), close(pipeOut[0]);
-	
+			// close(2);
 			if (execve(argv[0], argv, envp) == -1)
 				throw std::runtime_error("500");
 		}

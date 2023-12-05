@@ -36,7 +36,6 @@ void Response::initResponseHeaders(Request& request){
 		_headers["Content-Type"] = findMimeType(filePath.substr(filePath.find_last_of(".")));
 		_headers["Accept-Ranges"] = "bytes";
 		_headers["Connection"] = "keep-alive" ;
-		_headers["cache-control"] = "max-age=3600 public";
 	}
 	for(std::unordered_map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
 		response.append(it->first + ": " + it->second + "\r\n");
