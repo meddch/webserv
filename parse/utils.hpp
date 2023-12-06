@@ -14,7 +14,7 @@
 #define ISNOTEXIST 3
 #define EMPTY ""
 #define REDIRECT "301"
-#define HTTP "http://"
+#define HTTP "http://localhost:"
 
 
 #include "Parse.hpp"
@@ -28,4 +28,5 @@ bool			isAllDigit(std::string str);
 Listen_Addr		getAddressFromFd(int fd);
 in_addr_t 		toIpNum(std::string str);
 int 			getResourceType(std::string path);
+std::string 	getRootPath();
 

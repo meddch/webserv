@@ -31,7 +31,7 @@ typedef std::vector<std::string> stringVec;
 #define DEFAULT_INDEX	"index.html"
 #define ROOT			"/Session"
 #define NONE			"none"
-#define MAX_BODY_SIZE	1000000000000
+#define MAX_BODY_SIZE	100000000
 
 
 //Structs

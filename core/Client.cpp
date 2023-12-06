@@ -1,5 +1,6 @@
 #include "Client.hpp"
 #include <cstdio>
+#include <cstdlib>
 #include <ctime>
 #include <iostream>
 #include <sys/_types/_size_t.h>
@@ -242,7 +243,7 @@ void Client::handleGetRequest()
 	else if (resourceType == ISDIR)
 	{
 		if (fullPath[fullPath.length() - 1] != '/')
-			return generateRedirectionResponse(r, HTTP + request._headers["host"] + request.uri + "/", 301);
+			return generateRedirectionResponse(r, HTTP + toString(server._config.address.port) + "/" + normalizePath(request.uri + "/"), 301);
 		std::string index = normalizePath(fullPath + "/" + _config_location.index);
 		struct stat path_stat;
    		stat(index.c_str(), &path_stat);
@@ -310,9 +311,8 @@ void Client::handlePostRequest(){
 void Client::handleDeleteRequest(){
 	
 	Request r = this->request;
-	std::string path = server.getRoot() + request.getRequestURI();
+	std::string path = normalizePath(server.getRoot() + request.getRequestURI());
 	int resourceType = getResourceType(path);
-
 
 	if (resourceType == ISFILE){
 		if (::remove(path.c_str()) == 0)
@@ -326,7 +326,7 @@ void Client::handleDeleteRequest(){
 			throw std::runtime_error("409");
 		else
 		{
-			if (::rmdir(path.c_str()) == 0)
+			if (rmdir(path.c_str()) == 0)
 				return generateResponse(r, EMPTY, 204);
 			else
 			{
@@ -431,15 +431,14 @@ void Client::handleCGI()
 				char **argv = new char*[3];
 				argv[0] = new char[_config_location.cgiPath.size() + 1];
 				std::strcpy(argv[0], _config_location.cgiPath.c_str());
-				argv[1] = new char[path.size() + 1];
-				std::strcpy(argv[1], path.c_str());
+				argv[1] = new char[path.substr(path.find_last_of('/') + 1).size() + 1];
+				std::strcpy(argv[1], path.substr(path.find_last_of('/') + 1).c_str());
 				argv[2] = NULL;
 	
-
-			chdir(std::string(argv[1]).substr(0, std::string(argv[1]).find_last_of('/')).c_str());
+			chdir(std::string(path.substr(0, path.find_last_of('/'))).c_str());
 			dup2(pipeIn[0], 0), dup2(pipeOut[1], 1);
 			close(pipeIn[1]), close(pipeOut[0]);
-			// close(2);
+			close(2);
 			if (execve(argv[0], argv, envp) == -1)
 				throw std::runtime_error("500");
 		}

@@ -79,6 +79,15 @@ in_addr_t toIPv4(std::string str)
 	return htonl(result);
 }
 
+std::string getRootPath()
+{
+	char *realPat = realpath(".", NULL);
+	if (realPat == NULL)
+		throw std::runtime_error("Parser :: failed to get root path");
+	std::string realPath = realPat + std::string(ROOT);
+	free(realPat);
+	return realPath;
+}
 
 
 Listen_Addr getAddressFromFd(int fd)

@@ -34,6 +34,7 @@ int	Core::CreateTcpIpListeners(Listen_Addr addr)
 	if (bind(fd, reinterpret_cast<sockaddr *>(&serverAddr), sizeof(serverAddr)) < 0)
 	{
 		close(fd);
+		std::cout << strerror(errno) << std::endl;
 		throw std::runtime_error("Error: Bind failed: " + std::string(strerror(errno)));
 	}
 
@@ -283,6 +284,12 @@ void Core::handlePl_Out(Client& client)
 				Str = client.response.response;
 				client.response._headerSent = true;
 				bytesSent = send(client.getFd(), Str.c_str(), Str.length(), 0);
+				if (bytesSent == -1 || bytesSent == 0)
+				{
+					close(client.response.fd);
+					client.set_Connect(false);
+					return;
+				}
 			}
 			else
 				{
@@ -309,14 +316,50 @@ void Core::handlePl_Out(Client& client)
 
 Server&	Core::getServer(Client client)
 {
+	std::string Host;
+	std::vector<Server> servers;
+	int		id;
 	
-try {
+	if (client.request._headers.find("host") != client.request._headers.end())
+		Host = client.request._headers["host"];
+	else
+		std::runtime_error("Error: No Host found");
+
+	try {
+		if (Host.find(":") != std::string::npos)
+			Host = Host.substr(0, Host.find(":"));
 		for (size_t i = 0; i < _servers.size(); i++)
 		{
 			if (_servers[i].getAddress().port == client.getServerPort())
-				return _servers[i];
-		
+				servers.push_back(_servers[i]);
 		}
+		if (servers.size() == 0)
+			throw std::runtime_error("Error: No server found");
+		id = -1;
+		for (size_t i = 0; i < servers.size(); i++)
+		{
+			if (servers[i].getName() == Host)
+				id = servers[i].getId();
+		}
+		for (size_t i = 0; i < _servers.size(); i++)
+		{
+			if (_servers[i].getId() == id)
+				return _servers[i];
+		}
+		Host = client.request._headers["host"];
+	
+		size_t colonPos = Host.find(':');
+		in_addr_t ip = colonPos != std::string::npos ? toIpNum(Host.substr(0, colonPos)): toIpNum(Host);
+		int port = colonPos != std::string::npos ? toIpNum(Host.substr(colonPos + 1)): 80;
+		if (port <= 0 || port > 65535)
+			throw std::runtime_error("port out of range");
+		for (size_t i = 0; i < _servers.size(); i++)
+		{
+			Listen_Addr addr = _servers[i].getAddress();
+			if (addr.ip == ip && addr.port == port)
+				return _servers[i];
+		}
+
 	}
 	catch (...) {
 	}

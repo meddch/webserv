@@ -115,7 +115,9 @@ print(f"""
 
 	 <p>Hi "{name}" welcome to our Webserv !</p> 
 	<div class="button-container">
+
 		<a href="/upload.html" class="button">Upload</a>
+		<a href="/form.html" class="button">Form</a>
 		<a href="/media.html" class="button">Media</a>
 		<a href="/team.html" class="button">Team</a>
 		<a href="/welcome.html" class="button">Go Back</a>
