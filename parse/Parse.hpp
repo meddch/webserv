@@ -29,7 +29,7 @@ typedef std::vector<std::string> stringVec;
 //Constants
 #define DEFAULT_PORT	80
 #define DEFAULT_INDEX	"index.html"
-#define ROOT			"/Session"
+#define ROOT			"/Session/"
 #define NONE			"none"
 #define MAX_BODY_SIZE	100000000
 

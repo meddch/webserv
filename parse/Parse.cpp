@@ -168,7 +168,10 @@ void	Parse::ParseServer()
 		server.root = getRootPath();
 
 	if (server.address.port == -1)
+	{	
+		server.address.ip = 0;
 		server.address.port = DEFAULT_PORT;
+	}
 
 
 	// Check if server name already exists and port matches
@@ -181,6 +184,7 @@ void	Parse::ParseServer()
 
 	addDefaultLocation(server);
 	_config.push_back(server);
+
 }
 
 LocationContext Parse::Location(void)
@@ -192,7 +196,7 @@ LocationContext Parse::Location(void)
 	location.alias.clear();
 	location.redirect.second.clear();
 	location.redirect.first = 0;
-	location.autoindex = false;
+	location.autoindex = true;
 	location.cgiPath.clear();
 	location.uploadPath.clear();
 
@@ -245,7 +249,7 @@ void Parse::ParseServerRoot(ServerContext& server)
 {
     
 	std::string path = Accept();
-	std::string realPath = getRootPath();
+	std::string realPath = getRootPath().substr(0, getRootPath().size() - 1);
 	if (path.empty() || path.substr(0, realPath.size()) != realPath)
 		throw std::runtime_error("Parser: invalid root path!");
 	if (!server.root.empty())
@@ -471,7 +475,6 @@ void Parse::addDefaultLocation(ServerContext& server)
 	location.uri = "/";
 	location.root = server.root;
 	location.allowedMethods.push_back("GET");
-
 	server.locations.push_back(location);
 }
 

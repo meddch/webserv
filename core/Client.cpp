@@ -227,7 +227,6 @@ void Client::handleGetRequest()
 {
 	Request r = this->request;
 	std::string fullPath = normalizePath(getPath());
-
 	if (fullPath.find(server.getRoot()) == std::string::npos)
 		throw std::runtime_error("403");
 	int resourceType = getResourceType(fullPath);	
@@ -243,7 +242,7 @@ void Client::handleGetRequest()
 	else if (resourceType == ISDIR)
 	{
 		if (fullPath[fullPath.length() - 1] != '/')
-			return generateRedirectionResponse(r, HTTP + toString(server._config.address.port) + "/" + normalizePath(request.uri + "/"), 301);
+			return generateRedirectionResponse(r, HTTP + toString(server._config.address.port) + normalizePath(request.uri + "/"), 301);
 		std::string index = normalizePath(fullPath + "/" + _config_location.index);
 		struct stat path_stat;
    		stat(index.c_str(), &path_stat);
