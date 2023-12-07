@@ -395,6 +395,8 @@ std::string Client::getPath()
 	env["SERVER_PORT"] = std::to_string(server._config.address.port);
 	env["SERVER_SOFTWARE"] = "Webserv/1.0.0 (mechane-azari)";
 	env["REDIRECT_STATUS"] = "200";
+	if (request._headers["cookie"].find("session_id=") != std::string::npos)
+		env["SESSION_ID"] = request._headers["cookie"].substr(request._headers["cookie"].find("session_id=") + 11);
 	return env;
 }
 
@@ -482,8 +484,9 @@ void Client::handleCGI()
 			throw std::runtime_error("500");
 
 	}
-
-	response.response =  "HTTP/1.1 200 script output follows\r\n Server: Webserv/1.0.0 (mechane-azari)\r\n"  + result;
+	if (result.find("\r\n\r\n") == std::string::npos)
+		throw std::runtime_error("500");
+	response.response =  "HTTP/1.1 200 OK\r\nServer: Webserv/1.0.0 (mechane-azari)\r\n" "Content-Length: " + std::to_string((result.substr(result.find("\r\n\r\n")+4).length())) + "\r\n" + result;
 	response.readyToSend = true;
 	_isCGI = true;
 	

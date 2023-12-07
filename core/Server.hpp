@@ -7,6 +7,7 @@ class Server
 {
 private:
 	int 			_id;
+	stringMap		_sessions;
 public:
 	ServerContext _config;
 	Server(const ServerContext config);
@@ -23,6 +24,10 @@ public:
 	LocationContext 				&getLocation(std::string);
 	bool 							uploadEnabled() const;
 	LocationContext					&findLocation(std::string uri);
-	// void							handlerequest(Request &request, Client &client);
+	void							addSession(std::string session_id, std::string username);
+	void							removeSession(std::string session_id);
+	bool							isSessionValid(std::string session_id);
+	std::string						getSessionUsername(std::string session_id);
+	
 
 };

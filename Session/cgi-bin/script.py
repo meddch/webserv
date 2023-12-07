@@ -33,22 +33,8 @@ if name != "Guest":
 # Print the headers
 print('Content-Type: text/html; charset=utf-8')
 print(cookie.output())
-print()
+print("\r\n\r\n")
 
-# Print the HTML
-# print(f"""
-# <html>
-# <head>
-# <style>
-# body {{ background-color: #f0f0f0; font-family: Arial, sans-serif; }}
-# h1 {{ color: #333; }}
-# </style>
-# </head>
-# <body>
-# <h1>Hello, {name}!</h1>
-# </body>
-# </html>
-# """)
 
 print(f"""
 <html>

@@ -135,3 +135,6 @@ void Response::generateAutoIndex(Request& request)
     response += auto_index;
     readyToSend = true;
 }
+
+
+

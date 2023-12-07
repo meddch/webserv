@@ -6,7 +6,7 @@
 /*   By: mechane <mechane@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 15:21:09 by azari             #+#    #+#             */
-/*   Updated: 2023/12/05 22:15:29 by mechane          ###   ########.fr       */
+/*   Updated: 2023/12/07 11:17:41 by mechane          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,7 +80,9 @@ std::string Request::parseURI(std::string uri){
         _headers["Queries"] = uri.substr(uri.find("?") + 1, uri.npos);
         uri = newURI;
     }
-
+	//normalize url
+	while (uri.find("//") != std::string::npos)
+		uri.erase(uri.find("//"), 1);
 	return uri;
 }
 

@@ -87,3 +87,23 @@ LocationContext &Server::findLocation(std::string uri)
 	uri = backPos == 0 ? "/" : uri.substr(0, uri.find_last_of('/'));
 	return findLocation(uri);
 }
+
+void Server::addSession(std::string session_id, std::string username)
+{
+	_sessions[session_id] = username;
+}
+
+void Server::removeSession(std::string session_id)
+{
+	_sessions.erase(session_id);
+}
+
+bool Server::isSessionValid(std::string session_id)
+{
+	return _sessions.find(session_id) != _sessions.end();
+}
+
+std::string Server::getSessionUsername(std::string session_id)
+{
+	return _sessions[session_id];
+}
