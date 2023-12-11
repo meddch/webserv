@@ -5,7 +5,7 @@ BLUE = \033[0;34m
 NAME = Webserv
 RM = rm -f
 CPPFLAGS = -Wall -Wextra -Werror -std=c++98 
-FILE =  main core/Client  core/Core     core/Server parse/Parse    parse/Utils   request/Request response/Response response/Generators
+FILE =  main core/Client  core/Core     core/Server parse/Parse    parse/Utils   request/Request response/Response response/generators
 
 HEADERS = Webserv.hpp core/Client.hpp core/Core.hpp core/Server.hpp parse/Parse.hpp parse/Utils.hpp request/Request.hpp response/Response.hpp 
 
